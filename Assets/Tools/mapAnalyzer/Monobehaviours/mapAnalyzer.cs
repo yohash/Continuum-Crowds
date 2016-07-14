@@ -20,7 +20,7 @@ public class mapAnalyzer : MonoBehaviour {
 	// *****************************************
 	int xSteps, zSteps;
 	float[,] h, dhdx, dhdy, g;
-
+	Vector2[,] dh;
 
 	void Awake () {
 		S = this;		
@@ -33,6 +33,11 @@ public class mapAnalyzer : MonoBehaviour {
 		generateHeightMap();
 		generateGradientMaps();
 		generateDiscomfortMap();
+
+
+		tileAndColorSystem.S.instantiateTiles(xSteps,zSteps,stepSize,h);
+		tileAndColorSystem.S.setTileColor(dhdy,Color.red);
+		//printOutMatrix(dhdx);
 	}
 
 
@@ -138,6 +143,8 @@ public class mapAnalyzer : MonoBehaviour {
 		for (int n=0; n<f.GetLength(0); n++) {
 			s = "";
 			for (int m=0; m<f.GetLength(1); m++) {
+				if (n==f.GetLength(0)-1 && m==f.GetLength(1)-1) {s += " X ";}
+				else if (n==0 && m==0) {s += " X ";} 
 				s += f[n,m].ToString() + " "; 
 			}
 			print(s);
