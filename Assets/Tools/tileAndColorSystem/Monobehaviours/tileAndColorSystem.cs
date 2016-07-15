@@ -12,8 +12,6 @@ public class tileAndColorSystem : MonoBehaviour {
 	public float tileDim;
 
 
-
-	[ExecuteInEditMode]
 	void Awake() {
 		S = this;
 	}
@@ -31,8 +29,8 @@ public class tileAndColorSystem : MonoBehaviour {
 		for (int n=0; n<xNum; n++) {
 			for (int m=0; m<zNum; m++) {
 				tempTile = Instantiate(theTile) as GameObject;
-				xLoc = n*tileDim + tileDim/2f;
-				zLoc = m*tileDim + tileDim/2f;
+				xLoc = n*tileDim; // + tileDim/2f;
+				zLoc = m*tileDim; // + tileDim/2f;
 				tempTile.transform.position = new Vector3(xLoc,0f,zLoc);
 				tempTile.transform.SetParent(this.transform);
 				tiles[n,m] = tempTile.GetComponent<tile>();
@@ -53,8 +51,8 @@ public class tileAndColorSystem : MonoBehaviour {
 		for (int n=0; n<xNum; n++) {
 			for (int m=0; m<zNum; m++) {
 				tempTile = Instantiate(theTile) as GameObject;
-				xLoc = n*tileDim + tileDim/2f;
-				zLoc = m*tileDim + tileDim/2f;
+				xLoc = n*tileDim; //+ tileDim/2f;
+				zLoc = m*tileDim; // + tileDim/2f;
 				tempTile.transform.position = new Vector3(xLoc,heightMap[n,m]+0.1f,zLoc);
 				tempTile.transform.SetParent(this.transform);
 				tiles[n,m] = tempTile.GetComponent<tile>();
@@ -91,13 +89,9 @@ public class tileAndColorSystem : MonoBehaviour {
 
 						newC = new Color(r,g,b) * Mathf.Abs(colMap[n,m]);
 					}
-
-
 					tiles[n,m].setColor(newC);
 				}
 			}
 		}
-
-
 	}
 }

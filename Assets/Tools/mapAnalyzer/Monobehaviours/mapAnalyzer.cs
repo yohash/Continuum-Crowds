@@ -22,6 +22,11 @@ public class mapAnalyzer : MonoBehaviour {
 	float[,] h, dhdx, dhdy, g;
 	Vector2[,] dh;
 
+	public float[,] get_h() {return h;}
+	public float[,] get_dhdx() {return dhdx;}
+	public float[,] get_dhdy() {return dhdy;}
+	public float[,] get_g() {return g;}
+	// *****************************************
 	void Awake () {
 		S = this;		
 	}
@@ -36,7 +41,6 @@ public class mapAnalyzer : MonoBehaviour {
 
 
 		tileAndColorSystem.S.instantiateTiles(xSteps,zSteps,stepSize,h);
-		tileAndColorSystem.S.setTileColor(dhdy,Color.red);
 		//printOutMatrix(dhdx);
 	}
 
@@ -90,6 +94,8 @@ public class mapAnalyzer : MonoBehaviour {
 		dhdy[x,y] = (h[x,yMax] - h[x,yMin]) / (yMax - yMin);
 	}
 
+
+	// change this up...
 	public List<Location> getUnpassableTerrain(float threshhold) {
 		List<Location> theList = new List<Location>();
 		for (int i=0; i<xSteps; i++) {
@@ -137,7 +143,10 @@ public class mapAnalyzer : MonoBehaviour {
 		return unNormMap;
 	}
 
-	void printOutMatrix(float[,] f) {
+	// *****************************************************************************************************************
+	// 		ADMIN and DEBUG functions
+	// *****************************************************************************************************************
+	public void printOutMatrix(float[,] f) {
 		string s;
 		print("NEW MATRIX");
 		for (int n=0; n<f.GetLength(0); n++) {
