@@ -24,13 +24,11 @@ public class CC_UnitManager : MonoBehaviour
 	}
 
 	void Start () {
-//		Invoke("startTest",1f);
 	}
 
 	void Update() {
-		testCC();
+			testCC();
 	}
-
 
 	void testCC ()
 	{
@@ -42,6 +40,8 @@ public class CC_UnitManager : MonoBehaviour
 		);
 
 		Rect r;
+
+		My_CC_unit_goal_groups = new List<CC_Unit_Goal_Group> ();
 
 		r = new Rect(new Vector2(30,10), new Vector2(10,10));
 		temp_cc_units = new List<CC_Unit>(); 
@@ -60,7 +60,6 @@ public class CC_UnitManager : MonoBehaviour
 		CC = new ContinuumCrowds(My_CC_map_package, My_CC_unit_goal_groups);
 
 
-		tileAndColorSystem.S.setTileColor(CC.rho,Color.red);
+		tileAndColorSystem.S.setTileColor(CC.gP,Color.red);
 	}
-
 }

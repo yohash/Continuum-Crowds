@@ -63,6 +63,36 @@ public class tileAndColorSystem : MonoBehaviour {
 	public void setTileColor(int xLoc, int zLoc, Color col) {
 		tiles[(int)(xLoc/tileDim), (int)(zLoc/tileDim)].setColor(col);
 	}
+	public void addTileColor(int xLoc, int zLoc, Color col) {
+		tiles[(int)(xLoc/tileDim), (int)(zLoc/tileDim)].addColor(col);
+	}
+	public void setTileColor(Vector2[,] colMap, Color col) {
+		int N = colMap.GetLength(0);
+		int M = colMap.GetLength(1);
+
+		if (N!= xNum || M!= zNum) {
+			for (int n=0; n<xNum; n++) {
+				for (int m=0; m<zNum; m++) {
+					tiles[n,m].setColor(Color.white);
+				}
+			}
+		} else {	
+			for (int n=0; n<xNum; n++) {
+				for (int m=0; m<zNum; m++) {
+					Color newC;
+					newC = col * colMap[n,m].x;
+					setTileColor(n,m,newC);
+
+					float r,g,b;
+					r = col.g;
+					g = col.b;
+					b = col.r;
+					newC = (new Color(r,g,b)) * colMap[n,m].y;
+					addTileColor(n,m,newC);
+				}
+			}
+		}
+	}
 	public void setTileColor(float[,] colMap, Color col) {
 
 		int N = colMap.GetLength(0);
@@ -90,6 +120,38 @@ public class tileAndColorSystem : MonoBehaviour {
 						newC = new Color(r,g,b) * Mathf.Abs(colMap[n,m]);
 					}
 					tiles[n,m].setColor(newC);
+				}
+			}
+		}
+	}
+
+	public void addTileColor(float[,] colMap, Color col) {
+
+		int N = colMap.GetLength(0);
+		int M = colMap.GetLength(1);
+
+		if (N!= xNum || M!= zNum) {
+			for (int n=0; n<xNum; n++) {
+				for (int m=0; m<zNum; m++) {
+					tiles[n,m].setColor(Color.white);
+				}
+			}
+		} else {	
+			for (int n=0; n<xNum; n++) {
+				for (int m=0; m<zNum; m++) {
+					Color newC;
+
+					if (colMap[n,m]>0) {
+						newC = col * colMap[n,m];
+					} else {
+						float r,g,b;
+						r = 1f-col.r;
+						g = 1f-col.g;
+						b = 1f-col.b;
+
+						newC = new Color(r,g,b) * Mathf.Abs(colMap[n,m]);
+					}
+					tiles[n,m].addColor(newC);
 				}
 			}
 		}

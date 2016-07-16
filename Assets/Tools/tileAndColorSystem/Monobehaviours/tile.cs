@@ -24,4 +24,10 @@ public class tile : MonoBehaviour {
 		myColor = c;
 		mat.color = myColor;
 	}
+
+	public void addColor(Color c) {
+		c.a = 0.0f;
+		myColor += c;
+		mat.color = myColor;
+	}
 }

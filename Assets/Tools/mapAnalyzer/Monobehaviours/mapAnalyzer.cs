@@ -27,6 +27,7 @@ public class mapAnalyzer : MonoBehaviour {
 	public float[,] get_dhdy() {return dhdy;}
 	public float[,] get_g() {return g;}
 	// *****************************************
+
 	void Awake () {
 		S = this;		
 	}
@@ -39,12 +40,8 @@ public class mapAnalyzer : MonoBehaviour {
 		generateGradientMaps();
 		generateDiscomfortMap();
 
-
 		tileAndColorSystem.S.instantiateTiles(xSteps,zSteps,stepSize,h);
-
-		//printOutMatrix(dhdx);
 	}
-
 
 	// *****************************************************************************************************************
 	// 				HEIGHT MAP GENERATION
@@ -95,7 +92,6 @@ public class mapAnalyzer : MonoBehaviour {
 		dhdy[x,y] = (h[x,yMax] - h[x,yMin]) / (yMax - yMin);
 	}
 
-
 	// change this up...
 	public List<Location> getUnpassableTerrain(float threshhold) {
 		List<Location> theList = new List<Location>();
@@ -106,7 +102,6 @@ public class mapAnalyzer : MonoBehaviour {
 		}
 		return theList;
 	}
-
 
 	// *****************************************************************************************************************
 	// 		HELPer functions
