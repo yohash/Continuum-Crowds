@@ -134,39 +134,39 @@ public class _levelManager : MonoBehaviour {
 
 
 	void saveGrid (SquareGrid grid, AStarSearch astar) {
-		var sa = File.CreateText("Assets/pathfinding/arrow.txt");
-		var sv = File.CreateText("Assets/pathfinding/value.txt");
-
-		// Print out the cameFrom array
-		for (var y = 0; y < xSteps; y++)
-		{
-			string sa1="";
-			string sv1="";
-			for (var x = 0; x < zSteps; x++)
-			{
-				float cost;
-				Location id = new Location(x, y);
-				Location ptr = id;
-				if (!astar.cameFrom.TryGetValue(id, out ptr))
-				{
-					ptr = id;
-				}
-				if (grid.walls.Contains(id)) { sa1+="##"; sv1+="##"; }
-				else if (id.x == startLoc.x && id.y == startLoc.y) {sa1+="A ";sv1+="A ";}
-				else if (id.x == goalLoc.x && id.y == goalLoc.y) {sa1+="Z "; sv1+="Z ";}
-				else if (ptr.x == x+1) { sa1+="\u2192 "; }
-				else if (ptr.x == x-1) { sa1+="\u2190 "; }
-				else if (ptr.y == y+1) { sa1+="\u2193 "; }
-				else if (ptr.y == y-1) { sa1+="\u2191 "; }
-				else { sa1+="* ";  sv1+="* ";}
-				if (astar.costSoFar.TryGetValue(id, out cost)) {
-					sv1+=cost.ToString()+" ";
-				}
-			}
-			sa.WriteLine(sa1);
-			sv.WriteLine(sv1);
-		}
-		sa.Close();
-		sv.Close();
+//		var sa = File.CreateText("Assets/pathfinding/arrow.txt");
+//		var sv = File.CreateText("Assets/pathfinding/value.txt");
+//
+//		// Print out the cameFrom array
+//		for (var y = 0; y < xSteps; y++)
+//		{
+//			string sa1="";
+//			string sv1="";
+//			for (var x = 0; x < zSteps; x++)
+//			{
+//				float cost;
+//				Location id = new Location(x, y);
+//				Location ptr = id;
+//				if (!astar.cameFrom.TryGetValue(id, out ptr))
+//				{
+//					ptr = id;
+//				}
+//				if (grid.walls.Contains(id)) { sa1+="##"; sv1+="##"; }
+//				else if (id.x == startLoc.x && id.y == startLoc.y) {sa1+="A ";sv1+="A ";}
+//				else if (id.x == goalLoc.x && id.y == goalLoc.y) {sa1+="Z "; sv1+="Z ";}
+//				else if (ptr.x == x+1) { sa1+="\u2192 "; }
+//				else if (ptr.x == x-1) { sa1+="\u2190 "; }
+//				else if (ptr.y == y+1) { sa1+="\u2193 "; }
+//				else if (ptr.y == y-1) { sa1+="\u2191 "; }
+//				else { sa1+="* ";  sv1+="* ";}
+//				if (astar.costSoFar.TryGetValue(id, out cost)) {
+//					sv1+=cost.ToString()+" ";
+//				}
+//			}
+//			sa.WriteLine(sa1);
+//			sv.WriteLine(sv1);
+//		}
+//		sa.Close();
+//		sv.Close();
 	}
 }

@@ -41,6 +41,7 @@ public class mapAnalyzer : MonoBehaviour {
 
 
 		tileAndColorSystem.S.instantiateTiles(xSteps,zSteps,stepSize,h);
+
 		//printOutMatrix(dhdx);
 	}
 
