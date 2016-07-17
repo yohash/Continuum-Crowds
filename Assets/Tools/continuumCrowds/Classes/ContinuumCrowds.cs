@@ -58,6 +58,7 @@ public class ContinuumCrowds
 	CC_Map_Package theMap;
 	List<CC_Unit_Goal_Group> theUnitGoalGroups;
 
+	// this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
 	Vector2[] dir = new Vector2[] {Vector2.right, Vector2.up, Vector2.left, Vector2.down };
 
 	int N, M;
@@ -83,7 +84,7 @@ public class ContinuumCrowds
 		foreach (CC_Unit_Goal_Group cc_ugg in theUnitGoalGroups) {
 			foreach (CC_Unit cc_u in cc_ugg.units) {
 				// (1) density field and velocity
-				densityFieldComputation (cc_u); 		
+				computeDensityField (cc_u); 		
 				// (2) predictive discomfort field
 				applyPredictiveDiscomfort (gP_predictiveSeconds, cc_u);	
 			}
@@ -92,11 +93,11 @@ public class ContinuumCrowds
 		// 		divide the velocity by densty to get average velocity field
 		// **** FOR NOW, LETS CALCLUATE THE WHOLE THING. LATER, WE SHOULD SAVE COMPUTATION
 		// **** BY ONLY CALCULATING THE NECESSARY POINTS USING THE COST FUNCTION
-		averageVelocityFieldComptutation ();	
+		computeAverageVelocityField ();	
 
 		// (4)	now that the average velocity field is computed, and the density
 		// 		field is in place, we calculate the speed field
-		speedFieldComputation ();
+		computeSpeedField ();
 
 		// these next fields must be computed for each goal in the entire list:
 		foreach (CC_Unit_Goal_Group cc_ugg in unitGoals) {
@@ -116,7 +117,7 @@ public class ContinuumCrowds
 		}
 	}
 
-	void densityFieldComputation (CC_Unit cc_u)
+	void computeDensityField (CC_Unit cc_u)
 	{
 		Vector2 cc_u_pos = cc_u.getLocalPosition ();
 
@@ -125,20 +126,20 @@ public class ContinuumCrowds
 		int xInd = (int)Mathf.Floor (cc_u_pos.x);
 		int yInd = (int)Mathf.Floor (cc_u_pos.y);
 
-		velocityFieldPointAddition (xInd, yInd, cc_u.getVelocity ());
-		velocityFieldPointAddition (xInd + 1, yInd, cc_u.getVelocity ());
-		velocityFieldPointAddition (xInd, yInd + 1, cc_u.getVelocity ());
-		velocityFieldPointAddition (xInd + 1, yInd + 1, cc_u.getVelocity ());
+		computeVelocityFieldPoint (xInd, yInd, cc_u.getVelocity ());
+		computeVelocityFieldPoint (xInd + 1, yInd, cc_u.getVelocity ());
+		computeVelocityFieldPoint (xInd, yInd + 1, cc_u.getVelocity ());
+		computeVelocityFieldPoint (xInd + 1, yInd + 1, cc_u.getVelocity ());
 	}
 
-	void velocityFieldPointAddition (int x, int y, Vector2 v)
+	void computeVelocityFieldPoint (int x, int y, Vector2 v)
 	{
 		if (isPointValid (x, y)) {
 			vAve [x, y] += v * rho [x, y];
 		}
 	}
 
-	void averageVelocityFieldComptutation ()
+	void computeAverageVelocityField ()
 	{
 		for (int n = 0; n < N; n++) {
 			for (int m = 0; m < M; m++) {
@@ -164,18 +165,18 @@ public class ContinuumCrowds
 		}
 	}
 
-	void speedFieldComputation ()
+	void computeSpeedField ()
 	{
 		for (int n = 0; n < N; n++) {
 			for (int m = 0; m < M; m++) {
 				for (int d = 0; d < 4; d++) {
-					f[n,m][d] = calcSpeedFieldValue(n,m,dir[d]);
+					f[n,m][d] = computeSpeedFieldValue(n,m,dir[d]);
 				}
 			}
 		} 
 	}
 
-	float calcSpeedFieldValue(int x, int y, Vector2 direction) {
+	float computeSpeedFieldValue(int x, int y, Vector2 direction) {
 		int xInto = x+(int)direction.x;
 		int yInto = y+(int)direction.y;
 
@@ -188,14 +189,14 @@ public class ContinuumCrowds
 
 		// test the density INTO WHICH we move: 
 		if (r < f_rhoMin) {	// rho < rho_min calc
-			ft = calcTopographicalSpeed(x, y, direction);
+			ft = computeTopographicalSpeed(x, y, direction);
 			ff = ft;
 		} else if (r > f_rhoMax) {	// rho > rho_max calc
-			fv = calcFlowSpeed(xInto, yInto, direction);
+			fv = computeFlowSpeed(xInto, yInto, direction);
 			ff = fv;
 		} else {	// rho in-between calc
-			fv = calcFlowSpeed(xInto,yInto,direction);
-			ft = calcTopographicalSpeed(x, y, direction) ;
+			fv = computeFlowSpeed(xInto,yInto,direction);
+			ft = computeTopographicalSpeed(x, y, direction) ;
 			ff = ft + (r-f_rhoMin) / (f_rhoMax-f_rhoMin) * (fv-ft);
 		}
 
@@ -203,7 +204,7 @@ public class ContinuumCrowds
 	}
 
 
-	float calcTopographicalSpeed(int x, int y, Vector2 dir) {
+	float computeTopographicalSpeed(int x, int y, Vector2 dir) {
 		// first, calculate the gradient in the direction we are looking. By taking the dot with Direction,
 		// we extract the direction we're looking and assign it a proper sign
 		// i.e. if we look left (x=-1) we want -dhdx(x,y), because the gradient is assigned with a positive x
@@ -214,7 +215,7 @@ public class ContinuumCrowds
 		return (f_speedMax + (hGradientInDirection - f_slopeMin) / (f_slopeMax - f_slopeMin) * (f_speedMin - f_speedMax) );
 	}
 
-	float calcFlowSpeed(int xI, int yI, Vector2 dir) {
+	float computeFlowSpeed(int xI, int yI, Vector2 dir) {
 		// the flow speed is simply the average velocity field of the region INTO WHICH we are looking,
 		// dotted with the direction vector
 		return Vector2.Dot(vAve[xI,yI],dir);

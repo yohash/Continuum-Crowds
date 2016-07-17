@@ -61,7 +61,9 @@ public class CC_UnitManager : MonoBehaviour
 		CC = new ContinuumCrowds(My_CC_map_package, My_CC_unit_goal_groups);
 
 
-		tileAndColorSystem.S.setTileColor(CC.gP,Color.red);
+		tileAndColorSystem.S.setTileColor(mapAnalyzer.S.get_dhdx(),Color.red);
+
+
 
 	}
 }
