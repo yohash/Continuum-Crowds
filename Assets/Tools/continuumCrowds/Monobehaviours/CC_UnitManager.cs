@@ -33,6 +33,7 @@ public class CC_UnitManager : MonoBehaviour
 	void testCC ()
 	{
 		My_CC_map_package = new CC_Map_Package (
+			mapAnalyzer.S.get_dh (),
 			mapAnalyzer.S.get_h (), 
 			mapAnalyzer.S.get_dhdx (),
 			mapAnalyzer.S.get_dhdy (),
@@ -61,5 +62,6 @@ public class CC_UnitManager : MonoBehaviour
 
 
 		tileAndColorSystem.S.setTileColor(CC.gP,Color.red);
+
 	}
 }

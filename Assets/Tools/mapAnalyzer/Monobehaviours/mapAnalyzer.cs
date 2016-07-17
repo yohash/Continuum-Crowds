@@ -22,6 +22,7 @@ public class mapAnalyzer : MonoBehaviour {
 	float[,] h, dhdx, dhdy, g;
 	Vector2[,] dh;
 
+	public Vector2[,] get_dh() {return dh;}
 	public float[,] get_h() {return h;}
 	public float[,] get_dhdx() {return dhdx;}
 	public float[,] get_dhdy() {return dhdy;}
@@ -61,6 +62,7 @@ public class mapAnalyzer : MonoBehaviour {
 	void generateGradientMaps() {
 		dhdx = new float[xSteps,zSteps];
 		dhdy = new float[xSteps,zSteps];
+		dh = new Vector2[xSteps,zSteps];
 
 		for (int i=0; i<xSteps; i++) {
 			for (int k=0; k<zSteps; k++) {
@@ -90,6 +92,7 @@ public class mapAnalyzer : MonoBehaviour {
 	void writeGradientMapData(int x, int y, int xMin, int xMax, int yMin, int yMax) {
 		dhdx[x,y] = (h[xMax,y] - h[xMin,y]) / (xMax - xMin);
 		dhdy[x,y] = (h[x,yMax] - h[x,yMin]) / (yMax - yMin);
+		dh[x,y] = new Vector2(dhdx[x,y], dhdy[x,y]);
 	}
 
 	// change this up...
