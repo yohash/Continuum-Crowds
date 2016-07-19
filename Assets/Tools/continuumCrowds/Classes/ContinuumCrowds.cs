@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using Priority_Queue;
+
 public struct CC_Unit_Goal_Group
 {
 	public Rect goal;
@@ -34,34 +36,46 @@ public struct CC_Map_Package
 
 public class ContinuumCrowds
 {
+	// the Continuum Crowds fields
 	public float[,] rho;				// density field
 	public Vector2[,] vAve;				// average velocity field
 	public float[,] gP;					// predictive discomfort
 	public Vector4[,] f;				// speed field, data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
-
-	float gP_predictiveSeconds = 4f;
-
-	float f_slopeMax = 0.5f;			// correlates roughly to 30-degree incline
-	float f_slopeMin = 0f;				// for a min slope, nothing else makes sense...
-
-	float f_rhoMax = 0.6f;
-	float f_rhoMin = 0.2f;
-
-	float f_speedMax = 100f;			// I just picked something big here
-	float f_speedMin = 0f;				// minimum would be 0
-
 	public Vector4[,] C;				// cost field, data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
 	public float[,] Phi;				// potential field
 	public Vector2[,] dPhi;				// potential field gradient
 	public Vector2[,] v;				// final velocity
 
+	// parameters for the respective equations -- FIND MORE APPROPRIATE PLACE TO PUT THESE
+	float gP_predictiveSeconds = 4f;
+
+	float f_slopeMax = 1f;				// correlates roughly to 30-degree incline
+	float f_slopeMin = 0f;				// for a min slope, nothing else makes sense...
+
+	float f_rhoMax = 0.6f;				// TODO: everything above this must be clamped to 'unpassable' discomfort map
+	float f_rhoMin = 0.2f;
+
+	float f_speedMax = 10f;				// will this vary by unit???
+	float f_speedMin = 0.01f;			// set to some positive number to clamp flow speed
+
+	float C_alpha = 1f;					// speed field weight
+	float C_beta = 1f;					// time weight
+	float C_gamma = 2f;					// discomfort weight
+
+	// this list must be kept public so the Eikonal solver can access it
+	List<Location> accepted, goal;
+	SimplePriorityQueue<Location> considered;
+
+	// These are the two input values
 	CC_Map_Package theMap;
 	List<CC_Unit_Goal_Group> theUnitGoalGroups;
 
 	// this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
-	Vector2[] dir = new Vector2[] {Vector2.right, Vector2.up, Vector2.left, Vector2.down };
+	Vector2[] DIR_ENWS = new Vector2[] {Vector2.right, Vector2.up, Vector2.left, Vector2.down };
 
-	int N, M;
+	int N, M;			// store the dimensions for easy iteration
+	int Nloc, Mloc;		// store local location for eikonal iterations
+	int Ndim, Mdim;		// store local dimension for eikonal iterations
 
 	public ContinuumCrowds (CC_Map_Package map, List<CC_Unit_Goal_Group> unitGoals)
 	{
@@ -75,6 +89,7 @@ public class ContinuumCrowds
 		vAve = new Vector2[N, M];
 		gP = new float[N, M];
 		f = new Vector4[N, M];
+		C = new Vector4[N, M];
 
 		// these next fields must be computed for each unit in the entire list:
 		// 		populate density field
@@ -90,28 +105,32 @@ public class ContinuumCrowds
 			}
 		}
 		// (3) 	now that the velocity field and density fields are implemented,
-		// 		divide the velocity by densty to get average velocity field
-		// **** FOR NOW, LETS CALCLUATE THE WHOLE THING. LATER, WE SHOULD SAVE COMPUTATION
-		// **** BY ONLY CALCULATING THE NECESSARY POINTS USING THE COST FUNCTION
+		// 		divide the velocity by density to get average velocity field
 		computeAverageVelocityField ();	
 
 		// (4)	now that the average velocity field is computed, and the density
-		// 		field is in place, we calculate the speed field
+		// 		field is in place, we calculate the speed field, f
+		// **** FOR NOW, LETS CALCLUATE THE WHOLE THING. LATER, WE SHOULD SAVE COMPUTATION
+		// **** BY ONLY CALCULATING THE NECESSARY POINTS USING THE COST FUNCTION
 		computeSpeedField ();
 
+		// (5) 	the cost field depends only on f and g, so it can be computed in its
+		//		entirety now as well
+		computeCostField();
+
 		// these next fields must be computed for each goal in the entire list:
+		Rect soln;
 		foreach (CC_Unit_Goal_Group cc_ugg in unitGoals) {
-
-			// first we need to compute new dynamic boundaries for small unit groups
-
-			C = new Vector4[N, M];
+			
 			Phi = new float[N, M];
 			dPhi = new Vector2[N, M];
 			v = new Vector2[N, M];
 
 			// determine the Rect to bound the current units and their goal
-			// calculate cost field
+			soln = new Rect(Vector2.zero, new Vector2(N,M));
 			// calculate potential field (Eikonal solver)
+			computePotentialField(soln, cc_ugg);
+			calculatePotentialGradient();
 			// calculate velocity field
 			// assign new velocities to each unit in List<CC_Unit> units
 		}
@@ -169,58 +188,305 @@ public class ContinuumCrowds
 	{
 		for (int n = 0; n < N; n++) {
 			for (int m = 0; m < M; m++) {
-				for (int d = 0; d < 4; d++) {
-					f[n,m][d] = computeSpeedFieldValue(n,m,dir[d]);
+				for (int d = 0; d < DIR_ENWS.Length; d++) {
+					f[n,m][d] = computeSpeedFieldPoint(n,m,DIR_ENWS[d]);
 				}
 			}
 		} 
 	}
 
-	float computeSpeedFieldValue(int x, int y, Vector2 direction) {
+	float computeSpeedFieldPoint(int x, int y, Vector2 direction) {
 		int xInto = x+(int)direction.x;
 		int yInto = y+(int)direction.y;
 
 		// if we're looking in an invalid direction, dont store this value
-		if (!isPointValid(xInto,yInto)) {return 9999f;}
+		if (!isPointValid(xInto,yInto)) {return f_speedMin;}
 
 		// otherwise, run the speed field calculation
 		float ff=0, ft=0, fv=0;
 		float r = rho[xInto,yInto];				
 
 		// test the density INTO WHICH we move: 
-		if (r < f_rhoMin) {	// rho < rho_min calc
+		if (r < f_rhoMin) {				// rho < rho_min calc
 			ft = computeTopographicalSpeed(x, y, direction);
 			ff = ft;
-		} else if (r > f_rhoMax) {	// rho > rho_max calc
+		} else if (r > f_rhoMax) {		// rho > rho_max calc
 			fv = computeFlowSpeed(xInto, yInto, direction);
 			ff = fv;
-		} else {	// rho in-between calc
-			fv = computeFlowSpeed(xInto,yInto,direction);
+		} else {						// rho in-between calc
+			fv = computeFlowSpeed(xInto, yInto, direction);
 			ft = computeTopographicalSpeed(x, y, direction) ;
 			ff = ft + (r-f_rhoMin) / (f_rhoMax-f_rhoMin) * (fv-ft);
 		}
 
-		return ff;
+		return Mathf.Max(f_speedMin, ff);
 	}
 
 
-	float computeTopographicalSpeed(int x, int y, Vector2 dir) {
+	float computeTopographicalSpeed(int x, int y, Vector2 direction) {
 		// first, calculate the gradient in the direction we are looking. By taking the dot with Direction,
 		// we extract the direction we're looking and assign it a proper sign
 		// i.e. if we look left (x=-1) we want -dhdx(x,y), because the gradient is assigned with a positive x
 		// 		therefore:		also, Vector.left = [-1,0]
 		//						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
-		float hGradientInDirection = Vector2.Dot(dir, theMap.dh[x,y]) ;
+		float hGradientInDirection = Vector2.Dot(direction, theMap.dh[x,y]) ;
 		// calculate the speed field from the equation
 		return (f_speedMax + (hGradientInDirection - f_slopeMin) / (f_slopeMax - f_slopeMin) * (f_speedMin - f_speedMax) );
 	}
 
-	float computeFlowSpeed(int xI, int yI, Vector2 dir) {
+	float computeFlowSpeed(int xI, int yI, Vector2 direction) {
 		// the flow speed is simply the average velocity field of the region INTO WHICH we are looking,
 		// dotted with the direction vector
-		return Vector2.Dot(vAve[xI,yI],dir);
+		return Mathf.Max(f_speedMin, Vector2.Dot(vAve[xI,yI],direction));
 	}
 
+	void computeCostField() {
+		for (int n = 0; n < N; n++) {
+			for (int m = 0; m < M; m++) {
+				for (int d = 0; d < DIR_ENWS.Length; d++) {
+					C[n,m][d] = computeCostFieldValue(n,m,d,DIR_ENWS[d]);
+				}
+			}
+		} 
+	}
+
+	float computeCostFieldValue(int x, int y, int d, Vector2 direction) {
+		int xInto = x+(int)direction.x;
+		int yInto = y+(int)direction.y;
+
+		// if we're looking in an invalid direction, dont store this value
+		if (!isPointValid(xInto,yInto) || (f[x,y][d]==0)) {return Mathf.Infinity;}
+
+		return (f[x,y][d] * C_alpha + C_beta + gP[xInto,yInto] * C_gamma) / f[x,y][d];
+	}
+
+	void computePotentialField(Rect solve, CC_Unit_Goal_Group ccugg) {
+		EikonalSolver(solve,ccugg.goal);
+	}
+	// ******************************************************************************************
+	// 							THE EIKONAL SOLVER
+	// ******************************************************************************************
+	// 3 labels for each node (Location): far, considered, accepted
+	//	labels are tracked by:  far - has huge value (Mathf.Infinite)
+	//							considered - placed in a priorityQueue
+	//							accepted - stored in List<Location>
+	// The Algorithm:
+	//  1) set all nodes (xi=Ui=inf) to far, set nodes in goal (xi=Ui=0) to accepted
+	//  2) for each accepted node, use eikonal update formula to find new U', and
+	//		if U'<Ui, then Ui=U', and xi -> considered
+	// 	[proposed change to 2)]
+	//	2) instead of marking each node accepted, mark them considered, and begin the loop
+	//		They will naturally become accepted, as their value of 0 gives them highest priority.
+	//	The Loop:
+	//  -->	3) let xt be the considered node with smallest Ui
+	//	|  	4) for each neighbor (xi) of xt that is NOT accepted, calculate U'
+	//  |  	5) if U'<Ui, then Ui=U' and label xi as considered
+	//  ---	6) if there is a considered node, repeat from step 3
+	//
+	// To implement: considered nodes will be a priority queue, and the highest priority 
+	//				(lowest Ui in considered nodes)	will be pulled in step (3) each iteration
+	void EikonalSolver (Rect solutionSpace, Rect goalRect) {
+
+		accepted = new List<Location>();
+		goal = new List<Location>();
+		considered = new SimplePriorityQueue <Location>();
+
+		Vector2 goalPos = goalRect.position;
+		Vector2 goalDim = goalRect.size;
+
+		Vector2 solutionPos = solutionSpace.position;
+		Vector2 solutionDim = solutionSpace.size;
+
+		Nloc = (int)solutionPos.x;
+		Mloc = (int)solutionPos.y;
+
+		Ndim = (int)solutionDim.x;
+		Mdim = (int)solutionDim.y;
+
+		// start by assigning all values of potential a huge number to in-effect label them 'far'
+		for (int n=Nloc; n<(Nloc+Ndim); n++) {
+			for (int m=Mloc; m<(Mloc+Mdim); m++) {
+				Phi[n,m] = Mathf.Infinity;
+			}
+		}
+
+		// initiate by setting potential to 0 in the goal, and adding all goal locations to the considered list
+		// goal locations will naturally become accepted nodes, as their 0-cost gives them 1st priority, and this
+		// way, they are quickly added to accepted, while simultaneously propagating their lists and beginning the 
+		// algorithm loop
+		Location loc;
+
+		for (int n=(int)goalPos.x; n<(int)(goalPos.x+goalDim.x); n++) {
+			for (int m=(int)goalPos.y; m<(int)(goalPos.y+goalDim.y); m++) {
+				Phi[n,m] = 0f;
+				loc = new Location(n,m);
+
+				goal.Add(loc);
+
+				// only consider the outer-edge of the goal... everything in the center
+				// is irrelevant
+				if ((n==(int)goalPos.x) || 
+					(n==(int)(goalPos.x+goalDim.x)-1) || 
+					(m==(int)goalPos.y) || 
+					(m==(int)(goalPos.y+goalDim.y)-1)) 
+				{considered.Enqueue(loc, 0f);}
+			}
+		}
+
+		// THE EIKONAL UPDATE LOOP
+		// next, we initiate the eikonal update loop, by initiating it with each goal point as 'considered'.
+		// this will check each neighbor to see if it's a valid point (EikonalLocationValidityTest==true)
+		// and if so, update if necessary
+		float phi_P;
+		int i=0;
+		while (considered.Count > 0f) {
+			Location current = considered.Dequeue();
+			EikonalUpdateFormula(current);
+			accepted.Add(current);
+		}
+	}
+
+	void EikonalUpdateFormula (Location l) {
+		float phi_proposed = Mathf.Infinity;
+		int xInto, yInto;
+
+		// cycle through directions to check all neighbors and perform the eikonal
+		// update cycle on them
+		for (int d = 0; d < DIR_ENWS.Length; d++) {
+			xInto = l.x + (int)DIR_ENWS[d].x;
+			yInto = l.y + (int)DIR_ENWS[d].y;
+
+			Location neighbor;
+			neighbor = new Location(xInto,yInto);
+
+			if (isEikonalLocationValidAsNeighbor (neighbor)) {
+				// The point is valid. Now, we pull values from THIS location's
+				// 4 neighbors and use them in the calculation
+
+				int xIInto, yIInto;
+				float phi_mx, phi_my, C_mx, C_my;
+				Vector4 phi_m;
+				phi_m = Vector4.one * Mathf.Infinity;	
+
+				// track cost of moving into each nearby space
+				for (int dd = 0; dd < DIR_ENWS.Length; dd++) {
+					xIInto = neighbor.x + (int)DIR_ENWS[dd].x;
+					yIInto = neighbor.y + (int)DIR_ENWS[dd].y;
+
+					if (isEikonalLocationValidToMoveInto (new Location(xIInto, yIInto))) 
+					{
+						phi_m[dd] = Phi[xIInto,yIInto] + C[neighbor.x,neighbor.y][dd];
+					}
+				}
+				// select out cheapest 
+				phi_mx = Mathf.Min(phi_m[0],phi_m[2]);
+				phi_my = Mathf.Min(phi_m[1],phi_m[3]);
+
+				// now assign C_mx based on which direction was chosen
+				if (phi_mx == phi_m[0]) {
+					C_mx = C[neighbor.x,neighbor.y][0];
+				} else {
+					C_mx = C[neighbor.x,neighbor.y][2];
+				}
+
+				// now assign C_mx based on which direction was chosen
+				if (phi_my == phi_m[1]) {
+					C_my = C[neighbor.x,neighbor.y][1];
+				} else {
+					C_my = C[neighbor.x,neighbor.y][3];
+				}
+
+				// solve for our proposed Phi[neighbor] value using the quadratic solution to the
+				// approximation of the eikonal equation
+				float C_mx_Sq = C_mx*C_mx;
+				float C_my_Sq = C_my*C_my;
+				float phi_mDiff_Sq = (phi_mx - phi_my)*(phi_mx - phi_my);
+
+				float valTest;
+//				valTest = C_mx_Sq + C_my_Sq - 1f/(C_mx_Sq*C_my_Sq);
+				valTest = C_mx_Sq + C_my_Sq - 1f;
+
+				// test the quadratic
+				if (phi_mDiff_Sq > valTest) {
+					// use the simplified solution for phi_proposed
+					float phi_min = Mathf.Min(phi_mx,phi_my);
+					float cost_min;
+					if (phi_min==phi_mx) {cost_min = C_mx;}
+					else {cost_min = C_my;}
+					phi_proposed = cost_min + phi_min;
+				} else {
+					// solve the quadratic
+					float radical = Mathf.Sqrt(C_mx_Sq*C_my_Sq*(C_mx_Sq + C_my_Sq - phi_mDiff_Sq));
+					float soln1 = (C_my_Sq*phi_mx + C_mx_Sq*phi_my + radical) / (C_mx_Sq + C_my_Sq);
+					float soln2 = (C_my_Sq*phi_mx + C_mx_Sq*phi_my - radical) / (C_mx_Sq + C_my_Sq);
+					phi_proposed = Mathf.Max(soln1,soln2);
+				}
+
+				// we now have a phi_proposed
+
+				// we are re-writing the phi-array real time, so we simply compare to the current slot
+				if (phi_proposed < Phi[neighbor.x,neighbor.y]) {
+					// save the value of the lower phi
+					Phi[neighbor.x,neighbor.y] = phi_proposed;
+
+					if (considered.Contains(neighbor)) {
+						// re-write the old value in the queue
+						considered.UpdatePriority(neighbor, phi_proposed);
+					} else {
+						// -OR- add this value to the queue
+						considered.Enqueue(neighbor, Phi[neighbor.x,neighbor.y]);
+					}
+				}
+			}
+		}		
+	}
+
+	bool isEikonalLocationValidAsNeighbor (Location l) {
+		if (goal.Contains(l)) {return false;}
+
+		return (isEikonalLocationValidToMoveInto (l));
+	}
+
+	bool isEikonalLocationValidToMoveInto (Location l) {
+		// location must be tested to ensure that it does not attempt to assess a point
+		// that is not valid for assignment. a valid point is:
+		//		1) NOT accepted
+		//		2) NOT in the goal
+		if (accepted.Contains(l)) {return false;}
+		//		3) not outisde the local grid
+		if ((l.x < Nloc) || (l.y < Mloc) || (l.x > (Nloc + Ndim) - 1) || (l.y > (Mloc + Mdim) - 1)) {
+			return false;
+		}
+		//		3) NOT on a global discomfort grid		(this occurs in isPointValid() )
+		//		4) NOT outside the global grid			(this occurs in isPointValid() )
+		if (!isPointValid(l)) {return false;}
+
+		return true;
+	}
+
+	void calculatePotentialGradient() {
+		for (int i=Nloc; i<(Ndim+Nloc); i++) {
+			for (int k=Mloc; k<(Mdim+Mloc); k++) {
+				if ((i!=Nloc) && (i!=(Ndim+Nloc)-1) && (k!=Mloc) && (k!=(Mdim+Mloc)-1)) 
+																{writePotentialGradientFieldData(i,k,i-1,i+1,k-1,k+1);} // generic spot
+				else if ((i==Nloc) && (k==(Mdim+Mloc)-1)) 		{writePotentialGradientFieldData(i,k,i,i+1,k-1,k);} 	// upper left corner
+				else if ((i==(Ndim+Nloc)-1) && (k==Mloc)) 		{writePotentialGradientFieldData(i,k,i-1,i,k,k+1);}	// bottom left corner
+				else if ((i==Nloc) && (k==Mloc)) 				{writePotentialGradientFieldData(i,k,i,i+1,k,k+1);}	// upper left corner
+				else if ((i==(Ndim+Nloc)-1) && (k==(Mdim+Mloc)-1)) 
+																{writePotentialGradientFieldData(i,k,i-1,i,k-1,k);} 	// bottom right corner
+				else if (i==Nloc) 								{writePotentialGradientFieldData(i,k,i,i+1,k-1,k+1);}	// top edge
+				else if (i==(Ndim+Nloc)-1) 						{writePotentialGradientFieldData(i,k,i-1,i,k-1,k+1);}	// bot edge
+				else if (k==Mloc) 								{writePotentialGradientFieldData(i,k,i-1,i+1,k,k+1);}	// left edge
+				else if (k==(Mdim+Mloc)-1) 						{writePotentialGradientFieldData(i,k,i-1,i+1,k-1,k);}	// right edge								
+			}
+		}
+	}
+
+	void writePotentialGradientFieldData(int x, int y, int xMin, int xMax, int yMin, int yMax) {
+		float dPhidx = (Phi[xMax,y] - Phi[xMin,y]) / (xMax - xMin);
+		float dPhidy = (Phi[x,yMax] - Phi[x,yMin]) / (yMax - yMin);
+		dPhi[x,y] = new Vector2(dPhidx, dPhidy);
+	}
 
 	// ******************************************************************************
 	//			TOOLS AND UTILITIES
@@ -244,7 +510,10 @@ public class ContinuumCrowds
 		if (isPointValid (xInd, yInd + 1)) 		{mat [xInd, yInd + 1] += Mathf.Min (1 - delx, dely) * scalar;}
 		if (isPointValid (xInd + 1, yInd + 1)) 	{mat [xInd + 1, yInd + 1] += Mathf.Min (delx, dely) * scalar;}
 	}
-	
+
+	bool isPointValid (Location l) {
+		return isPointValid(l.x, l.y);
+	}
 	bool isPointValid (Vector2 v)
 	{
 		return isPointValid((int)v.x, (int)v.y);
@@ -252,15 +521,14 @@ public class ContinuumCrowds
 
 	bool isPointValid (int x, int y)
 	{
-		// check to make sure the point is not in a place dis-allowed by terrain (slope)
-				// TBC
 		// check to make sure the point is not outside the grid
 		if ((x < 0) || (y < 0) || (x > N - 1) || (y > M - 1)) {
 			return false;
 		}
 		// check to make sure the point is not on a place of absolute discomfort (like inside a building)
-				// TBC
-		// side note: should absolute discomfort encompass too-steep-terrain slopes?
+		if (theMap.g[x,y]==1) {return false;}
+		// check to make sure the point is not in a place dis-allowed by terrain (slope)
+		// TBC
 
 		return true;
 	}

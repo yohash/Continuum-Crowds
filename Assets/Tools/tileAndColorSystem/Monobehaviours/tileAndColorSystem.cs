@@ -29,8 +29,8 @@ public class tileAndColorSystem : MonoBehaviour {
 		for (int n=0; n<xNum; n++) {
 			for (int m=0; m<zNum; m++) {
 				tempTile = Instantiate(theTile) as GameObject;
-				xLoc = n*tileDim; // + tileDim/2f;
-				zLoc = m*tileDim; // + tileDim/2f;
+				xLoc = n*tileDim;// + tileDim/2f;
+				zLoc = m*tileDim;// + tileDim/2f;
 				tempTile.transform.position = new Vector3(xLoc,0f,zLoc);
 				tempTile.transform.SetParent(this.transform);
 				tiles[n,m] = tempTile.GetComponent<tile>();
@@ -51,8 +51,8 @@ public class tileAndColorSystem : MonoBehaviour {
 		for (int n=0; n<xNum; n++) {
 			for (int m=0; m<zNum; m++) {
 				tempTile = Instantiate(theTile) as GameObject;
-				xLoc = n*tileDim; //+ tileDim/2f;
-				zLoc = m*tileDim; // + tileDim/2f;
+				xLoc = n*tileDim + tileDim/2f;
+				zLoc = m*tileDim + tileDim/2f;
 				tempTile.transform.position = new Vector3(xLoc,heightMap[n,m]+0.1f,zLoc);
 				tempTile.transform.SetParent(this.transform);
 				tiles[n,m] = tempTile.GetComponent<tile>();
@@ -80,14 +80,18 @@ public class tileAndColorSystem : MonoBehaviour {
 			for (int n=0; n<xNum; n++) {
 				for (int m=0; m<zNum; m++) {
 					Color newC;
-					newC = col * colMap[n,m].x;
+					if (colMap[n,m].x==Mathf.Infinity) {colMap[n,m]=new Vector2(1f, colMap[n,m].y);}
+					if (colMap[n,m].y==Mathf.Infinity) {colMap[n,m]=new Vector2(colMap[n,m].x, 1f);}
+					if (colMap[n,m].x==-Mathf.Infinity) {colMap[n,m]=new Vector2(-1f, colMap[n,m].y);}
+					if (colMap[n,m].y==-Mathf.Infinity) {colMap[n,m]=new Vector2(colMap[n,m].x, -1f);}
+					newC = col * Mathf.Abs( colMap[n,m].x);
 					setTileColor(n,m,newC);
 
 					float r,g,b;
 					r = col.g;
 					g = col.b;
 					b = col.r;
-					newC = (new Color(r,g,b)) * colMap[n,m].y;
+					newC = (new Color(r,g,b)) * Mathf.Abs( colMap[n,m].y);
 					addTileColor(n,m,newC);
 				}
 			}

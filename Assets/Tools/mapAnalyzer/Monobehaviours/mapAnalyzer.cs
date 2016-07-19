@@ -27,6 +27,8 @@ public class mapAnalyzer : MonoBehaviour {
 	public float[,] get_dhdx() {return dhdx;}
 	public float[,] get_dhdy() {return dhdy;}
 	public float[,] get_g() {return g;}
+
+	public float TEMP_RHO_MAX = 0.6f;
 	// *****************************************
 
 	void Awake () {
@@ -85,6 +87,14 @@ public class mapAnalyzer : MonoBehaviour {
 	//		void generateDiscomfortMap(List<Rect> bldgs) {
 		//		foreach (Rect r in bldgs) {		}
 		g = new float[xSteps,zSteps];
+
+		for (int i=0; i<xSteps; i++) {
+			for (int k=0; k<zSteps; k++) {
+				if (Mathf.Max(Mathf.Abs(dhdx[i,k]),Mathf.Abs(dhdy[i,k])) > TEMP_RHO_MAX) {
+					g[i,k] = 1f;
+				}
+			}
+		}
 	}
 
 	// this performs a center-gradient for interior points, 
