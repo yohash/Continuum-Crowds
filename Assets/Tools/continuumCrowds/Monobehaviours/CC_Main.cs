@@ -4,39 +4,29 @@ using System.Collections.Generic;
 
 using Priority_Queue;
 
-
-public struct CC_Unit_Goal_Group
+public class fastLocation : FastPriorityQueueNode
 {
-	public Rect goal;
-	public List<CC_Unit> units;
-
-	public CC_Unit_Goal_Group (Rect r, List<CC_Unit> u)
+	public readonly int x, y;
+	public fastLocation(int x, int y)
 	{
-		this.goal = r;
-		this.units = u;
+		this.x = x;
+		this.y = y;
+	}
+	public static bool operator ==(fastLocation l1, fastLocation l2) {
+		return((l1.x==l2.x) && (l1.y==l2.y));
+	}
+	public static bool Equals(fastLocation l1, fastLocation l2) {
+		return((l1.x==l2.x) && (l1.y==l2.y));
+	}
+	public static bool operator !=(fastLocation l1, fastLocation l2) {
+		return(!(l1==l2));
 	}
 }
 
-public struct CC_Map_Package
-{
-	public float[,] h;
-	public float[,] dhdx;
-	public float[,] dhdy;
-	public Vector2[,] dh;
-	public float[,] g;
 
-	public CC_Map_Package (Vector2[,] _dh, float[,] _h, float[,] _dhdx, float[,] _dhdy, float[,] _g)
-	{
-		this.dh = _dh;
-		this.h = _h;
-		this.dhdx = _dhdx;
-		this.dhdy = _dhdy;
-		this.g = _g;
-	}
-}
+public class CC_Main : MonoBehaviour {
 
-public class ContinuumCrowds
-{
+	public static CC_Main S;
 
 	// the Continuum Crowds fields
 	public float[,] rho;				// density field
@@ -66,6 +56,7 @@ public class ContinuumCrowds
 
 	// this list must be kept public so the Eikonal solver can access it
 	bool[,] accepted, goal;
+//	SimplePriorityQueue<Location> considered;
 	FastPriorityQueue<fastLocation> considered;
 
 	// These are the two input values
@@ -79,8 +70,20 @@ public class ContinuumCrowds
 	int Nloc, Mloc;		// store local location for eikonal iterations
 	int Ndim, Mdim;		// store local dimension for eikonal iterations
 
-	public ContinuumCrowds (CC_Map_Package map, List<CC_Unit_Goal_Group> unitGoals)
+
+	void Awake () {
+		S = this;
+	}
+
+	float rootTime, TIMECHECK, dT;
+	float TIMECHECKsub, dTsub;
+	float subTOT=0f;
+
+	public void ContinuumCrowds (CC_Map_Package map, List<CC_Unit_Goal_Group> unitGoals)
 	{
+		TIMECHECK = Time.realtimeSinceStartup;
+		rootTime = TIMECHECK;
+
 		theMap = map;
 		theUnitGoalGroups = unitGoals;
 
@@ -126,6 +129,8 @@ public class ContinuumCrowds
 		Rect soln;
 		foreach (CC_Unit_Goal_Group cc_ugg in unitGoals) {
 
+			TIMECHECK = Time.realtimeSinceStartup;
+
 			Phi = new float[N, M];
 			dPhi = new Vector2[N, M];
 			v = new Vector2[N, M];
@@ -135,9 +140,14 @@ public class ContinuumCrowds
 			// calculate potential field (Eikonal solver)
 			computePotentialField(soln, cc_ugg);
 			calculatePotentialGradient();
+
+			dT = Time.realtimeSinceStartup;
+			Debug.Log("Potential field (eikonal) and gradient: "+(dT-TIMECHECK));
 			// calculate velocity field
 			// assign new velocities to each unit in List<CC_Unit> units
 		}
+
+		Debug.Log("TOTAL: "+(Time.realtimeSinceStartup - rootTime));
 	}
 
 	void computeDensityField (CC_Unit cc_u)
@@ -290,7 +300,7 @@ public class ContinuumCrowds
 	// To implement: considered nodes will be a priority queue, and the highest priority 
 	//				(lowest Ui in considered nodes)	will be pulled in step (3) each iteration
 	void EikonalSolver (Rect solutionSpace, Rect goalRect) {
-
+		
 		considered = new FastPriorityQueue <fastLocation> (N*M);
 
 		Vector2 goalPos = goalRect.position;
