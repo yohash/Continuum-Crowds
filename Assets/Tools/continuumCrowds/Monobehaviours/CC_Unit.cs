@@ -6,10 +6,10 @@ public class CC_Unit : MonoBehaviour {
 	// and has this localization instantiated on a continuum crowds call
 
 	// private variables
+	public float _CC_Unit_maxSpeed = 5f;
 	public Vector2 _CC_Unit_velocity;
 	public Vector2 _CC_Unit_localPosition;		// hold position vs. transform as only local space is relevant
 	public Rect _CC_Unit_localGoal;
-	Vector2 tmp2;
 	Vector3 tmp3;
 
 	public Vector2 _CC_worldspace_anchor;
@@ -20,18 +20,26 @@ public class CC_Unit : MonoBehaviour {
 	public Vector2 getLocalPosition() {return _CC_Unit_localPosition;}
 	public Rect getLocalGoal() {return _CC_Unit_localGoal;}
 
-	private void setVelocity(Vector3 v) {_CC_Unit_velocity = v;}
-	private void setGoal(Rect r) {_CC_Unit_localGoal = r;}
+	public void setVelocity(Vector2 v) {_CC_Unit_velocity = v;}
+	public void setGoal(Rect r) {_CC_Unit_localGoal = r;}
 
+	Transform tr;
 
-	void Awake () {	}
+	void Awake () {tr = transform;}
 	void Start () {	}
 	void OnEnable () { }
 
 	void Update () {
 		// SUPER temporary code
-		tmp3 = transform.position;
-		_CC_Unit_localPosition = new Vector2(tmp3.x,tmp3.z);
+		if (_CC_Unit_velocity!=Vector2.zero) {
+			if (_CC_Unit_velocity.SqrMagnitude() > _CC_Unit_maxSpeed*_CC_Unit_maxSpeed) {
+				_CC_Unit_velocity = _CC_Unit_velocity.normalized * _CC_Unit_maxSpeed;
+			}
+			tmp3 = new Vector3( _CC_Unit_velocity.x, 0f, _CC_Unit_velocity.y);
+		}
+		tr.position += tmp3 * Time.deltaTime;
+
+		_CC_Unit_localPosition = new Vector2(tr.position.x, tr.position.z);
 	}
 
 	public void packageForCCSubmission(Vector2 worldSpace_anchor, Rect worldSpace_goal) {

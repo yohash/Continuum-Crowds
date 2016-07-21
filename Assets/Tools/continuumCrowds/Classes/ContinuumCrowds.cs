@@ -4,6 +4,24 @@ using System.Collections.Generic;
 
 using Priority_Queue;
 
+public class fastLocation : FastPriorityQueueNode
+{
+	public readonly int x, y;
+	public fastLocation(int x, int y)
+	{
+		this.x = x;
+		this.y = y;
+	}
+	public static bool operator ==(fastLocation l1, fastLocation l2) {
+		return((l1.x==l2.x) && (l1.y==l2.y));
+	}
+	public static bool Equals(fastLocation l1, fastLocation l2) {
+		return((l1.x==l2.x) && (l1.y==l2.y));
+	}
+	public static bool operator !=(fastLocation l1, fastLocation l2) {
+		return(!(l1==l2));
+	}
+}
 
 public struct CC_Unit_Goal_Group
 {
@@ -19,24 +37,21 @@ public struct CC_Unit_Goal_Group
 
 public struct CC_Map_Package
 {
-	public float[,] h;
-	public float[,] dhdx;
-	public float[,] dhdy;
 	public Vector2[,] dh;
+	public float[,] h;
 	public float[,] g;
 
-	public CC_Map_Package (Vector2[,] _dh, float[,] _h, float[,] _dhdx, float[,] _dhdy, float[,] _g)
+	public CC_Map_Package (Vector2[,] _dh, float[,] _h, float[,] _g)
 	{
 		this.dh = _dh;
 		this.h = _h;
-		this.dhdx = _dhdx;
-		this.dhdy = _dhdy;
 		this.g = _g;
 	}
 }
 
 public class ContinuumCrowds
 {
+	private float TIMESTAMP, dT, subTot;
 
 	// the Continuum Crowds fields
 	public float[,] rho;				// density field
@@ -64,7 +79,8 @@ public class ContinuumCrowds
 	public float C_beta = 1f;					// time weight
 	public float C_gamma = 2f;					// discomfort weight
 
-	// this list must be kept public so the Eikonal solver can access it
+
+	// public lists for the Eikonal solver
 	bool[,] accepted, goal;
 	FastPriorityQueue<fastLocation> considered;
 
@@ -106,11 +122,9 @@ public class ContinuumCrowds
 				applyPredictiveDiscomfort (gP_predictiveSeconds, cc_u);	
 			}
 		}
-
 		// (3) 	now that the velocity field and density fields are implemented,
 		// 		divide the velocity by density to get average velocity field
 		computeAverageVelocityField ();	
-
 
 		// (4)	now that the average velocity field is computed, and the density
 		// 		field is in place, we calculate the speed field, f
@@ -134,8 +148,9 @@ public class ContinuumCrowds
 			soln = new Rect(Vector2.zero, new Vector2(N,M));
 			// calculate potential field (Eikonal solver)
 			computePotentialField(soln, cc_ugg);
-			calculatePotentialGradient();
+			calculatePotentialGradientAndNormalize();
 			// calculate velocity field
+			calculateVelocityField();
 			// assign new velocities to each unit in List<CC_Unit> units
 		}
 	}
@@ -347,6 +362,10 @@ public class ContinuumCrowds
 			EikonalUpdateFormula(current);
 			markAccepted(current);
 		}
+//		TIMESTAMP = Time.realtimeSinceStartup;
+//		dT = Time.realtimeSinceStartup;
+//		subTot+=(dT-TIMESTAMP);
+//		Debug.Log (" -- total stored time: "+subTot);
 	}
 
 	void EikonalUpdateFormula (fastLocation l) {
@@ -393,7 +412,6 @@ public class ContinuumCrowds
 				} else {
 					C_mx = C[neighbor.x,neighbor.y][2];
 				}
-
 				// now assign C_mx based on which direction was chosen
 				if (phi_my == phi_m[1]) {
 					C_my = C[neighbor.x,neighbor.y][1];
@@ -484,28 +502,58 @@ public class ContinuumCrowds
 		return true;
 	}
 
-	void calculatePotentialGradient() {
+	void calculatePotentialGradientAndNormalize() {
 		for (int i=Nloc; i<(Ndim+Nloc); i++) {
 			for (int k=Mloc; k<(Mdim+Mloc); k++) {
 				if ((i!=Nloc) && (i!=(Ndim+Nloc)-1) && (k!=Mloc) && (k!=(Mdim+Mloc)-1)) 
-				{writePotentialGradientFieldData(i,k,i-1,i+1,k-1,k+1);} // generic spot
-				else if ((i==Nloc) && (k==(Mdim+Mloc)-1)) 		{writePotentialGradientFieldData(i,k,i,i+1,k-1,k);} 	// upper left corner
-				else if ((i==(Ndim+Nloc)-1) && (k==Mloc)) 		{writePotentialGradientFieldData(i,k,i-1,i,k,k+1);}	// bottom left corner
-				else if ((i==Nloc) && (k==Mloc)) 				{writePotentialGradientFieldData(i,k,i,i+1,k,k+1);}	// upper left corner
+				{writeNormalizedPotentialGradientFieldData(i,k,i-1,i+1,k-1,k+1);} // generic spot
+				else if ((i==Nloc) && (k==(Mdim+Mloc)-1)) 		{writeNormalizedPotentialGradientFieldData(i,k,i,i+1,k-1,k);} 	// upper left corner
+				else if ((i==(Ndim+Nloc)-1) && (k==Mloc)) 		{writeNormalizedPotentialGradientFieldData(i,k,i-1,i,k,k+1);}	// bottom left corner
+				else if ((i==Nloc) && (k==Mloc)) 				{writeNormalizedPotentialGradientFieldData(i,k,i,i+1,k,k+1);}	// upper left corner
 				else if ((i==(Ndim+Nloc)-1) && (k==(Mdim+Mloc)-1)) 
-				{writePotentialGradientFieldData(i,k,i-1,i,k-1,k);} 	// bottom right corner
-				else if (i==Nloc) 								{writePotentialGradientFieldData(i,k,i,i+1,k-1,k+1);}	// top edge
-				else if (i==(Ndim+Nloc)-1) 						{writePotentialGradientFieldData(i,k,i-1,i,k-1,k+1);}	// bot edge
-				else if (k==Mloc) 								{writePotentialGradientFieldData(i,k,i-1,i+1,k,k+1);}	// left edge
-				else if (k==(Mdim+Mloc)-1) 						{writePotentialGradientFieldData(i,k,i-1,i+1,k-1,k);}	// right edge								
+				{writeNormalizedPotentialGradientFieldData(i,k,i-1,i,k-1,k);} 	// bottom right corner
+				else if (i==Nloc) 								{writeNormalizedPotentialGradientFieldData(i,k,i,i+1,k-1,k+1);}	// top edge
+				else if (i==(Ndim+Nloc)-1) 						{writeNormalizedPotentialGradientFieldData(i,k,i-1,i,k-1,k+1);}	// bot edge
+				else if (k==Mloc) 								{writeNormalizedPotentialGradientFieldData(i,k,i-1,i+1,k,k+1);}	// left edge
+				else if (k==(Mdim+Mloc)-1) 						{writeNormalizedPotentialGradientFieldData(i,k,i-1,i+1,k-1,k);}	// right edge								
 			}
 		}
 	}
 
-	void writePotentialGradientFieldData(int x, int y, int xMin, int xMax, int yMin, int yMax) {
-		float dPhidx = (Phi[xMax,y] - Phi[xMin,y]) / (xMax - xMin);
-		float dPhidy = (Phi[x,yMax] - Phi[x,yMin]) / (yMax - yMin);
-		dPhi[x,y] = new Vector2(dPhidx, dPhidy);
+	void writeNormalizedPotentialGradientFieldData(int x, int y, int xMin, int xMax, int yMin, int yMax) {
+		float phiXmin = Phi[xMin,y], phiXmax = Phi[xMax,y], phiYmin = Phi[x,yMin], phiYmax = Phi[x,yMax];
+
+		if (float.IsInfinity(phiXmin)) {phiXmin = Phi[x,y]*2f;}
+		if (float.IsInfinity(phiXmax)) {phiXmax = Phi[x,y]*2f;}
+		if (float.IsInfinity(phiYmin)) {phiYmin = Phi[x,y]*2f;}
+		if (float.IsInfinity(phiYmax)) {phiYmax = Phi[x,y]*2f;}
+
+		float dPhidx = (phiXmax - phiXmin) / (xMax - xMin);
+		float dPhidy = (phiYmax - phiYmin) / (yMax - yMin);
+		dPhi[x,y] = (new Vector2(dPhidx, dPhidy)).normalized;
+	}
+
+	void calculateVelocityField() {
+		float vx, vy;
+
+		for (int i=Nloc; i<(Ndim+Nloc); i++) {
+			for (int k=Mloc; k<(Mdim+Mloc); k++) {
+
+				if (dPhi[i,k].x > 0) {
+					vx = -f[i,k][0] * dPhi[i,k].x;
+				} else {
+					vx = -f[i,k][2] * dPhi[i,k].x;
+				}
+
+				if (dPhi[i,k].y > 0) {
+					vy = -f[i,k][1] * dPhi[i,k].y;
+				} else {
+					vy = -f[i,k][3] * dPhi[i,k].y;
+				}
+
+				v[i,k] = new Vector2(vx,vy);
+			}
+		}
 	}
 
 	// ******************************************************************************
