@@ -28,6 +28,9 @@ public class mapAnalyzer : MonoBehaviour {
 	public float[,] get_dhdy() {return dhdy;}
 	public float[,] get_g() {return g;}
 
+	public int getWidth() {return (int)mapWidthX;}
+	public int getHeight() {return (int)mapHeightZ;}
+
 	float TEMP_RHO_MAX = 0.6f;
 	// *****************************************
 

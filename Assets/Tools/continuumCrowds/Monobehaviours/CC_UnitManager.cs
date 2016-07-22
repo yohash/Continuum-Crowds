@@ -21,6 +21,8 @@ public class CC_UnitManager : MonoBehaviour
 
 	ContinuumCrowds CC;
 
+	List<Vector2[,]> vel_fields;
+
 	bool CC_1stIter_done = false;
 
 	void Awake ()
@@ -29,16 +31,34 @@ public class CC_UnitManager : MonoBehaviour
 		My_CC_unit_goal_groups = new List<CC_Unit_Goal_Group> ();
 
 		Rect r;
-		r = new Rect(new Vector2(30,20), new Vector2(1,1));
+		r = new Rect(new Vector2(28,0), new Vector2(2,20));
 		temp_cc_units = new List<CC_Unit>(); 
-		temp_cc_units.Add(My_CC_units[0]);
+		temp_cc_units.Add( My_CC_units[0]); 
+		temp_cc_units.Add( My_CC_units[1]); 
+		temp_cc_units.Add( My_CC_units[2]); 
+		temp_cc_units.Add( My_CC_units[3]); 
+		temp_cc_units.Add( My_CC_units[4]); 
+		temp_cc_units.Add( My_CC_units[5]); 
+		temp_cc_units.Add( My_CC_units[6]); 
+		temp_cc_units.Add( My_CC_units[7]); 
+		temp_cc_units.Add( My_CC_units[8]);
+		temp_cc_units.Add( My_CC_units[9]);
 		temp_unit_goal_group = new CC_Unit_Goal_Group(r, temp_cc_units);
 
 		My_CC_unit_goal_groups.Add(temp_unit_goal_group);
 
-		r = new Rect(new Vector2(30,20), new Vector2(1,1));
-		temp_cc_units = new List<CC_Unit>(); 
-		temp_cc_units.Add(My_CC_units[1]);
+		r = new Rect(new Vector2(0,0), new Vector2(2,20));
+		temp_cc_units = new List<CC_Unit>();
+		temp_cc_units.Add( My_CC_units[10]); 
+		temp_cc_units.Add( My_CC_units[11]); 
+		temp_cc_units.Add( My_CC_units[12]); 
+		temp_cc_units.Add( My_CC_units[13]); 
+		temp_cc_units.Add( My_CC_units[14]); 
+		temp_cc_units.Add( My_CC_units[15]); 
+		temp_cc_units.Add( My_CC_units[16]); 
+		temp_cc_units.Add( My_CC_units[17]); 
+		temp_cc_units.Add( My_CC_units[18]);
+		temp_cc_units.Add( My_CC_units[19]);
 		temp_unit_goal_group = new CC_Unit_Goal_Group(r, temp_cc_units);
 
 		My_CC_unit_goal_groups.Add(temp_unit_goal_group);
@@ -56,15 +76,15 @@ public class CC_UnitManager : MonoBehaviour
 		if (CC_1stIter_done) {
 			// distribute velocities to each unit in each unit-goal-group
 			float vx, vy;
-			int xf, yf;
+			int xf, yf, index = 0;
 			Vector2 newV;
+			
 			foreach(CC_Unit_Goal_Group ccugg in My_CC_unit_goal_groups) {
 				foreach(CC_Unit ccu in ccugg.units) {
-					newV = interpolateBetweenValues(ccu.getLocalPosition().x,ccu.getLocalPosition().y,CC.v);
-
-
+					newV = interpolateBetweenValues(ccu.getLocalPosition().x,ccu.getLocalPosition().y,vel_fields[index]);
 					ccu.setVelocity(newV);
 				}
+				index++;
 			}
 		}
 	}
@@ -81,74 +101,68 @@ public class CC_UnitManager : MonoBehaviour
 
 			CC = new ContinuumCrowds(My_CC_map_package, My_CC_unit_goal_groups);
 
+			vel_fields = CC.vFields;
+
 			CC_1stIter_done = true;
 
 //			float dT = Time.realtimeSinceStartup;
 //			Debug.Log("TOTAL time: "+(dT-TIMEST));
 
-			float[,] phic = CC.Phi;
-			Vector2[,] dphic = CC.dPhi;
-			float max = 0f;
-
-			for(int m=0; m<phic.GetLength(0); m++) {
-				for(int n=0; n<phic.GetLength(1); n++) {
-					if (phic[m,n]>max && !float.IsInfinity(phic[m,n])) {max = phic[m,n];}
-				}
-			}
-
-			int d = 21;
-//			Debug.Log(CC.f[d,40]);
-//			Debug.Log(CC.f[d,39]);
-//			Debug.Log(CC.f[d,38]);
-//			Debug.Log(CC.f[d,37]);
-//			Debug.Log(CC.f[d,36]);
-//			Debug.Log(CC.f[d,35]);
-//			Debug.Log(CC.f[d,34]);
-//			Debug.Log(CC.f[d,33]);
-//			Debug.Log(CC.f[d,32]);
-//			Debug.Log(CC.f[d,31]);
-//			Debug.Log(CC.f[d,30]);
-			//
-//			Debug.Log(CC.C[d,40]);
-//			Debug.Log(CC.C[d,39]);
-//			Debug.Log(CC.C[d,38]);
-//			Debug.Log(CC.C[d,37]);
-//			Debug.Log(CC.C[d,36]);
-//			Debug.Log(CC.C[d,35]);
-//			Debug.Log(CC.C[d,34]);
-//			Debug.Log(CC.C[d,33]);
-//			Debug.Log(CC.C[d,32]);
-//			Debug.Log(CC.C[d,31]);
-//			Debug.Log(CC.C[d,30]);
-
-//			print("VAL: phiR-"+CC.Phi[22,33]+",phiC-"+CC.Phi[21,33]+", phiL-"+CC.Phi[20,33]+", costInto-"+CC.C[21,33]);
-//			print("the two var (r,l): "+(CC.C[21,33][0] + CC.Phi[22,33])+", "+(CC.C[21,33][2] + CC.Phi[20,33]));
-
-//			Debug.Log(CC.dPhi[d,40]);
-//			Debug.Log(CC.dPhi[d,39]);
-//			Debug.Log(CC.dPhi[d,38]);
-//			Debug.Log(CC.dPhi[d,37]);
-//			Debug.Log(CC.dPhi[d,36]);
-//			Debug.Log(CC.dPhi[d,35]);
-//			Debug.Log(CC.dPhi[d,34]);
-//			Debug.Log(CC.dPhi[d,33]);
-//			Debug.Log(CC.dPhi[d,32]);
-//			Debug.Log(CC.dPhi[d,31]);
-//			Debug.Log(CC.dPhi[d,30]);
-
-			tileAndColorSystem.S.setTileColor(CC.v, Color.red);
+//			float[,] phic = CC.Phi;
+//			Vector2[,] dphic = CC.dPhi;
+//			float max = 0f;
 //
-			tileAndColorSystem.S.setTileColor(d,30,Color.white);
-			tileAndColorSystem.S.setTileColor(d,40,Color.white);
+//			for(int m=0; m<phic.GetLength(0); m++) {
+//				for(int n=0; n<phic.GetLength(1); n++) {
+//					if (phic[m,n]>max && !float.IsInfinity(phic[m,n])) {max = phic[m,n];}
+//				}
+//			}
+
+			tileAndColorSystem.S.setTileColor(CC.dPhi, Color.red);
+
+//			int xs = 10;
+//			int xe = 20;
+//
+//			int ys = 0;
+//			int ye = 10;
+//
+//			string s;
+//			Debug.Log("dphi");
+//			for (int k=ye; k>(ys); k--) {
+//				s = "";
+//				for (int i=xs; i<(xe); i++) {
+//					s += ((vel_fields[0][i,k]).ToString());
+//					s += "    ";
+//				}
+//				Debug.Log(s);
+//			}
+//			Debug.Log("v");
+//			for (int k=ye; k>(ys); k--) {
+//				s = "";
+//				for (int i=xs; i<(xe); i++) {
+//					s += ((vel_fields[1][i,k]).ToString());
+//					s += "    ";
+//				}
+//				Debug.Log(s);
+//			}
+//
+//
+//			tileAndColorSystem.S.setTileColor(xs,ys,Color.white);
+//			tileAndColorSystem.S.setTileColor(xs,ye,Color.white);
+//			tileAndColorSystem.S.setTileColor(xe,ys,Color.white);
+//			tileAndColorSystem.S.setTileColor(xe,ye,Color.white);
 
 
-			yield return new WaitForSeconds(3f);
+			yield return new WaitForSeconds(.15f);
 		}
 	}
 
 	Vector2 interpolateBetweenValues(float x, float y, Vector2[,] array)
 	{
 		float xcomp,ycomp;
+
+		int xl = array.GetLength(0);
+		int yl = array.GetLength(1);
 
 		int topLeftX = (int)Mathf.Floor(x);
 		int topLeftY = (int)Mathf.Floor(y);
@@ -159,12 +173,14 @@ public class CC_UnitManager : MonoBehaviour
 		float yAmountTop = 1.0f - yAmountBottom;
 
 		Vector4 valuesX = Vector4.zero;
-		valuesX[0] = array[topLeftX, topLeftY].x;
-		valuesX[1] = array[topLeftX + 1, topLeftY].x;
-		valuesX[2] = array[topLeftX, topLeftY + 1].x;
-		valuesX[3] = array[topLeftX + 1, topLeftY + 1].x;
+
+		if (isPointInsideArray(topLeftX,topLeftY,xl,yl))			{valuesX[0] = array[topLeftX, topLeftY].x;}
+		if (isPointInsideArray(topLeftX + 1, topLeftY,xl,yl)) 		{valuesX[1] = array[topLeftX + 1, topLeftY].x;}
+		if (isPointInsideArray(topLeftX, topLeftY + 1,xl,yl)) 		{valuesX[2] = array[topLeftX, topLeftY + 1].x;}
+		if (isPointInsideArray(topLeftX + 1, topLeftY + 1,xl,yl)) 	{valuesX[3] = array[topLeftX + 1, topLeftY + 1].x;}
 		for (int n=0; n<4; n++) {
-			if (valuesX[n] == float.NaN) {valuesX[n] = 0f;}
+			if (float.IsNaN(valuesX[n])) {valuesX[n] = 0f;}
+			if (float.IsInfinity(valuesX[n])) {valuesX[n] = 0f;}
 		}
 
 		float averagedXTop = valuesX[0] * xAmountLeft + valuesX[1] * xAmountRight;
@@ -173,12 +189,13 @@ public class CC_UnitManager : MonoBehaviour
 		xcomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
 
 		Vector4 valuesY = Vector4.zero;
-		valuesY[0] = array[topLeftX, topLeftY].y;
-		valuesY[1] = array[topLeftX + 1, topLeftY].y;
-		valuesY[2] = array[topLeftX, topLeftY + 1].y;
-		valuesY[3] = array[topLeftX + 1, topLeftY + 1].y;
+		if (isPointInsideArray(topLeftX,topLeftY,xl,yl))			{valuesY[0] = array[topLeftX, topLeftY].y;}
+		if (isPointInsideArray(topLeftX + 1, topLeftY,xl,yl)) 		{valuesY[1] = array[topLeftX + 1, topLeftY].y;}
+		if (isPointInsideArray(topLeftX, topLeftY + 1,xl,yl)) 		{valuesY[2] = array[topLeftX, topLeftY + 1].y;}
+		if (isPointInsideArray(topLeftX + 1, topLeftY + 1,xl,yl)) 	{valuesY[3] = array[topLeftX + 1, topLeftY + 1].y;}
 		for (int n=0; n<4; n++) {
-			if (valuesY[n] == float.NaN) {valuesY[n] = 0f;}
+			if (float.IsNaN(valuesY[n])) {valuesY[n] = 0f;}
+			if (float.IsInfinity(valuesY[n])) {valuesY[n] = 0f;}
 		}
 
 		averagedXTop = valuesY[0] * xAmountLeft + valuesY[1] * xAmountRight;
@@ -186,13 +203,16 @@ public class CC_UnitManager : MonoBehaviour
 
 		ycomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
 
-//		print("4 vals from ("+x+","+y+"): "+new Vector2(valuesX[0], valuesY[0])+", "+new Vector2(valuesX[1], valuesY[1])+". "+new Vector2(valuesX[2], valuesY[2])+", "+new Vector2(valuesX[3], valuesY[3]));
-//		print("new INTERP val: "+new Vector2(xcomp,ycomp));
-
-		if (float.IsNaN(xcomp)) {xcomp = 0f;}
-		if (float.IsNaN(ycomp)) {ycomp = 0f;}
+//		print("the y-bounds: ""interp vect: "+(new Vector2(xcomp,ycomp)));
 
 		return new Vector2(xcomp,ycomp);
 	}
 
+
+	bool isPointInsideArray(int x, int y, int xl, int yl) {
+		if (x<0 || x>xl-1 || y<0 || y>yl-1) {
+			return false;
+		}
+		return true;
+	}
 }

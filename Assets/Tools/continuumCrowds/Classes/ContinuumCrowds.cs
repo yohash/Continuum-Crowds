@@ -63,8 +63,13 @@ public class ContinuumCrowds
 	public Vector2[,] dPhi;				// potential field gradient
 	public Vector2[,] v;				// final velocity
 
+	public List<Vector2[,]> vFields;	// all the final fields encapsulated
+
 	// parameters for the respective equations -- FIND MORE APPROPRIATE PLACE TO PUT THESE
-	public float gP_predictiveSeconds = 4f;
+	public float rho_sc = 2f;					// scalar for density to splat onto discomfort map
+
+	public float gP_predictiveSeconds = 6f;		// how far into future we predict the path
+	public float gP_weight = 1f;				// scalar for predictive discomfort to splat onto discomfort map
 
 	public float f_slopeMax = 1f;				// correlates roughly to 30-degree incline
 	public float f_slopeMin = 0f;				// for a min slope, nothing else makes sense...
@@ -75,7 +80,7 @@ public class ContinuumCrowds
 	public float f_speedMax = 10f;				// will this vary by unit???
 	public float f_speedMin = 0.01f;			// set to some positive number to clamp flow speed
 
-	public float C_alpha = 1f;					// speed field weight
+	public float C_alpha = 5f;					// speed field weight
 	public float C_beta = 1f;					// time weight
 	public float C_gamma = 2f;					// discomfort weight
 
@@ -108,6 +113,8 @@ public class ContinuumCrowds
 		gP = new float[N, M];
 		f = new Vector4[N, M];
 		C = new Vector4[N, M];
+
+		vFields = new List<Vector2[,]>();
 
 		// these next fields must be computed for each unit in the entire list:
 		// 		populate density field
@@ -151,7 +158,8 @@ public class ContinuumCrowds
 			calculatePotentialGradientAndNormalize();
 			// calculate velocity field
 			calculateVelocityField();
-			// assign new velocities to each unit in List<CC_Unit> units
+			// add the vfield to the list for this particular Unit-Goal-Group
+			vFields.Add(v);		
 		}
 	}
 
@@ -159,7 +167,8 @@ public class ContinuumCrowds
 	{
 		Vector2 cc_u_pos = cc_u.getLocalPosition ();
 
-		linear1stOrderSplat (cc_u_pos.x, cc_u_pos.y, rho, 1);
+		linear1stOrderSplat (cc_u_pos.x, cc_u_pos.y, rho, rho_sc);
+		linear1stOrderSplat (cc_u_pos.x, cc_u_pos.y, gP, rho_sc);
 
 		int xInd = (int)Mathf.Floor (cc_u_pos.x);
 		int yInd = (int)Mathf.Floor (cc_u_pos.y);
@@ -199,7 +208,7 @@ public class ContinuumCrowds
 		for (int i = 1; i < vfMag; i++) {
 			newLoc = Vector2.MoveTowards (cc_u.getLocalPosition (), xprime, i);
 			sc = (vfMag - i) / vfMag;				// inverse scale
-			linear1stOrderSplat (newLoc, gP, sc);
+			linear1stOrderSplat (newLoc, gP, sc*gP_weight);
 		}
 	}
 
@@ -362,10 +371,6 @@ public class ContinuumCrowds
 			EikonalUpdateFormula(current);
 			markAccepted(current);
 		}
-//		TIMESTAMP = Time.realtimeSinceStartup;
-//		dT = Time.realtimeSinceStartup;
-//		subTot+=(dT-TIMESTAMP);
-//		Debug.Log (" -- total stored time: "+subTot);
 	}
 
 	void EikonalUpdateFormula (fastLocation l) {
@@ -379,7 +384,6 @@ public class ContinuumCrowds
 		for (int d = 0; d < DIR_ENWS.Length; d++) {
 			xInto = l.x + (int)DIR_ENWS[d].x;
 			yInto = l.y + (int)DIR_ENWS[d].y;
-
 
 			neighbor = new fastLocation(xInto,yInto);
 
@@ -522,14 +526,23 @@ public class ContinuumCrowds
 
 	void writeNormalizedPotentialGradientFieldData(int x, int y, int xMin, int xMax, int yMin, int yMax) {
 		float phiXmin = Phi[xMin,y], phiXmax = Phi[xMax,y], phiYmin = Phi[x,yMin], phiYmax = Phi[x,yMax];
+		float dPhidx, dPhidy;
 
-		if (float.IsInfinity(phiXmin)) {phiXmin = Phi[x,y]*2f;}
-		if (float.IsInfinity(phiXmax)) {phiXmax = Phi[x,y]*2f;}
-		if (float.IsInfinity(phiYmin)) {phiYmin = Phi[x,y]*2f;}
-		if (float.IsInfinity(phiYmax)) {phiYmax = Phi[x,y]*2f;}
+		dPhidx = (phiXmax - phiXmin) / (xMax - xMin);
+		dPhidy = (phiYmax - phiYmin) / (yMax - yMin);
 
-		float dPhidx = (phiXmax - phiXmin) / (xMax - xMin);
-		float dPhidy = (phiYmax - phiYmin) / (yMax - yMin);
+		if(float.IsInfinity(phiXmin) && float.IsInfinity(phiXmax)) {
+			dPhidx = 0f;
+		} else if(float.IsInfinity(phiXmin) || float.IsInfinity(phiXmax)) {
+			dPhidx = Mathf.Sign(phiXmax - phiXmin);
+		}
+
+		if(float.IsInfinity(phiYmin) && float.IsInfinity(phiYmax)) {
+			dPhidy = 0f;
+		} else if(float.IsInfinity(phiYmin) || float.IsInfinity(phiYmax)) {
+			dPhidy = Mathf.Sign(phiYmax - phiYmin);
+		}
+
 		dPhi[x,y] = (new Vector2(dPhidx, dPhidy)).normalized;
 	}
 
@@ -540,15 +553,15 @@ public class ContinuumCrowds
 			for (int k=Mloc; k<(Mdim+Mloc); k++) {
 
 				if (dPhi[i,k].x > 0) {
-					vx = -f[i,k][0] * dPhi[i,k].x;
-				} else {
 					vx = -f[i,k][2] * dPhi[i,k].x;
+				} else {
+					vx = -f[i,k][0] * dPhi[i,k].x;
 				}
 
 				if (dPhi[i,k].y > 0) {
-					vy = -f[i,k][1] * dPhi[i,k].y;
-				} else {
 					vy = -f[i,k][3] * dPhi[i,k].y;
+				} else {
+					vy = -f[i,k][1] * dPhi[i,k].y;
 				}
 
 				v[i,k] = new Vector2(vx,vy);
