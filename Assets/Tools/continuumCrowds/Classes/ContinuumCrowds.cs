@@ -66,10 +66,10 @@ public class ContinuumCrowds
 	public List<Vector2[,]> vFields;	// all the final fields encapsulated
 
 	// parameters for the respective equations -- FIND MORE APPROPRIATE PLACE TO PUT THESE
-	public float rho_sc = 2f;					// scalar for density to splat onto discomfort map
+	public float rho_sc = 1.2f;					// scalar for density to splat onto discomfort map
 
-	public float gP_predictiveSeconds = 6f;		// how far into future we predict the path
-	public float gP_weight = 1f;				// scalar for predictive discomfort to splat onto discomfort map
+	public float gP_predictiveSeconds = 4f;		// how far into future we predict the path
+	public float gP_weight = 2f;				// scalar for predictive discomfort to splat onto discomfort map
 
 	public float f_slopeMax = 1f;				// correlates roughly to 30-degree incline
 	public float f_slopeMin = 0f;				// for a min slope, nothing else makes sense...
@@ -80,7 +80,7 @@ public class ContinuumCrowds
 	public float f_speedMax = 10f;				// will this vary by unit???
 	public float f_speedMin = 0.01f;			// set to some positive number to clamp flow speed
 
-	public float C_alpha = 5f;					// speed field weight
+	public float C_alpha = 8f;					// speed field weight
 	public float C_beta = 1f;					// time weight
 	public float C_gamma = 2f;					// discomfort weight
 

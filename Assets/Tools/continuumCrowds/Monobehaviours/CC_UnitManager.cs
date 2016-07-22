@@ -68,8 +68,14 @@ public class CC_UnitManager : MonoBehaviour
 		Invoke("start_CC",0.5f);
 	}
 	void start_CC() {
-		StartCoroutine("start_CC_task");
+		
+		My_CC_map_package = new CC_Map_Package (
+			mapAnalyzer.S.get_dh (),
+			mapAnalyzer.S.get_h (), 
+			mapAnalyzer.S.get_g ()
+		);
 
+		StartCoroutine("start_CC_task");
 	}
 
 	void Update() {
@@ -86,75 +92,28 @@ public class CC_UnitManager : MonoBehaviour
 				}
 				index++;
 			}
+			tileAndColorSystem.S.setTileColor(CC.dPhi, Color.red);
 		}
 	}
 
 	IEnumerator start_CC_task() {
 		while (true) {
-			My_CC_map_package = new CC_Map_Package (
-				mapAnalyzer.S.get_dh (),
-				mapAnalyzer.S.get_h (), 
-				mapAnalyzer.S.get_g ()
-			);
 
-//			float TIMEST = Time.realtimeSinceStartup;
+			var task = UnityTask.Run(() =>
+				{
+					runCC();
+				});
 
-			CC = new ContinuumCrowds(My_CC_map_package, My_CC_unit_goal_groups);
-
-			vel_fields = CC.vFields;
-
-			CC_1stIter_done = true;
-
-//			float dT = Time.realtimeSinceStartup;
-//			Debug.Log("TOTAL time: "+(dT-TIMEST));
-
-//			float[,] phic = CC.Phi;
-//			Vector2[,] dphic = CC.dPhi;
-//			float max = 0f;
-//
-//			for(int m=0; m<phic.GetLength(0); m++) {
-//				for(int n=0; n<phic.GetLength(1); n++) {
-//					if (phic[m,n]>max && !float.IsInfinity(phic[m,n])) {max = phic[m,n];}
-//				}
-//			}
-
-			tileAndColorSystem.S.setTileColor(CC.dPhi, Color.red);
-
-//			int xs = 10;
-//			int xe = 20;
-//
-//			int ys = 0;
-//			int ye = 10;
-//
-//			string s;
-//			Debug.Log("dphi");
-//			for (int k=ye; k>(ys); k--) {
-//				s = "";
-//				for (int i=xs; i<(xe); i++) {
-//					s += ((vel_fields[0][i,k]).ToString());
-//					s += "    ";
-//				}
-//				Debug.Log(s);
-//			}
-//			Debug.Log("v");
-//			for (int k=ye; k>(ys); k--) {
-//				s = "";
-//				for (int i=xs; i<(xe); i++) {
-//					s += ((vel_fields[1][i,k]).ToString());
-//					s += "    ";
-//				}
-//				Debug.Log(s);
-//			}
-//
-//
-//			tileAndColorSystem.S.setTileColor(xs,ys,Color.white);
-//			tileAndColorSystem.S.setTileColor(xs,ye,Color.white);
-//			tileAndColorSystem.S.setTileColor(xe,ys,Color.white);
-//			tileAndColorSystem.S.setTileColor(xe,ye,Color.white);
-
-
-			yield return new WaitForSeconds(.15f);
+			yield return task; 
 		}
+	}
+
+	void runCC() {
+		CC = new ContinuumCrowds(My_CC_map_package, My_CC_unit_goal_groups);
+
+		vel_fields = CC.vFields;
+
+		CC_1stIter_done = true;
 	}
 
 	Vector2 interpolateBetweenValues(float x, float y, Vector2[,] array)
