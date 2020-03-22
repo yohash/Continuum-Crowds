@@ -10,7 +10,7 @@ public interface WeightedGraph<L>
 	IEnumerable<Location> Neighbors(Location id);
 }
 
-public struct Location 
+public struct Location
 {
 	public readonly int x, y;
 	public Location(int x, int y)
@@ -18,21 +18,23 @@ public struct Location
 		this.x = x;
 		this.y = y;
 	}
-	public static bool operator ==(Location l1, Location l2) {
-		return((l1.x==l2.x) && (l1.y==l2.y));
+	public static bool operator ==(Location l1, Location l2)
+	{
+		return ((l1.x == l2.x) && (l1.y == l2.y));
 	}
-	public static bool Equals(Location l1, Location l2) {
-		return((l1.x==l2.x) && (l1.y==l2.y));
+	public static bool Equals(Location l1, Location l2)
+	{
+		return ((l1.x == l2.x) && (l1.y == l2.y));
 	}
-	public static bool operator !=(Location l1, Location l2) {
-		return(!(l1==l2));
+	public static bool operator !=(Location l1, Location l2)
+	{
+		return (!(l1 == l2));
 	}
 }
 
 public class SquareGrid : WeightedGraph<Location>
 {
-
-	public static readonly Location[] DIRS = new []
+	public static readonly Location[] DIRS = new[]
 	{
 		new Location(1, 0),
 		new Location(0, -1),
@@ -62,7 +64,7 @@ public class SquareGrid : WeightedGraph<Location>
 
 	public float Cost(Location a, Location b)
 	{
-		return terrain.ContainsKey(b) ? (1 + terrain[b]-terrain[a]) : 1;
+		return terrain.ContainsKey(b) ? (1 + terrain[b] - terrain[a]) : 1;
 	}
 
 	public IEnumerable<Location> Neighbors(Location id)
@@ -76,7 +78,7 @@ public class SquareGrid : WeightedGraph<Location>
 	}
 }
 //
-//// this is custom written from redbloblgames.com 
+//// this is custom written from redbloblgames.com
 //// this is not the most efficient implementation of a priority queue
 //// best to try and use the one in C5 generic collection library
 //// or next best thing to it
@@ -129,8 +131,8 @@ public class SquareGrid : WeightedGraph<Location>
 //}
 
 // the A* pathfinding algorithm as implemented by www.redblobgames.com
-public class AStarSearch {
-
+public class AStarSearch
+{
 	public Dictionary<Location, Location> cameFrom = new Dictionary<Location, Location>();
 	public Dictionary<Location, float> costSoFar = new Dictionary<Location, float>();
 
@@ -138,9 +140,9 @@ public class AStarSearch {
 	// also Heuristic
 	static public float Heuristic(Location a, Location b)
 	{
-		float dist = 
-			Mathf.Sqrt(Mathf.Abs(a.x - b.x)*Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y)*Mathf.Abs(a.y - b.y));
-	
+		float dist =
+			Mathf.Sqrt(Mathf.Abs(a.x - b.x) * Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) * Mathf.Abs(a.y - b.y));
+
 		return dist;
 	}
 
@@ -152,14 +154,12 @@ public class AStarSearch {
 		cameFrom[start] = start;
 		costSoFar[start] = 0;
 
-		while (frontier.Count > 0)
-		{
+		while (frontier.Count > 0) {
 			var current = frontier.Dequeue();
-			if (current.Equals(goal)) {break;}
-			foreach (var next in graph.Neighbors(current))
-			{
-				float newCost = costSoFar[current]	+ graph.Cost(current, next);
-				if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])	{
+			if (current.Equals(goal)) { break; }
+			foreach (var next in graph.Neighbors(current)) {
+				float newCost = costSoFar[current] + graph.Cost(current, next);
+				if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next]) {
 					costSoFar[next] = newCost;
 					float priority = newCost + Heuristic(next, goal);
 					frontier.Enqueue(next, priority);
