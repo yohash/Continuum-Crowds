@@ -1,10 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-
-public static class CCvals
+﻿public static class CCvals
 {
-  // parameters for the respective equations
-  public static float rho_sc = 1f;          // scalar for density to splat onto discomfort map
+  // scalar for density to splat onto discomfort map
+  public static float rho_sc = 1f;
 
   // **************************************************************************************************
   // ************ deprecated due to visually unappealing 'dodging' ************************************

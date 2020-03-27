@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class mapAnalyzer : MonoBehaviour {
-	
+public class mapAnalyzer : MonoBehaviour
+{
+
 	public static mapAnalyzer S;
 
 	public bool ___MapInputs___;
@@ -22,98 +23,101 @@ public class mapAnalyzer : MonoBehaviour {
 	float[,] h, dhdx, dhdy, g;
 	Vector2[,] dh;
 
-	public Vector2[,] get_dh() {return dh;}
-	public float[,] get_h() {return h;}
-	public float[,] get_dhdx() {return dhdx;}
-	public float[,] get_dhdy() {return dhdy;}
-	public float[,] get_g() {return g;}
+	public Vector2[,] get_dh() { return dh; }
+	public float[,] get_h() { return h; }
+	public float[,] get_dhdx() { return dhdx; }
+	public float[,] get_dhdy() { return dhdy; }
+	public float[,] get_g() { return g; }
 
-	public int getWidth() {return (int)mapWidthX;}
-	public int getHeight() {return (int)mapHeightZ;}
+	public int getWidth() { return (int)mapWidthX; }
+	public int getHeight() { return (int)mapHeightZ; }
 
 	float TEMP_RHO_MAX = 0.6f;
 	// *****************************************
 
-	void Awake () {
-		S = this;		
+	void Awake()
+	{
+		S = this;
 	}
 
-	void Start () {
-		xSteps = (int) (mapWidthX/stepSize);
-		zSteps = (int) (mapHeightZ/stepSize);
+	void Start()
+	{
+		xSteps = (int)(mapWidthX / stepSize);
+		zSteps = (int)(mapHeightZ / stepSize);
 
 		generateHeightMap();
 		generateGradientMaps();
 		generateDiscomfortMap();
-
-		tileAndColorSystem.S.instantiateTiles(xSteps,zSteps,stepSize,h);
 	}
 
 	// *****************************************************************************************************************
 	// 				HEIGHT MAP GENERATION
 	// *****************************************************************************************************************
-	void generateHeightMap() {
-		h = new float[xSteps,zSteps];
-		float xoffset = stepSize/2f + (centerX-mapWidthX/2f);
-		float zoffset = stepSize/2f + (centerZ-mapHeightZ/2f);
+	void generateHeightMap()
+	{
+		h = new float[xSteps, zSteps];
+		float xoffset = stepSize / 2f + (centerX - mapWidthX / 2f);
+		float zoffset = stepSize / 2f + (centerZ - mapHeightZ / 2f);
 
-		for (int i=0; i<xSteps; i++) {
-			for (int k=0; k<zSteps; k++) {
-				h[i,k] = getHeightAndNormalDataForPoint(stepSize*i + xoffset, stepSize*k + zoffset)[0].y;
+		for (int i = 0; i < xSteps; i++) {
+			for (int k = 0; k < zSteps; k++) {
+				h[i, k] = getHeightAndNormalDataForPoint(stepSize * i + xoffset, stepSize * k + zoffset)[0].y;
 			}
 		}
 	}
 
-	void generateGradientMaps() {
-		dhdx = new float[xSteps,zSteps];
-		dhdy = new float[xSteps,zSteps];
-		dh = new Vector2[xSteps,zSteps];
+	void generateGradientMaps()
+	{
+		dhdx = new float[xSteps, zSteps];
+		dhdy = new float[xSteps, zSteps];
+		dh = new Vector2[xSteps, zSteps];
 
-		for (int i=0; i<xSteps; i++) {
-			for (int k=0; k<zSteps; k++) {
-				if ((i!=0) && (i!=xSteps-1) && (k!=0) && (k!=zSteps-1)) 
-													{writeGradientMapData(i,k,i-1,i+1,k-1,k+1);} // generic spot
-				else if ((i==0) && (k==zSteps-1)) 	{writeGradientMapData(i,k,i,i+1,k-1,k);} 	// upper left corner
-				else if ((i==xSteps-1) && (k==0)) 	{writeGradientMapData(i,k,i-1,i,k,k+1);}	// bottom left corner
-				else if ((i==0) && (k==0)) 			{writeGradientMapData(i,k,i,i+1,k,k+1);}	// upper left corner
-				else if ((i==xSteps-1) && (k==zSteps-1)) 
-													{writeGradientMapData(i,k,i-1,i,k-1,k);} 	// bottom right corner
-				else if (i==0) 						{writeGradientMapData(i,k,i,i+1,k-1,k+1);}	// top edge
-				else if (i==xSteps-1) 				{writeGradientMapData(i,k,i-1,i,k-1,k+1);}	// bot edge
-				else if (k==0) 						{writeGradientMapData(i,k,i-1,i+1,k,k+1);}	// left edge
-				else if (k==zSteps-1) 				{writeGradientMapData(i,k,i-1,i+1,k-1,k);}	// right edge								
+		for (int i = 0; i < xSteps; i++) {
+			for (int k = 0; k < zSteps; k++) {
+				if ((i != 0) && (i != xSteps - 1) && (k != 0) && (k != zSteps - 1)) { writeGradientMapData(i, k, i - 1, i + 1, k - 1, k + 1); } // generic spot
+				else if ((i == 0) && (k == zSteps - 1)) { writeGradientMapData(i, k, i, i + 1, k - 1, k); }   // upper left corner
+				else if ((i == xSteps - 1) && (k == 0)) { writeGradientMapData(i, k, i - 1, i, k, k + 1); } // bottom left corner
+				else if ((i == 0) && (k == 0)) { writeGradientMapData(i, k, i, i + 1, k, k + 1); }  // upper left corner
+				else if ((i == xSteps - 1) && (k == zSteps - 1)) { writeGradientMapData(i, k, i - 1, i, k - 1, k); }  // bottom right corner
+				else if (i == 0) { writeGradientMapData(i, k, i, i + 1, k - 1, k + 1); }  // top edge
+				else if (i == xSteps - 1) { writeGradientMapData(i, k, i - 1, i, k - 1, k + 1); } // bot edge
+				else if (k == 0) { writeGradientMapData(i, k, i - 1, i + 1, k, k + 1); }  // left edge
+				else if (k == zSteps - 1) { writeGradientMapData(i, k, i - 1, i + 1, k - 1, k); } // right edge
 			}
 		}
 	}
 
-	void generateDiscomfortMap() {
-	//		void generateDiscomfortMap(List<Rect> bldgs) {
+	void generateDiscomfortMap()
+	{
+		//		void generateDiscomfortMap(List<Rect> bldgs) {
 		//		foreach (Rect r in bldgs) {		}
-		g = new float[xSteps,zSteps];
+		g = new float[xSteps, zSteps];
 
-		for (int i=0; i<xSteps; i++) {
-			for (int k=0; k<zSteps; k++) {
-				if (Mathf.Max(Mathf.Abs(dhdx[i,k]),Mathf.Abs(dhdy[i,k])) > TEMP_RHO_MAX) {
-					g[i,k] = 1f;
+		for (int i = 0; i < xSteps; i++) {
+			for (int k = 0; k < zSteps; k++) {
+				if (Mathf.Max(Mathf.Abs(dhdx[i, k]), Mathf.Abs(dhdy[i, k])) > TEMP_RHO_MAX) {
+					g[i, k] = 1f;
 				}
 			}
 		}
 	}
 
-	// this performs a center-gradient for interior points, 
+	// this performs a center-gradient for interior points,
 	// and is how MATLAB calculates gradients of matrices
-	void writeGradientMapData(int x, int y, int xMin, int xMax, int yMin, int yMax) {
-		dhdx[x,y] = (h[xMax,y] - h[xMin,y]) / (xMax - xMin);
-		dhdy[x,y] = (h[x,yMax] - h[x,yMin]) / (yMax - yMin);
-		dh[x,y] = new Vector2(dhdx[x,y], dhdy[x,y]);
+	void writeGradientMapData(int x, int y, int xMin, int xMax, int yMin, int yMax)
+	{
+		dhdx[x, y] = (h[xMax, y] - h[xMin, y]) / (xMax - xMin);
+		dhdy[x, y] = (h[x, yMax] - h[x, yMin]) / (yMax - yMin);
+		dh[x, y] = new Vector2(dhdx[x, y], dhdy[x, y]);
 	}
 
 	// change this up...
-	public List<Location> getUnpassableTerrain(float threshhold) {
+	public List<Location> getUnpassableTerrain(float threshhold)
+	{
 		List<Location> theList = new List<Location>();
-		for (int i=0; i<xSteps; i++) {
-			for (int k=0; k<zSteps; k++) {
-				if (g[i,k] > threshhold) {theList.Add(new Location(i,k));}
+		for (int i = 0; i < xSteps; i++) {
+			for (int k = 0; k < zSteps; k++) {
+				if (g[i, k] > threshhold) { theList.Add(new Location(i, k)); }
 			}
 		}
 		return theList;
@@ -123,32 +127,34 @@ public class mapAnalyzer : MonoBehaviour {
 	// 		HELPer functions
 	// *****************************************************************************************************************
 	Vector3 rayPoint, rayDir;
-	Vector3[] getHeightAndNormalDataForPoint(float x, float z) {
+	Vector3[] getHeightAndNormalDataForPoint(float x, float z)
+	{
 
-		rayPoint = new Vector3(x,terrainMaxWorldHeight*1.1f,z);
-		rayDir = new Vector3(0,-terrainMaxHeightDifferential,0);
+		rayPoint = new Vector3(x, terrainMaxWorldHeight * 1.1f, z);
+		rayDir = new Vector3(0, -terrainMaxHeightDifferential, 0);
 
-		Ray ray = new Ray(rayPoint , rayDir);
+		Ray ray = new Ray(rayPoint, rayDir);
 
 		RaycastHit hit;
 		int mask = 1 << 8;
-		if (Physics.Raycast(ray, out hit, terrainMaxHeightDifferential*1.5f, mask)) {
-			return new Vector3[2] {hit.point,hit.normal};
+		if (Physics.Raycast(ray, out hit, terrainMaxHeightDifferential * 1.5f, mask)) {
+			return new Vector3[2] { hit.point, hit.normal };
 		}
-		return new Vector3[2] {Vector3.zero,Vector3.zero};
+		return new Vector3[2] { Vector3.zero, Vector3.zero };
 	}
 
-	float[,] normalizeMap(float[,] unNormMap) {
+	float[,] normalizeMap(float[,] unNormMap)
+	{
 		float maxHeight = 0f;
-		for (int i=0; i<xSteps; i++) {
-			for (int k=0; k<zSteps; k++) {
-				if (unNormMap[i,k] > maxHeight) {maxHeight = h[i,k];}
+		for (int i = 0; i < xSteps; i++) {
+			for (int k = 0; k < zSteps; k++) {
+				if (unNormMap[i, k] > maxHeight) { maxHeight = h[i, k]; }
 			}
 		}
 		if (maxHeight > 0) {
-			for (int i=0; i<xSteps; i++) {
-				for (int k=0; k<zSteps; k++) {
-					unNormMap[i,k] /= maxHeight;
+			for (int i = 0; i < xSteps; i++) {
+				for (int k = 0; k < zSteps; k++) {
+					unNormMap[i, k] /= maxHeight;
 				}
 			}
 		}
@@ -158,15 +164,15 @@ public class mapAnalyzer : MonoBehaviour {
 	// *****************************************************************************************************************
 	// 		ADMIN and DEBUG functions
 	// *****************************************************************************************************************
-	public void printOutMatrix(float[,] f) {
+	public void printOutMatrix(float[,] f)
+	{
 		string s;
 		print("NEW MATRIX");
-		for (int n=0; n<f.GetLength(0); n++) {
+		for (int n = 0; n < f.GetLength(0); n++) {
 			s = "";
-			for (int m=0; m<f.GetLength(1); m++) {
-				if (n==f.GetLength(0)-1 && m==f.GetLength(1)-1) {s += " X ";}
-				else if (n==0 && m==0) {s += " X ";} 
-				s += f[n,m].ToString() + " "; 
+			for (int m = 0; m < f.GetLength(1); m++) {
+				if (n == f.GetLength(0) - 1 && m == f.GetLength(1) - 1) { s += " X "; } else if (n == 0 && m == 0) { s += " X "; }
+				s += f[n, m].ToString() + " ";
 			}
 			print(s);
 		}

@@ -38,7 +38,7 @@ public class CC_Tile
   /// </summary>
   /// <param name="d"></param>
   /// <param name="l"></param>
-  public CC_Tile (int d, Location l)
+  public CC_Tile(int d, Location l)
   {
     dim = d;
     myLoc = l;
@@ -57,10 +57,8 @@ public class CC_Tile
     Vector4 f_init = f0 * Vector4.one;
     Vector4 C_init = Vector4.one * (f0 * CCvals.C_alpha + CCvals.C_beta) / f0;
 
-    for (int i = 0; i < dim; i++)
-    {
-      for (int k = 0; k < dim; k++)
-      {
+    for (int i = 0; i < dim; i++) {
+      for (int k = 0; k < dim; k++) {
         f[i, k] = f_init;
         C[i, k] = C_init;
 
@@ -77,12 +75,10 @@ public class CC_Tile
   /// </summary>
   public void StoreCurrentSpeedAndCostFields()
   {
-    for (int i = 0; i < dim; i++)
-    {
-      for (int k = 0; k < dim; k++)
-      {
-        _fbackup[i, k] = f[i,k];
-        _Cbackup[i, k] = C[i,k];
+    for (int i = 0; i < dim; i++) {
+      for (int k = 0; k < dim; k++) {
+        _fbackup[i, k] = f[i, k];
+        _Cbackup[i, k] = C[i, k];
       }
     }
   }
@@ -91,12 +87,10 @@ public class CC_Tile
   /// Reset all the tile values to 0.
   /// Speed and Cost fields are reset to the stored defaults.
   /// </summary>
-  public void ResetTile ()
+  public void ResetTile()
   {
-    for (int i = 0; i < dim; i++)
-    {
-      for (int k = 0; k < dim; k++)
-      {
+    for (int i = 0; i < dim; i++) {
+      for (int k = 0; k < dim; k++) {
         rho[i, k] = 0;
         g[i, k] = 0;
         vAve[i, k] = Vector2.zero;
@@ -113,25 +107,25 @@ public class CC_Tile
   // proper matrix based on the input Type, but it was hard, and I
   // wasnt seeing success. Thus, this 'brute force' approach)
   // **************************************************************
-  public void writeData_rho (int xTile, int yTile, float f)
+  public void writeData_rho(int xTile, int yTile, float f)
   {
     rho[xTile, yTile] = f;
     UPDATE_TILE = true;
   }
-  public void writeData_g (int xTile, int yTile, float f)
+  public void writeData_g(int xTile, int yTile, float f)
   {
     g[xTile, yTile] = f;
     UPDATE_TILE = true;
   }
-  public void writeData_vAve (int xTile, int yTile, Vector2 f)
+  public void writeData_vAve(int xTile, int yTile, Vector2 f)
   {
     vAve[xTile, yTile] = f;
   }
-  public void writeData_f (int xTile, int yTile, Vector4 v)
+  public void writeData_f(int xTile, int yTile, Vector4 v)
   {
     f[xTile, yTile] = v;
   }
-  public void writeData_C (int xTile, int yTile, Vector4 v)
+  public void writeData_C(int xTile, int yTile, Vector4 v)
   {
     C[xTile, yTile] = v;
   }
@@ -139,23 +133,23 @@ public class CC_Tile
   // **************************************************************
   //  		READ data
   // **************************************************************
-  public float readData_rho (int xTile, int yTile)
+  public float readData_rho(int xTile, int yTile)
   {
     return rho[xTile, yTile];
   }
-  public float readData_g (int xTile, int yTile)
+  public float readData_g(int xTile, int yTile)
   {
     return g[xTile, yTile];
   }
-  public Vector2 readData_vAve (int xTile, int yTile)
+  public Vector2 readData_vAve(int xTile, int yTile)
   {
     return vAve[xTile, yTile];
   }
-  public Vector4 readData_f (int xTile, int yTile)
+  public Vector4 readData_f(int xTile, int yTile)
   {
     return f[xTile, yTile];
   }
-  public Vector4 readData_C (int xTile, int yTile)
+  public Vector4 readData_C(int xTile, int yTile)
   {
     return C[xTile, yTile];
   }

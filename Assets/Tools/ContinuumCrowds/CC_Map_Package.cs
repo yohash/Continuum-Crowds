@@ -10,7 +10,8 @@ using System.Collections;
 public struct CC_Map_Package
 {
   public float[,] g;
-  public Vector4[,] f, C;
+  public Vector4[,] f;
+  public Vector4[,] C;
 
   public CC_Map_Package (float[,] _g, Vector4[,] _f, Vector4[,] _C)
   {

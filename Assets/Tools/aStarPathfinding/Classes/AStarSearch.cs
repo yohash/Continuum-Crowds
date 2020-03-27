@@ -55,58 +55,6 @@ public class SquareGrid : WeightedGraph<Location>
 		}
 	}
 }
-//
-//// this is custom written from redbloblgames.com
-//// this is not the most efficient implementation of a priority queue
-//// best to try and use the one in C5 generic collection library
-//// or next best thing to it
-//public class PriorityQueue<T>
-//{
-//	private List<Tuple<T, double>> elements = new List<Tuple<T, double>>();
-//
-//	public int Count
-//	{
-//		get { return elements.Count; }
-//	}
-//
-//	public void Enqueue(T item, double priority)
-//	{
-//		elements.Add(Tuple.New(item, priority));
-//	}
-//
-//	public T Dequeue()
-//	{
-//		int bestIndex = 0;
-//		for (int i = 0; i < elements.Count; i++) {
-//			if (elements[i].Second < elements[bestIndex].Second) {
-//				bestIndex = i;
-//			}
-//		}
-//		T bestItem = elements[bestIndex].First;
-//		elements.RemoveAt(bestIndex);
-//		return bestItem;
-//	}
-//}
-//// since Unity doesnt have Tuples, we have to implement
-//// our own Tuple class as well
-//public class Tuple<T1, T2>
-//{
-//	public T1 First { get; private set; }
-//	public T2 Second { get; private set; }
-//	internal Tuple(T1 first, T2 second)
-//	{
-//		First = first;
-//		Second = second;
-//	}
-//}
-//public static class Tuple
-//{
-//	public static Tuple<T1, T2> New<T1, T2>(T1 first, T2 second)
-//	{
-//		var tuple = new Tuple<T1, T2>(first, second);
-//		return tuple;
-//	}
-//}
 
 // the A* pathfinding algorithm as implemented by www.redblobgames.com
 public class AStarSearch
@@ -134,7 +82,12 @@ public class AStarSearch
 
 		while (frontier.Count > 0) {
 			var current = frontier.Dequeue();
-			if (current.Equals(goal)) { break; }
+			// termination condition
+			if (current.Equals(goal)) {
+				break;
+			}
+
+
 			foreach (var next in graph.Neighbors(current)) {
 				float newCost = costSoFar[current] + graph.Cost(current, next);
 				if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next]) {
@@ -147,3 +100,129 @@ public class AStarSearch
 		}
 	}
 }
+
+/// GRID STAR from Terrabomb
+
+//////using System;
+//////using System.Linq;
+//////using System.Collections.Generic;
+//////using UnityEngine;
+//////using Priority_Queue;
+
+//////[System.Serializable]
+//////public class GridStarRequest
+//////{
+//////  public Vector3 StartPoint;
+//////  public Vector3 EndPoint;
+//////  public Action<List<Vector2>> OnComplete;
+
+//////  public GridStarRequest(
+//////      Vector3 Start,
+//////      Vector3 End,
+//////      Action<List<Vector2>> OnCompleteCallback
+//////  )
+//////  {
+//////    StartPoint = Start;
+//////    EndPoint = End;
+//////    OnComplete = OnCompleteCallback;
+//////  }
+
+//////  public override string ToString()
+//////  {
+//////    return $"GridStarRequest  :\n" +
+//////      $"\t Start: {StartPoint}\n" +
+//////      $"\t End: {EndPoint}\n" +
+//////      $"\t Callback: {OnComplete.Method.ToString()}";
+//////  }
+//////}
+
+//////[Serializable]
+//////public class GridStar
+//////{
+//////  public List<Vector2> Path;
+
+//////  private FastPriorityQueue<PowerGridNode> frontier;
+
+//////  private Dictionary<PowerGridNode, PowerGridNode> cameFrom;
+//////  private Dictionary<PowerGridNode, float> costSoFar;
+
+//////  public GridStar()
+//////  {
+//////    // init the queues and dictionary
+//////    frontier = new FastPriorityQueue<PowerGridNode>(1);
+
+//////    Path = new List<Vector2>();
+
+//////    cameFrom = new Dictionary<PowerGridNode, PowerGridNode>();
+//////    costSoFar = new Dictionary<PowerGridNode, float>();
+//////  }
+
+//////  public void ComputePath(GridStarRequest request, List<PowerGridNode> grid)
+//////  {
+//////    // init the queues and dictionary
+//////    if (frontier.MaxSize != grid.Count) { frontier.Resize(grid.Count); }
+//////    frontier.Clear();
+//////    cameFrom.Clear();
+//////    costSoFar.Clear();
+
+//////    // determine start nodes
+//////    PowerGridNode startNode = grid.OrderBy(node =>
+//////        (request.StartPoint.XY() - node.Node).sqrMagnitude)
+//////        .First();
+//////    PowerGridNode endNode = grid.OrderBy(node =>
+//////        (request.EndPoint.XY() - node.Node).sqrMagnitude)
+//////        .First();
+
+//////    // initialize our tracking components and queue
+//////    frontier.Enqueue(startNode, 0);
+//////    cameFrom[startNode] = startNode;
+//////    costSoFar[startNode] = 0;
+
+//////    PowerGridNode currentNode;
+
+//////    // start Grid* (A* pathfinding for the power grid)
+//////    while (frontier.Count > 0) {
+//////      currentNode = frontier.Dequeue();
+//////      // termination condition
+//////      if (currentNode == endNode) {
+//////        break;
+//////      }
+
+//////      foreach (var prospect in currentNode.Neighbors) {
+//////        // since the graph is equaly spaced, all cost increases are 1
+//////        // (7-neighbors) is used to prefer nodes away from walls
+//////        float newCost = costSoFar[currentNode] + (7 - currentNode.Neighbors.Count);
+
+//////        if (!costSoFar.ContainsKey(prospect) || newCost < costSoFar[prospect]) {
+//////          // track the cost so far for this node
+//////          costSoFar[prospect] = newCost;
+//////          float priority = newCost + Heuristic(prospect, endNode);
+//////          // make sure frontier doesn't include this prospect
+//////          if (!frontier.Contains(prospect)) {
+//////            frontier.Enqueue(prospect, priority);
+//////          }
+//////          // store the "came from" chain into the dictionary
+//////          cameFrom[prospect] = currentNode;
+//////        }
+//////      }
+//////    }
+
+//////    // create the path array and start it with the end point
+//////    Path.Clear();
+//////    // assemble the path backwards
+//////    currentNode = endNode;
+//////    while (currentNode != startNode) {
+//////      Path.Add(currentNode.Node);
+//////      currentNode = cameFrom[currentNode];
+//////    }
+//////    Path.Add(startNode.Node);
+//////    // reverse the path so it reads forwards
+//////    Path.Reverse();
+//////    request.OnComplete(Path);
+//////  }
+
+//////  private float Heuristic(PowerGridNode A, PowerGridNode B)
+//////  {
+//////    return (A.Node - B.Node).magnitude;
+//////  }
+//////}

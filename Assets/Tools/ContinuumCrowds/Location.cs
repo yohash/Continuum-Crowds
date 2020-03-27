@@ -12,9 +12,24 @@ public struct Location : IEquatable<Location>
     this.y = y;
   }
 
+  public static bool operator ==(Location l1, Location l2)
+  {
+    return (l1.x == l2.x) && (l1.y == l2.y);
+  }
+
+  public static bool operator !=(Location l1, Location l2)
+  {
+    return !(l1 == l2);
+  }
+
   public override bool Equals(object obj)
   {
     return Equals((Location)obj);
+  }
+
+  public static bool Equals(FastLocation l1, FastLocation l2)
+  {
+    return l1.Equals(l2);
   }
 
   public bool Equals(Location l2)
@@ -28,15 +43,5 @@ public struct Location : IEquatable<Location>
     hash = (31 * hash) + x;
     hash = (31 * hash) + y;
     return hash;
-  }
-
-  public static bool operator ==(Location l1, Location l2)
-  {
-    return ((l1.x == l2.x) && (l1.y == l2.y));
-  }
-
-  public static bool operator !=(Location l1, Location l2)
-  {
-    return (!(l1 == l2));
   }
 }

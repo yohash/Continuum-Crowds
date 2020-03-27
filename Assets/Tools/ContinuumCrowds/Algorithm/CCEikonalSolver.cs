@@ -8,32 +8,32 @@ using Priority_Queue;
 using System.Threading;
 using System.Threading.Tasks;
 
-// ******************************************************************************************
+/// ******************************************************************************************
 // 							THE EIKONAL SOLVER
-// ******************************************************************************************
+/// ******************************************************************************************
 // 3 labels for each node (Location): far, considered, accepted
 //	labels are tracked by:  far - has huge value (Mathf.Infinite)
 //							considered - placed in a priorityQueue
 //							accepted - stored in List<Location>
-// The Algorithm:
+/// The Algorithm:
 //  1) set all nodes (xi=Ui=inf) to far, set nodes in goal (xi=Ui=0) to accepted
 //  2) for each accepted node, use eikonal update formula to find new U', and
 //		if U'<Ui, then Ui=U', and xi -> considered
 // 	[proposed change to 2)]
 //	2) instead of marking each node accepted, mark them considered, and begin the loop
 //		They will naturally become accepted, as their value of 0 gives them highest priority.
-//	The Loop:
+///	The Loop:
 //  -->	3) let xt be the considered node with smallest Ui
 //	|  	4) for each neighbor (xi) of xt that is NOT accepted, calculate U'
 //  |  	5) if U'<Ui, then Ui=U' and label xi as considered
 //  ---	6) if there is a considered node, repeat from step 3
 //
-// To implement: considered nodes will be a priority queue, and the highest priority
+/// To implement:
+//        considered nodes will be a priority queue, and the highest priority
 //				(lowest Ui in considered nodes)	will be pulled in step (3) each iteration
 
 public class CCEikonalSolver
 {
-
   // Continuum Crowd fields (we're solving for these)
   public float[,] Phi;        // potential field
   public Vector2[,] dPhi;       // potential field gradient
@@ -44,18 +44,19 @@ public class CCEikonalSolver
   public Vector4[,] C;        // Cost field
   public float[,] g;          // absolute discomfort
 
-  // public lists for the Eikonal solver
-  bool[,] accepted, goal;
-  FastPriorityQueue<FastLocation> considered;
+  // local cached vars
+  private bool[,] accepted, goal;
+  private FastPriorityQueue<FastLocation> considered;
   // cache an oft-used variable
-  FastLocation neighbor;
+  private FastLocation neighbor;
   // for thread operations
-  bool isDone = false;
-
-  int N, M;     // store the dimensions for easy iteration
+  private bool isDone = false;
+  // store the dimensions for easy iteration
+  private int N;
+  private int M;
 
   // this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
-  Vector2[] DIR_ENWS = new Vector2[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
+  private Vector2[] DIR_ENWS = new Vector2[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
 
   // *************************************************************************
   //    CONSTRUCTOR AND INITIATION
@@ -406,30 +407,30 @@ public class CCEikonalSolver
     accepted[l.x, l.y] = true;
   }
 
-  bool isLocationAccepted(FastLocation l)
+  private bool isLocationAccepted(FastLocation l)
   {
     return accepted[l.x, l.y];
   }
 
-  void markGoal(FastLocation l)
+  private void markGoal(FastLocation l)
   {
     goal[l.x, l.y] = true;
   }
 
-  bool isLocationInGoal(FastLocation l)
+  private bool isLocationInGoal(FastLocation l)
   {
     return goal[l.x, l.y];
   }
 
-  bool isPointValid(FastLocation l)
+  private bool isPointValid(FastLocation l)
   {
     return isPointValid(l.x, l.y);
   }
-  bool isPointValid(Vector2 v)
+  private bool isPointValid(Vector2 v)
   {
     return isPointValid((int)v.x, (int)v.y);
   }
-  bool isPointValid(int x, int y)
+  private bool isPointValid(int x, int y)
   {
     // check to make sure the point is not outside the grid
     if ((x < 0) || (y < 0) || (x > N - 1) || (y > M - 1)) {

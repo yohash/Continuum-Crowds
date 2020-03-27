@@ -25,7 +25,7 @@ public class CCDynamicGlobalFields
   private float[,] mat = new float[2, 2];
 
   // this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
-  Vector2[] DIR_ENWS = new Vector2[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
+  private Vector2[] DIR_ENWS = new Vector2[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
 
   // *************************************************************************
   //    THREAD OPERATIONS
