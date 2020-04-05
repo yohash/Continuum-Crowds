@@ -34,7 +34,8 @@ public class CCDynamicGlobalFields
   {
     isDone = false;
 
-    var task = Task.Run(() => {
+    var task = Task.Run(() =>
+    {
       // _updateAll_CCTiles ();
     });
     task.Wait();
@@ -44,14 +45,16 @@ public class CCDynamicGlobalFields
 
   public IEnumerator WaitFor()
   {
-    while (!tUpdate()) {
+    while (!tUpdate())
+    {
       yield return null;
     }
   }
 
   private bool tUpdate()
   {
-    if (isDone) {
+    if (isDone)
+    {
       return true;
     }
     return false;
@@ -70,7 +73,8 @@ public class CCDynamicGlobalFields
 
   public void UpdateCCUnits()
   {
-    for (int i = 0; i < _units.Count; i++) {
+    for (int i = 0; i < _units.Count; i++)
+    {
       _units[i].UpdatePhysics();
     }
   }
@@ -95,18 +99,23 @@ public class CCDynamicGlobalFields
 
     // make sure the map dimensions are divisible by tileSize
     if ((((float)_mapX) % ((float)tileSize) != 0) ||
-      (((float)_mapY) % ((float)tileSize) != 0)) {
+      (((float)_mapY) % ((float)tileSize) != 0))
+    {
       // this should NEVER HAPPEN, so send an error if it does
       return false;
-    } else {
+    }
+    else
+    {
       Location loc;
 
       int numTilesX = _mapX / tileSize;
       int numTilesY = _mapY / tileSize;
 
       // instantiate all our tiles
-      for (int x = 0; x < numTilesX; x++) {
-        for (int y = 0; y < numTilesY; y++) {
+      for (int x = 0; x < numTilesX; x++)
+      {
+        for (int y = 0; y < numTilesY; y++)
+        {
           // create a new tile based on this location
           loc = new Location(x, y);
           CC_Tile cct = new CC_Tile(tileSize, loc);
@@ -115,7 +124,8 @@ public class CCDynamicGlobalFields
         }
       }
       // initialize some tile values
-      foreach (CC_Tile cct in _tiles.Values) {
+      foreach (CC_Tile cct in _tiles.Values)
+      {
         // initialize the cost and speed field
         computeSpeedField(cct);
         computeCostField(cct);
@@ -130,8 +140,10 @@ public class CCDynamicGlobalFields
   public List<CC_Tile> GetActiveTiles()
   {
     List<CC_Tile> activeTiles = new List<CC_Tile>();
-    foreach (CC_Tile cct in _tiles.Values) {
-      if (cct.UPDATE_TILE) {
+    foreach (CC_Tile cct in _tiles.Values)
+    {
+      if (cct.UPDATE_TILE)
+      {
         activeTiles.Add(cct);
       }
     }
@@ -141,14 +153,17 @@ public class CCDynamicGlobalFields
   public void UpdateTiles()
   {
     // first, clear the tiles
-    foreach (CC_Tile cct in _tiles.Values) {
-      if (cct.UPDATE_TILE) {
+    foreach (CC_Tile cct in _tiles.Values)
+    {
+      if (cct.UPDATE_TILE)
+      {
         cct.ResetTile();
       }
     }
 
     // update the unit specific elements (rho, vAve, g_P)
-    for (int i = 0; i < _units.Count; i++) {
+    for (int i = 0; i < _units.Count; i++)
+    {
       // (1) density field and velocity
       computeDensityField(_units[i]);
       // ******************************************************************************************
@@ -166,8 +181,10 @@ public class CCDynamicGlobalFields
 
     // these next values are derived from rho, vAve, and g_P, so we simply iterate
     // through the tiles and ONLY update the ones that have had their values changed
-    foreach (CC_Tile cct in _tiles.Values) {
-      if (cct.UPDATE_TILE) {
+    foreach (CC_Tile cct in _tiles.Values)
+    {
+      if (cct.UPDATE_TILE)
+      {
         // (3) 	now that the velocity field and density fields are implemented,
         // 		divide the velocity by density to get average velocity field
         computeAverageVelocityField(cct);
@@ -219,8 +236,10 @@ public class CCDynamicGlobalFields
     ft = new Vector4[xdim, ydim];
     Ct = new Vector4[xdim, ydim];
 
-    for (int xI = 0; xI < xdim; xI++) {
-      for (int yI = 0; yI < ydim; yI++) {
+    for (int xI = 0; xI < xdim; xI++)
+    {
+      for (int yI = 0; yI < ydim; yI++)
+      {
         gt[xI, yI] = theMapData.getDiscomfortMap(xs + xI, ys + yI) + readDataFromPoint_g(xs + xI, ys + yI);
         ft[xI, yI] = readDataFromPoint_f(xs + xI, ys + yI);
         Ct[xI, yI] = readDataFromPoint_C(xs + xI, ys + yI);
@@ -244,26 +263,34 @@ public class CCDynamicGlobalFields
     int xInd, yInd;
 
     // cache the x - offset
-    if (cc_u.UnitX % 2 == 0) {
+    if (cc_u.UnitX % 2 == 0)
+    {
       // if even, use Math.Round
       xOff = (int)Math.Round((double)gridAnchor.x);
-    } else {
+    }
+    else
+    {
       // is odd, use Math.Floor
       xOff = (int)Math.Floor((double)gridAnchor.x);
     }
 
     // cache y - offset
-    if (cc_u.UnitY % 2 == 0) {
+    if (cc_u.UnitY % 2 == 0)
+    {
       // if even, use Math.Round
       yOff = (int)Math.Round((double)gridAnchor.y);
-    } else {
+    }
+    else
+    {
       // is odd, use Math.Floor
       yOff = (int)Math.Floor((double)gridAnchor.y);
     }
 
     // scan the grid, stamping the footprint onto the tile
-    for (int x = 0; x < cc_u_footprint.GetLength(0); x++) {
-      for (int y = 0; y < cc_u_footprint.GetLength(1); y++) {
+    for (int x = 0; x < cc_u_footprint.GetLength(0); x++)
+    {
+      for (int y = 0; y < cc_u_footprint.GetLength(1); y++)
+      {
         // get the rho value
         float rho = cc_u_footprint[x, y];
         float rt = 0f;
@@ -271,7 +298,8 @@ public class CCDynamicGlobalFields
         xInd = x + xOff;
         yInd = y + yOff;
 
-        if (isPointValid(xInd, yInd)) {
+        if (isPointValid(xInd, yInd))
+        {
           rt = readDataFromPoint_rho(xInd, yInd);
           writeDataToPoint_rho(xInd, yInd, rho + rt);
         }
@@ -284,7 +312,8 @@ public class CCDynamicGlobalFields
   private void computeVelocityFieldPoint(int x, int y, Vector2 v, float rho)
   {
     Vector2 vAve = readDataFromPoint_vAve(x, y);
-    if (isPointValid(x, y)) {
+    if (isPointValid(x, y))
+    {
       vAve += v * rho;
       writeDataToPoint_vAve(x, y, vAve);
     }
@@ -339,12 +368,15 @@ public class CCDynamicGlobalFields
   // doesnt 'bleed' into or out from nearby tiles
   private void computeAverageVelocityField(CC_Tile cct)
   {
-    for (int n = 0; n < tileSize; n++) {
-      for (int m = 0; m < tileSize; m++) {
+    for (int n = 0; n < tileSize; n++)
+    {
+      for (int m = 0; m < tileSize; m++)
+      {
         Vector2 v = cct.vAve[n, m];
         float r = cct.rho[n, m];
 
-        if (r != 0) {
+        if (r != 0)
+        {
           v /= r;
         }
         cct.vAve[n, m] = v;
@@ -354,9 +386,12 @@ public class CCDynamicGlobalFields
 
   private void computeSpeedField(CC_Tile cct)
   {
-    for (int n = 0; n < tileSize; n++) {
-      for (int m = 0; m < tileSize; m++) {
-        for (int d = 0; d < DIR_ENWS.Length; d++) {
+    for (int n = 0; n < tileSize; n++)
+    {
+      for (int m = 0; m < tileSize; m++)
+      {
+        for (int d = 0; d < DIR_ENWS.Length; d++)
+        {
           cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, DIR_ENWS[d]);
         }
       }
@@ -376,26 +411,35 @@ public class CCDynamicGlobalFields
     float ff = 0, ft = 0, fv = 0;
     float r;
     // test to see if the point we're looking INTO is in another tile, and if so, pull it
-    if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1)) {
+    if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1))
+    {
       // if we're looking off the map, dont store this value
-      if (!isPointValid(xGlobalInto, yGlobalInto)) {
+      if (!isPointValid(xGlobalInto, yGlobalInto))
+      {
         return CCvals.f_speedMin;
       }
       r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
-    } else {
+    }
+    else
+    {
       r = cct.rho[xLocalInto, yLocalInto];
     }
 
     // test the density INTO WHICH we move:
-    if (r < CCvals.f_rhoMin) {
+    if (r < CCvals.f_rhoMin)
+    {
       // rho < rho_min calc
       ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
       ff = ft;
-    } else if (r > CCvals.f_rhoMax) {
+    }
+    else if (r > CCvals.f_rhoMax)
+    {
       // rho > rho_max calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
       ff = fv;
-    } else {
+    }
+    else
+    {
       // rho in-between calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
       ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
@@ -429,9 +473,12 @@ public class CCDynamicGlobalFields
 
   private void computeCostField(CC_Tile cct)
   {
-    for (int n = 0; n < tileSize; n++) {
-      for (int m = 0; m < tileSize; m++) {
-        for (int d = 0; d < DIR_ENWS.Length; d++) {
+    for (int n = 0; n < tileSize; n++)
+    {
+      for (int m = 0; m < tileSize; m++)
+      {
+        for (int d = 0; d < DIR_ENWS.Length; d++)
+        {
           cct.C[n, m][d] = computeCostFieldValue(n, m, d, DIR_ENWS[d], cct);
         }
       }
@@ -447,9 +494,12 @@ public class CCDynamicGlobalFields
     int yGlobalInto = cct.myLoc.y * tileSize + yLocalInto;
 
     // if we're looking in an invalid direction, dont store this value
-    if (cct.f[tileX, tileY][d] == 0) {
+    if (cct.f[tileX, tileY][d] == 0)
+    {
       return Mathf.Infinity;
-    } else if (!isPointValid(xGlobalInto, yGlobalInto)) {
+    }
+    else if (!isPointValid(xGlobalInto, yGlobalInto))
+    {
       return Mathf.Infinity;
     }
 
@@ -457,10 +507,13 @@ public class CCDynamicGlobalFields
     float g = theMapData.getDiscomfortMap(xGlobalInto, yGlobalInto);
     float r;
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
-    if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1)) {
+    if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1))
+    {
       g += readDataFromPoint_g(xGlobalInto, yGlobalInto);
       r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
-    } else {
+    }
+    else
+    {
       g += cct.g[xLocalInto, yLocalInto];
       r = cct.rho[xLocalInto, yLocalInto];
     }
@@ -483,12 +536,14 @@ public class CCDynamicGlobalFields
   public bool isPointValid(int x, int y)
   {
     // check to make sure the point is not outside the grid
-    if ((x < 0) || (y < 0) || (x > _mapX - 1) || (y > _mapY - 1)) {
+    if ((x < 0) || (y < 0) || (x > _mapX - 1) || (y > _mapY - 1))
+    {
       return false;
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
     // check to make sure the point is not in a place dis-allowed by terrain (slope)
-    if (theMapData.getDiscomfortMap(x, y) == 1) {
+    if (theMapData.getDiscomfortMap(x, y) == 1)
+    {
       return false;
     }
     return true;
@@ -499,9 +554,12 @@ public class CCDynamicGlobalFields
   // ******************************************************************************************
   private CC_Tile getLocalTile(Location l)
   {
-    if (_tiles.ContainsKey(l)) {
+    if (_tiles.ContainsKey(l))
+    {
       return _tiles[l];
-    } else {
+    }
+    else
+    {
       return (new CC_Tile(0, l));
     }
   }
