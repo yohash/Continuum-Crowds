@@ -68,7 +68,7 @@ public class CCDynamicGlobalFields
     _tiles = new Dictionary<Location, CC_Tile>(); // (new LocationComparator());
     _units = new List<CC_Unit>();
 
-    theMapData = new Map_Data_Package();
+    //theMapData = new Map_Data_Package();
   }
 
   public void UpdateCCUnits()
@@ -84,12 +84,12 @@ public class CCDynamicGlobalFields
     tileSize = s;
   }
 
-  public void SetMapData(Map_Data_Package data)
-  {
-    theMapData = data;
-    _mapX = data.getMapX();
-    _mapY = data.getMapY();
-  }
+  //public void SetMapData(Map_Data_Package data)
+  //{
+  //  theMapData = data;
+  //  _mapX = data.getMapX();
+  //  _mapY = data.getMapY();
+  //}
 
   public bool InitiateTiles()
   {
@@ -240,7 +240,7 @@ public class CCDynamicGlobalFields
     {
       for (int yI = 0; yI < ydim; yI++)
       {
-        gt[xI, yI] = theMapData.getDiscomfortMap(xs + xI, ys + yI) + readDataFromPoint_g(xs + xI, ys + yI);
+        gt[xI, yI] = /*theMapData.getDiscomfortMap(xs + xI, ys + yI) +*/ readDataFromPoint_g(xs + xI, ys + yI);
         ft[xI, yI] = readDataFromPoint_f(xs + xI, ys + yI);
         Ct[xI, yI] = readDataFromPoint_C(xs + xI, ys + yI);
       }
@@ -429,7 +429,7 @@ public class CCDynamicGlobalFields
     if (r < CCvals.f_rhoMin)
     {
       // rho < rho_min calc
-      ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
+      //ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
       ff = ft;
     }
     else if (r > CCvals.f_rhoMax)
@@ -442,7 +442,7 @@ public class CCDynamicGlobalFields
     {
       // rho in-between calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
-      ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
+      //ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
       ff = ft + (r - CCvals.f_rhoMin) / (CCvals.f_rhoMax - CCvals.f_rhoMin) * (fv - ft);
     }
     // ff = Mathf.Clamp (ff, CCvals.f_speedMin, CCvals.f_speedMax);
@@ -504,7 +504,7 @@ public class CCDynamicGlobalFields
     }
 
     // initialize g as the map discomfort data value
-    float g = theMapData.getDiscomfortMap(xGlobalInto, yGlobalInto);
+    float g = 0; // = theMapData.getDiscomfortMap(xGlobalInto, yGlobalInto);
     float r;
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
     if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1))
@@ -542,10 +542,10 @@ public class CCDynamicGlobalFields
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
     // check to make sure the point is not in a place dis-allowed by terrain (slope)
-    if (theMapData.getDiscomfortMap(x, y) == 1)
-    {
-      return false;
-    }
+    //if (theMapData.getDiscomfortMap(x, y) == 1)
+    //{
+    //  return false;
+    //}
     return true;
   }
 
