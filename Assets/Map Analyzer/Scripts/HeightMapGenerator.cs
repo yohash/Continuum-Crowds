@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 public class HeightMapGenerator : MonoBehaviour
 {
@@ -16,7 +15,9 @@ public class HeightMapGenerator : MonoBehaviour
 
 	[Header("Texture Map")]
 	public Texture2D HeightMap;
+	public Texture2D AbsGradientMap;
 	public Texture2D GradientMap;
+	public Texture2D DiscomfortMap;
 
 	// private local vars
 	private float[,] h;
@@ -30,24 +31,12 @@ public class HeightMapGenerator : MonoBehaviour
 	private Vector2[,] dh;
 
 	// ***************************************************************************
-	//  PUBLIC METHODS
-	// ***************************************************************************
-	public Texture2D MapToTexture()
-	{
-		float[,] tex = normalizeMap(h);
-		return TextureGenerator.TextureFromMap(tex);
-	}
-
-	public Vector3[] GetHeightAndNormalDataForPoint(Location l)
-	{
-		return getHeightAndNormalDataForPoint(l.x, l.y);
-	}
-
-
-	// ***************************************************************************
 	//  HEIGHT MAP GENERATION
 	// ***************************************************************************
-	public float[,] GenerateHeightMap()
+	/// <summary>
+	/// Generate the Height Map based on the provided Map Size
+	/// </summary>
+	public void GenerateHeightMap()
 	{
 		int xSteps = (int)(MapSize.x / StepSize);
 		int zSteps = (int)(MapSize.y / StepSize);
@@ -62,10 +51,14 @@ public class HeightMapGenerator : MonoBehaviour
 				h[i, k] = getHeightAndNormalDataForPoint(StepSize * i + xOffset, StepSize * k + zOffset)[0].y;
 			}
 		}
-		return h;
+
+		HeightMap = TextureGenerator.TextureFromMatrix(h);
 	}
 
-	public float[,] GenerateGradientMaps()
+	/// <summary>
+	/// Generate the gradient maps from the previously generated height maps
+	/// </summary>
+	public void GenerateGradientMaps()
 	{
 		int xSteps = (int)(MapSize.x / StepSize);
 		int zSteps = (int)(MapSize.y / StepSize);
@@ -77,6 +70,7 @@ public class HeightMapGenerator : MonoBehaviour
 
 		for (int i = 0; i < xSteps; i++) {
 			for (int k = 0; k < zSteps; k++) {
+
 				if ((i != 0) && (i != xSteps - 1) && (k != 0) && (k != zSteps - 1)) {
 					// generic spot
 					writeGradientMapData(i, k, i - 1, i + 1, k - 1, k + 1);
@@ -102,14 +96,20 @@ public class HeightMapGenerator : MonoBehaviour
 					// left edge
 					writeGradientMapData(i, k, i - 1, i + 1, k, k + 1);
 				} else if (k == zSteps - 1) {
-				} // right edge
-				writeGradientMapData(i, k, i - 1, i + 1, k - 1, k);
+					// right edge
+					writeGradientMapData(i, k, i - 1, i + 1, k - 1, k);
+				}
 			}
 		}
-		return absGradient;
+
+		AbsGradientMap = TextureGenerator.TextureFromMatrix(absGradient);
+		GradientMap = TextureGenerator.TextureFromMatrix(dh);
 	}
 
-	private void GenerateDiscomfortMap()
+	/// <summary>
+	/// Generate the discomfort maps based on the gradients computed previously
+	/// </summary>
+	public void GenerateDiscomfortMap()
 	{
 		int xSteps = (int)(MapSize.x / StepSize);
 		int zSteps = (int)(MapSize.y / StepSize);
@@ -123,6 +123,8 @@ public class HeightMapGenerator : MonoBehaviour
 				}
 			}
 		}
+
+		DiscomfortMap = TextureGenerator.TextureFromMatrix(g);
 	}
 
 	// ***************************************************************************
@@ -144,33 +146,15 @@ public class HeightMapGenerator : MonoBehaviour
 	/// </summary>
 	private Vector3[] getHeightAndNormalDataForPoint(float x, float z)
 	{
-		Vector3 rayPoint = new Vector3(x, TerrainHeightMax * 1.1f, z);
-		Vector3 rayDir = new Vector3(0, -TerrainHeightMin, 0);
+		Vector3 rayPoint = new Vector3(x, TerrainHeightMax, z);
+		Vector3 rayDir = new Vector3(0, -1, 0);
 
 		Ray ray = new Ray(rayPoint, rayDir);
 
 		RaycastHit hit;
-		if (Physics.Raycast(ray, out hit, TerrainHeightMin * 1.5f)) {
+		if (Physics.Raycast(ray, out hit, (TerrainHeightMax - TerrainHeightMin) * 1.5f)) {
 			return new Vector3[2] { hit.point, hit.normal };
 		}
 		return new Vector3[2] { Vector3.zero, Vector3.zero };
-	}
-
-	private float[,] normalizeMap(float[,] map)
-	{
-		float maxHeight = 0f;
-		for (int i = 0; i < map.GetLength(0); i++) {
-			for (int k = 0; k < map.GetLength(1); k++) {
-				if (map[i, k] > maxHeight) { maxHeight = h[i, k]; }
-			}
-		}
-		if (maxHeight > 0) {
-			for (int i = 0; i < map.GetLength(0); i++) {
-				for (int k = 0; k < map.GetLength(1); k++) {
-					map[i, k] /= maxHeight;
-				}
-			}
-		}
-		return map;
 	}
 }
