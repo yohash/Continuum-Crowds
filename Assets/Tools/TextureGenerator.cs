@@ -55,13 +55,13 @@ public static class TextureGenerator
 		float max = 0f;
 		for (int i = 0; i < matrix.GetLength(0); i++) {
 			for (int k = 0; k < matrix.GetLength(1); k++) {
-				if (matrix[i, k] > max) { max = matrix[i, k]; }
+				if (Mathf.Abs(matrix[i, k]) > max) { max = Mathf.Abs(matrix[i, k]); }
 			}
 		}
 		if (max > 0) {
 			for (int i = 0; i < matrix.GetLength(0); i++) {
 				for (int k = 0; k < matrix.GetLength(1); k++) {
-					matrix[i, k] /= max;
+					matrix[i, k] = Mathf.Abs(matrix[i, k]) / max;
 				}
 			}
 		}
@@ -74,15 +74,15 @@ public static class TextureGenerator
 		float yMax = 0f;
 		for (int i = 0; i < matrix.GetLength(0); i++) {
 			for (int k = 0; k < matrix.GetLength(1); k++) {
-				if (matrix[i, k].x > xMax) { xMax = matrix[i, k].x; }
-				if (matrix[i, k].y > yMax) { yMax = matrix[i, k].y; }
+				if (Mathf.Abs(matrix[i, k].x) > xMax) { xMax = Mathf.Abs(matrix[i, k].x); }
+				if (Mathf.Abs(matrix[i, k].y) > yMax) { yMax = Mathf.Abs(matrix[i, k].y); }
 			}
 		}
 		if (xMax > 0) {
 			for (int i = 0; i < matrix.GetLength(0); i++) {
 				for (int k = 0; k < matrix.GetLength(1); k++) {
-					matrix[i, k].x /= xMax;
-					matrix[i, k].y /= yMax;
+					matrix[i, k].x = Mathf.Abs(matrix[i, k].x) / xMax;
+					matrix[i, k].y = Mathf.Abs(matrix[i, k].y) / yMax;
 				}
 			}
 		}

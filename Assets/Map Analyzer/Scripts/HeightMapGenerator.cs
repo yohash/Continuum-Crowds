@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Threading.Tasks;
+using UnityEngine;
 
 public class HeightMapGenerator : MonoBehaviour
 {
 	private const float TEMP_RHO_MAX = 0.6f;
+
+	private const string ROOT_PATH = "/_Data/";
 
 	[Header("Assign these variables")]
 	public float TerrainHeightMax;
@@ -10,6 +13,8 @@ public class HeightMapGenerator : MonoBehaviour
 
 	public Vector2 MapSize;
 	public Vector2 Center;
+
+	public string Filename;
 
 	public float StepSize = 1;
 
@@ -127,6 +132,18 @@ public class HeightMapGenerator : MonoBehaviour
 		DiscomfortMap = TextureGenerator.TextureFromMatrix(g);
 	}
 
+	public void SaveTextures()
+	{
+		// Application.persistentDataPath = "C:/Users/<name>/AppData/LocalLow/<company>/<project>"
+		// Application.dataPath = "<Project Path>/Assets"
+		string path = Application.dataPath + ROOT_PATH;
+
+		FileUtility.SaveTextureAsPNG(path, Filename + "_H", HeightMap);
+		FileUtility.SaveTextureAsPNG(path, Filename + "_abs_dH", AbsGradientMap);
+		FileUtility.SaveTextureAsPNG(path, Filename + "_dH", GradientMap);
+		FileUtility.SaveTextureAsPNG(path, Filename + "_g", DiscomfortMap);
+	}
+
 	// ***************************************************************************
 	//  PRIVATE METHODS
 	// ***************************************************************************
@@ -138,7 +155,7 @@ public class HeightMapGenerator : MonoBehaviour
 		dhdx[x, y] = (h[xMax, y] - h[xMin, y]) / (xMax - xMin);
 		dhdy[x, y] = (h[x, yMax] - h[x, yMin]) / (yMax - yMin);
 		dh[x, y] = new Vector2(dhdx[x, y], dhdy[x, y]);
-		absGradient[x, y] = Mathf.Max(dhdx[x, y], dhdy[x, y]);
+		absGradient[x, y] = Mathf.Max(Mathf.Abs(dhdx[x, y]), Mathf.Abs(dhdy[x, y]));
 	}
 
 	/// <summary>
