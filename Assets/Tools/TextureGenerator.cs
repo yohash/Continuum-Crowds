@@ -78,7 +78,7 @@ public static class TextureGenerator
 				if (Mathf.Abs(matrix[i, k].y) > yMax) { yMax = Mathf.Abs(matrix[i, k].y); }
 			}
 		}
-		if (xMax > 0) {
+		if (xMax > 0 && yMax > 0) {
 			for (int i = 0; i < matrix.GetLength(0); i++) {
 				for (int k = 0; k < matrix.GetLength(1); k++) {
 					matrix[i, k].x = Mathf.Abs(matrix[i, k].x) / xMax;

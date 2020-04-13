@@ -1,11 +1,20 @@
-﻿using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class HeightMapGenerator : MonoBehaviour
 {
 	private const float TEMP_RHO_MAX = 0.6f;
 
-	private const string ROOT_PATH = "/_Data/";
+	private static string SAVE_PATH {
+		get {
+			// Application.persistentDataPath = "C:/Users/<name>/AppData/LocalLow/<company>/<project>"
+			//return Application.persistentDataPath;
+			// Application.dataPath = "<Project Path>/Assets"
+			return Application.dataPath;
+		}
+	}
+	private const string DATA_FOLDER = "/_Data/";
+	private const string IMAGE_PATH = "Image Maps/";
+	private const string CSV_PATH = "CSV/";
 
 	[Header("Assign these variables")]
 	public float TerrainHeightMax;
@@ -132,16 +141,23 @@ public class HeightMapGenerator : MonoBehaviour
 		DiscomfortMap = TextureGenerator.TextureFromMatrix(g);
 	}
 
-	public void SaveTextures()
+	public void SaveTextureImages()
 	{
-		// Application.persistentDataPath = "C:/Users/<name>/AppData/LocalLow/<company>/<project>"
-		// Application.dataPath = "<Project Path>/Assets"
-		string path = Application.dataPath + ROOT_PATH;
+		string path = SAVE_PATH + DATA_FOLDER + IMAGE_PATH;
 
 		FileUtility.SaveTextureAsPNG(path, Filename + "_H", HeightMap);
 		FileUtility.SaveTextureAsPNG(path, Filename + "_abs_dH", AbsGradientMap);
 		FileUtility.SaveTextureAsPNG(path, Filename + "_dH", GradientMap);
 		FileUtility.SaveTextureAsPNG(path, Filename + "_g", DiscomfortMap);
+	}
+
+	public void SaveMapsAsCsv()
+	{
+		string path = SAVE_PATH + DATA_FOLDER + CSV_PATH;
+
+		FileUtility.SaveMatrixAsCsv(path, Filename + "_H", h);
+		FileUtility.SaveMatrixAsCsv(path, Filename + "_dH", dh);
+		FileUtility.SaveMatrixAsCsv(path, Filename + "_g", g);
 	}
 
 	// ***************************************************************************
