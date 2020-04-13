@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEditor;
+using UnityEngine;
 
 public class HeightMapGenerator : MonoBehaviour
 {
@@ -132,7 +134,7 @@ public class HeightMapGenerator : MonoBehaviour
 
 		for (int i = 0; i < xSteps; i++) {
 			for (int k = 0; k < zSteps; k++) {
-				if (Mathf.Max(Mathf.Abs(dhdx[i, k]), Mathf.Abs(dhdy[i, k])) > TEMP_RHO_MAX) {
+				if (absGradient[i, k] > TEMP_RHO_MAX) {
 					g[i, k] = 1f;
 				}
 			}
@@ -156,8 +158,26 @@ public class HeightMapGenerator : MonoBehaviour
 		string path = SAVE_PATH + DATA_FOLDER + CSV_PATH;
 
 		FileUtility.SaveMatrixAsCsv(path, Filename + "_H", h);
-		FileUtility.SaveMatrixAsCsv(path, Filename + "_dH", dh);
+		FileUtility.SaveMatrixAsCsv(path, Filename + "_dHdx", dhdx);
+		FileUtility.SaveMatrixAsCsv(path, Filename + "_dHdy", dhdy);
 		FileUtility.SaveMatrixAsCsv(path, Filename + "_g", g);
+	}
+
+	public void LoadCsvFiles()
+	{
+		string path = SAVE_PATH + DATA_FOLDER + CSV_PATH;
+
+		h = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_H.txt");
+		g = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_g.txt");
+		dhdx = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_dHdx.txt");
+		dhdy = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_dHdy.txt");
+		// manually populate matrix dh
+		dh = new Vector2[dhdx.GetLength(0), dhdx.GetLength(1)];
+		for (int i = 0; i < dhdx.GetLength(0); i++) {
+			for (int k = 0; k < dhdx.GetLength(1); k++) {
+				dh[i, k] = new Vector2(dhdx[i, k], dhdy[i, k]);
+			}
+		}
 	}
 
 	// ***************************************************************************
