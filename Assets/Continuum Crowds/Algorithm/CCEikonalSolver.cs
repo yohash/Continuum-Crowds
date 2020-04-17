@@ -86,64 +86,64 @@ public class CCEikonalSolver
     neighbor = new FastLocation(0, 0);
   }
 
-  public void SetFields_andGoals_andSolve(CC_Map_Package fields, List<Location> goalLocs)
-  {
-    f = fields.f;
-    C = fields.C;
-    g = fields.g;
+  //public void SetFields_andGoals_andSolve(CC_Map_Package fields, List<Location> goalLocs)
+  //{
+  //  f = fields.f;
+  //  C = fields.C;
+  //  g = fields.g;
 
-    N = f.GetLength(0);
-    M = f.GetLength(1);
+  //  N = f.GetLength(0);
+  //  M = f.GetLength(1);
 
-    if (N == 0 || M == 0) {
-      Debug.Log("Eikonal Solver initiated with 0-dimension");
-    }
+  //  if (N == 0 || M == 0) {
+  //    Debug.Log("Eikonal Solver initiated with 0-dimension");
+  //  }
 
-    Phi = new float[N, M];
-    dPhi = new Vector2[N, M];
-    velocity = new Vector2[N, M];
+  //  Phi = new float[N, M];
+  //  dPhi = new Vector2[N, M];
+  //  velocity = new Vector2[N, M];
 
-    accepted = new bool[N, M];
-    goal = new bool[N, M];
+  //  accepted = new bool[N, M];
+  //  goal = new bool[N, M];
 
-    //		considered = new FastPriorityQueue <fastLocation> (N*M);
-    considered.Clear();
-    considered.Resize(N * M);
+  //  //		considered = new FastPriorityQueue <fastLocation> (N*M);
+  //  considered.Clear();
+  //  considered.Resize(N * M);
 
-    neighbor = new FastLocation(0, 0);
+  //  neighbor = new FastLocation(0, 0);
 
-    // reset our tracking bool
-    isDone = false;
+  //  // reset our tracking bool
+  //  isDone = false;
 
-    InitiateEikonalSolver(fields, goalLocs);
-  }
+  //  InitiateEikonalSolver(fields, goalLocs);
+  //}
 
-  private void _computeContinuumCrowdsFields(CC_Map_Package fields, List<Location> goalLocs)
-  {
-    // calculate potential field (Eikonal solver)
-    computePotentialField(fields, goalLocs);
-    // calculate the gradient
-    calculatePotentialGradientAndNormalize();
-    // calculate velocity field
-    calculateVelocityField();
+  //private void _computeContinuumCrowdsFields(CC_Map_Package fields, List<Location> goalLocs)
+  //{
+  //  // calculate potential field (Eikonal solver)
+  //  computePotentialField(fields, goalLocs);
+  //  // calculate the gradient
+  //  calculatePotentialGradientAndNormalize();
+  //  // calculate velocity field
+  //  calculateVelocityField();
 
-    isDone = true;
-  }
+  //  isDone = true;
+  //}
 
-  private void computePotentialField(CC_Map_Package fields, List<Location> goalLocs)
-  {
-    EikonalSolver(fields, goalLocs);
-  }
+  //private void computePotentialField(CC_Map_Package fields, List<Location> goalLocs)
+  //{
+  //  EikonalSolver(fields, goalLocs);
+  //}
 
   // *************************************************************************
   //    THREAD OPERATIONS
   // *************************************************************************
-  public void InitiateEikonalSolver(CC_Map_Package fields, List<Location> goalLocs)
-  {
-    var task = Task.Run(() => {
-      _computeContinuumCrowdsFields(fields, goalLocs);
-    });
-  }
+  //public void InitiateEikonalSolver(CC_Map_Package fields, List<Location> goalLocs)
+  //{
+  //  var task = Task.Run(() => {
+  //    _computeContinuumCrowdsFields(fields, goalLocs);
+  //  });
+  //}
 
   public IEnumerator WaitFor()
   {
@@ -167,7 +167,7 @@ public class CCEikonalSolver
   /// </summary>
   /// <param name="fields"></param>
   /// <param name="goalLocs"></param>
-  private void EikonalSolver(CC_Map_Package fields, List<Location> goalLocs)
+  private void EikonalSolver(List<Location> goalLocs)
   {
     // start by assigning all values of potential a huge number to in-effect label them 'far'
     for (int n = 0; n < N; n++) {

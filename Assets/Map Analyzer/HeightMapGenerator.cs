@@ -1,20 +1,9 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 public class HeightMapGenerator : MonoBehaviour
 {
 	private const float TEMP_RHO_MAX = 0.6f;
-
-	private static string SAVE_PATH {
-		get {
-			// Application.persistentDataPath = "C:/Users/<name>/AppData/LocalLow/<company>/<project>"
-			//return Application.persistentDataPath;
-			// Application.dataPath = "<Project Path>/Assets"
-			return Application.dataPath;
-		}
-	}
-	private const string DATA_FOLDER = "/_Data/";
-	private const string IMAGE_PATH = "Image Maps/";
-	private const string CSV_PATH = "CSV/";
 
 	[Header("Assign these variables")]
 	public float TerrainHeightMax;
@@ -143,9 +132,12 @@ public class HeightMapGenerator : MonoBehaviour
 		DiscomfortMap = TextureGenerator.TextureFromMatrix(g);
 	}
 
+	// ***************************************************************************
+	//  FILE IO
+	// ***************************************************************************
 	public void SaveTextureImages()
 	{
-		string path = SAVE_PATH + DATA_FOLDER + Filename + "/" + IMAGE_PATH;
+		string path = $"{FileUtility.PATH}/{FileUtility.DATA_FOLDER}/{Filename}/{FileUtility.IMAGE_FOLDER}/";
 
 		FileUtility.SaveTextureAsPNG(path, Filename + "_H", HeightMap);
 		FileUtility.SaveTextureAsPNG(path, Filename + "_abs_dH", AbsGradientMap);
@@ -155,7 +147,7 @@ public class HeightMapGenerator : MonoBehaviour
 
 	public void SaveMapsAsCsv()
 	{
-		string path = SAVE_PATH + DATA_FOLDER + Filename + "/" + CSV_PATH;
+		string path = $"{FileUtility.PATH}/{FileUtility.DATA_FOLDER}/{Filename}/{FileUtility.CSV_FOLDER}/";
 
 		FileUtility.SaveMatrixAsCsv(path, Filename + "_H", h);
 		FileUtility.SaveMatrixAsCsv(path, Filename + "_dHdx", dhdx);
@@ -165,7 +157,7 @@ public class HeightMapGenerator : MonoBehaviour
 
 	public void LoadCsvFiles()
 	{
-		string path = SAVE_PATH + DATA_FOLDER + CSV_PATH;
+		string path = $"{FileUtility.PATH}/{FileUtility.DATA_FOLDER}/{Filename}/{FileUtility.CSV_FOLDER}/";
 
 		h = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_H.txt");
 		g = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_g.txt");

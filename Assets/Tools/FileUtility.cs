@@ -6,6 +6,18 @@ using System.IO;
 
 public static class FileUtility
 {
+  public static string PATH {
+    get {
+      // Application.persistentDataPath = "C:/Users/<name>/AppData/LocalLow/<company>/<project>"
+      //return Application.persistentDataPath;
+      // Application.dataPath = "<Project Path>/Assets"
+      return Application.dataPath;
+    }
+  }
+  public static string DATA_FOLDER = "_Data";
+  public static string IMAGE_FOLDER = "Image Maps";
+  public static string CSV_FOLDER = "CSV";
+
   public static async Task SaveTextureAsPNG(string path, string filename, Texture2D texture)
   {
     createDirectory(path);
