@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class HeightMapGenerator : MonoBehaviour
 {
@@ -45,6 +43,8 @@ public class HeightMapGenerator : MonoBehaviour
 	private float[,] g;
 
 	private Vector2[,] dh;
+
+	public void SetFilename(string filename) { Filename = filename; }
 
 	// ***************************************************************************
 	//  HEIGHT MAP GENERATION
@@ -145,7 +145,7 @@ public class HeightMapGenerator : MonoBehaviour
 
 	public void SaveTextureImages()
 	{
-		string path = SAVE_PATH + DATA_FOLDER + IMAGE_PATH;
+		string path = SAVE_PATH + DATA_FOLDER + Filename + "/" + IMAGE_PATH;
 
 		FileUtility.SaveTextureAsPNG(path, Filename + "_H", HeightMap);
 		FileUtility.SaveTextureAsPNG(path, Filename + "_abs_dH", AbsGradientMap);
@@ -155,7 +155,7 @@ public class HeightMapGenerator : MonoBehaviour
 
 	public void SaveMapsAsCsv()
 	{
-		string path = SAVE_PATH + DATA_FOLDER + CSV_PATH;
+		string path = SAVE_PATH + DATA_FOLDER + Filename + "/" + CSV_PATH;
 
 		FileUtility.SaveMatrixAsCsv(path, Filename + "_H", h);
 		FileUtility.SaveMatrixAsCsv(path, Filename + "_dHdx", dhdx);
