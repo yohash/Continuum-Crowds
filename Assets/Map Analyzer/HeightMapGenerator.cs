@@ -12,7 +12,7 @@ public class HeightMapGenerator : MonoBehaviour
 	public Vector2 MapSize;
 	public Vector2 Center;
 
-	public string Filename;
+	public string Filename = "Test";
 
 	public float StepSize = 1;
 
@@ -35,13 +35,14 @@ public class HeightMapGenerator : MonoBehaviour
 
 	public void SetFilename(string filename) { Filename = filename; }
 
-	// ***************************************************************************
-	//  HEIGHT MAP GENERATION
-	// ***************************************************************************
-	/// <summary>
-	/// Generate the Height Map based on the provided Map Size
-	/// </summary>
-	public void GenerateHeightMap()
+  // ***************************************************************************
+  //  HEIGHT MAP GENERATION
+  // ***************************************************************************
+  #region Height Map Generation
+  /// <summary>
+  /// Generate the Height Map based on the provided Map Size
+  /// </summary>
+  public void GenerateHeightMap()
 	{
 		int xSteps = (int)(MapSize.x / StepSize);
 		int zSteps = (int)(MapSize.y / StepSize);
@@ -131,11 +132,11 @@ public class HeightMapGenerator : MonoBehaviour
 
 		DiscomfortMap = TextureGenerator.TextureFromMatrix(g);
 	}
-
-	// ***************************************************************************
-	//  FILE IO
-	// ***************************************************************************
-	public void SaveTextureImages()
+  #endregion
+  // ***************************************************************************
+  //  FILE IO
+  // ***************************************************************************
+  public void SaveTextureImages()
 	{
 		string path = $"{FileUtility.PATH}/{FileUtility.DATA_FOLDER}/{Filename}/{FileUtility.IMAGE_FOLDER}/";
 
@@ -172,13 +173,14 @@ public class HeightMapGenerator : MonoBehaviour
 		}
 	}
 
-	// ***************************************************************************
-	//  PRIVATE METHODS
-	// ***************************************************************************
-	/// <summary>
-	/// Perform a center point gradient
-	/// </summary>
-	private void writeGradientMapData(int x, int y, int xMin, int xMax, int yMin, int yMax)
+  // ***************************************************************************
+  //  PRIVATE METHODS
+  // ***************************************************************************
+  #region Private Methods
+  /// <summary>
+  /// Perform a center point gradient
+  /// </summary>
+  private void writeGradientMapData(int x, int y, int xMin, int xMax, int yMin, int yMax)
 	{
 		dhdx[x, y] = (h[xMax, y] - h[xMin, y]) / (xMax - xMin);
 		dhdy[x, y] = (h[x, yMax] - h[x, yMin]) / (yMax - yMin);
@@ -202,4 +204,5 @@ public class HeightMapGenerator : MonoBehaviour
 		}
 		return new Vector3[2] { Vector3.zero, Vector3.zero };
 	}
+  #endregion
 }

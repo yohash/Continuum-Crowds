@@ -50,9 +50,9 @@ public static class FileUtility
       file = string.Concat(file, "\n");
     }
 
-    Debug.Log("FileUtility.SaveMatrixAsCsv - saving: " + path);
+    Debug.Log("FileUtility.SaveMatrixAsCsv - saving: " + completePath);
     saveString(completePath, file);
-    Debug.Log("\tcompleted saving: " + path);
+    Debug.Log("\tcompleted saving: " + completePath);
   }
 
   public static void SaveMatrixAsCsv(string path, string filename, Vector2[,] matrix)
@@ -73,9 +73,9 @@ public static class FileUtility
       file = string.Concat(file, "\n");
     }
 
-    Debug.Log("FileUtility.SaveMatrixAsCsv - saving: " + path);
+    Debug.Log("FileUtility.SaveMatrixAsCsv - saving: " + completePath);
     saveString(completePath, file);
-    Debug.Log("\tcompleted saving: " + path);
+    Debug.Log("\tcompleted saving: " + completePath);
   }
 
   public static float[,] LoadCsvIntoFloatMatrix(string fullPath)
