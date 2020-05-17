@@ -58,14 +58,15 @@ public static class TextureGenerator
 				if (Mathf.Abs(matrix[i, k]) > max) { max = Mathf.Abs(matrix[i, k]); }
 			}
 		}
-		if (max > 0) {
-			for (int i = 0; i < matrix.GetLength(0); i++) {
-				for (int k = 0; k < matrix.GetLength(1); k++) {
-					matrix[i, k] = Mathf.Abs(matrix[i, k]) / max;
-				}
+
+		float[,] normalized = new float[matrix.GetLength(0), matrix.GetLength(1)];
+		for (int i = 0; i < matrix.GetLength(0); i++) {
+			for (int k = 0; k < matrix.GetLength(1); k++) {
+				normalized[i, k] = Mathf.Abs(matrix[i, k]) / max;
 			}
 		}
-		return matrix;
+
+		return normalized;
 	}
 
 	private static Vector2[,] normalize(Vector2[,] matrix)
@@ -78,14 +79,15 @@ public static class TextureGenerator
 				if (Mathf.Abs(matrix[i, k].y) > yMax) { yMax = Mathf.Abs(matrix[i, k].y); }
 			}
 		}
-		if (xMax > 0 && yMax > 0) {
-			for (int i = 0; i < matrix.GetLength(0); i++) {
-				for (int k = 0; k < matrix.GetLength(1); k++) {
-					matrix[i, k].x = Mathf.Abs(matrix[i, k].x) / xMax;
-					matrix[i, k].y = Mathf.Abs(matrix[i, k].y) / yMax;
-				}
+
+		Vector2[,] normalized = new Vector2[matrix.GetLength(0), matrix.GetLength(1)];
+		for (int i = 0; i < matrix.GetLength(0); i++) {
+			for (int k = 0; k < matrix.GetLength(1); k++) {
+				normalized[i, k].x = Mathf.Abs(matrix[i, k].x) / xMax;
+				normalized[i, k].y = Mathf.Abs(matrix[i, k].y) / yMax;
 			}
 		}
-		return matrix;
+
+		return normalized;
 	}
 }
