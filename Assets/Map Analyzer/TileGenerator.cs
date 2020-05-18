@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class TileGenerator : MonoBehaviour
 {
@@ -95,6 +96,23 @@ public class TileGenerator : MonoBehaviour
 							g.SubMatrix(x * TileSize, y * TileSize, TileSize, TileSize),
 							dh.SubMatrix(x * TileSize, y * TileSize, TileSize, TileSize)
 				));
+			}
+		}
+
+		foreach (var tile in Tiles) {
+			foreach (var neighbor in Tiles) {
+				if (tile != neighbor && !tile.NeighborTiles.Contains(neighbor)) {
+					if ((tile.Corner - neighbor.Corner).magnitude == TileSize) {
+						// this tile is within one TileSize, it is a neighbor
+						tile.NeighborTiles.Add(neighbor);
+					} else if (
+							Mathf.Abs(tile.Corner.x - neighbor.Corner.x) == TileSize &&
+							Mathf.Abs(tile.Corner.y - neighbor.Corner.y) == TileSize
+					) {
+						// this tile is a diagonal neighbor
+						tile.DiagonalNeighbors.Add(neighbor);
+					}
+				}
 			}
 		}
 	}

@@ -9,11 +9,11 @@ public class MapTile
 
   public List<Region> BorderRegions;
   public List<MapTile> NeighborTiles;
+  public List<MapTile> DiagonalNeighbors;
 
   private float[,] h;
   private float[,] g;
   private Vector2[,] dh;
-
 
   public float[,] Height { get { return h; } }
   public float[,] Discomfort { get { return g; } }
@@ -25,10 +25,13 @@ public class MapTile
     this.dh = dh;
     this.Corner = corner;
 
-    selfAssemble();
+    NeighborTiles = new List<MapTile>();
+    DiagonalNeighbors = new List<MapTile>();
+
+    assemble();
   }
 
-  private void selfAssemble()
+  private void assemble()
   {
     BorderRegions = new List<Region>();
 
