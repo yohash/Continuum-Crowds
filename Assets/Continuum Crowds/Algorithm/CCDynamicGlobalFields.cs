@@ -24,9 +24,6 @@ public class CCDynamicGlobalFields
   // cached 2x2 float[] for linear1stOrderSplat (GC redux)
   private float[,] mat = new float[2, 2];
 
-  // this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
-  private Vector2[] DIR_ENWS = new Vector2[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
-
   // *************************************************************************
   //    THREAD OPERATIONS
   // *************************************************************************
@@ -383,9 +380,9 @@ public class CCDynamicGlobalFields
     {
       for (int m = 0; m < tileSize; m++)
       {
-        for (int d = 0; d < DIR_ENWS.Length; d++)
+        for (int d = 0; d < CCvals.ENSW.Length; d++)
         {
-          cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, DIR_ENWS[d]);
+          cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, CCvals.ENSW[d]);
         }
       }
     }
@@ -470,9 +467,9 @@ public class CCDynamicGlobalFields
     {
       for (int m = 0; m < tileSize; m++)
       {
-        for (int d = 0; d < DIR_ENWS.Length; d++)
+        for (int d = 0; d < CCvals.ENSW.Length; d++)
         {
-          cct.C[n, m][d] = computeCostFieldValue(n, m, d, DIR_ENWS[d], cct);
+          cct.C[n, m][d] = computeCostFieldValue(n, m, d, CCvals.ENSW[d], cct);
         }
       }
     }

@@ -19,8 +19,10 @@ public class TileGenerator : MonoBehaviour
 	// viewables
 	private bool viewTiles;
 	private bool viewRegions;
+	private bool viewRegionConnections;
 	public void ViewTiles(bool show) { viewTiles = show; }
 	public void ViewRegions(bool show) { viewRegions = show; }
+	public void ViewRegionConenction(bool show) { viewRegionConnections = show; }
 
 	// ***************************************************************************
 	//  MONOBEHAVIOURS
@@ -56,13 +58,28 @@ public class TileGenerator : MonoBehaviour
 				foreach (var region in tile.BorderRegions) {
 					foreach (Vector2Int location in region.GetLocations()) {
 						// handy call shortener
-						float height(Vector2Int v) { return tile.Height[v.x, v.y]; }
+						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
 
-						Vector3 corner = tile.Corner.ToXZ() + location.ToXYZ(height(location) + dy);
-						Debug.DrawLine(corner, corner + Vector3.forward, Color.red);
-						Debug.DrawLine(corner + Vector3.forward, corner + Vector3.forward + Vector3.right, Color.red);
-						Debug.DrawLine(corner + Vector3.forward + Vector3.right, corner + Vector3.right, Color.red);
-						Debug.DrawLine(corner + Vector3.right, corner, Color.red);
+						Vector3 hgt = location.ToXYZ(height(location) + dy);
+						Debug.DrawLine(hgt, hgt + Vector3.forward, Color.red);
+						Debug.DrawLine(hgt + Vector3.forward, hgt + Vector3.forward + Vector3.right, Color.red);
+						Debug.DrawLine(hgt + Vector3.forward + Vector3.right, hgt + Vector3.right, Color.red);
+						Debug.DrawLine(hgt + Vector3.right, hgt, Color.red);
+					}
+				}
+			}
+		}
+		if (viewRegionConnections) {
+			foreach (var tile in Tiles) {
+				foreach (var region in tile.BorderRegions) {
+					foreach (Region connection in region.GetInternalConnections()) {
+						// handy call shortener
+						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
+						Vector3 hgt = Vector3.up * 0.25f;
+
+						Debug.DrawLine(hgt + region.Average.ToXYZ(height(region.Average)),
+							hgt + connection.Average.ToXYZ(height(connection.Average)),
+							Color.blue);
 					}
 				}
 			}
