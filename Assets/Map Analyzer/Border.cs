@@ -4,38 +4,36 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Region
+public class Border
 {
   [NonSerialized] private MapTile tile;
   [SerializeField] private List<Vector2Int> locations;
 
-  [NonSerialized] private List<Region> neighborRegions;
-  [NonSerialized] private List<Region> internalConnections;
+  [NonSerialized] private List<Border> neighborBorders;
 
   public List<Vector2Int> connections = new List<Vector2Int>();
 
-  public void AddConnection(Region connection)
+  public void AddConnection(Border connection)
   {
-    if (connection != this && !internalConnections.Contains(connection)) {
-      internalConnections.Add(connection);
+    if (connection != this && !neighborBorders.Contains(connection)) {
+      neighborBorders.Add(connection);
       connections.Add(connection.Average);
     }
   }
 
-  public void AddNeighbor(Region neighbor)
+  public void AddNeighbor(Border neighbor)
   {
-    if (neighbor != this && !neighborRegions.Contains(neighbor)) {
-      neighborRegions.Add(neighbor);
+    if (neighbor != this && !neighborBorders.Contains(neighbor)) {
+      neighborBorders.Add(neighbor);
     }
   }
 
-  public Region(MapTile tile)
+  public Border(MapTile tile)
   {
     this.tile = tile;
     locations = new List<Vector2Int>();
 
-    neighborRegions = new List<Region>();
-    internalConnections = new List<Region>();
+    neighborBorders = new List<Border>();
   }
 
   public void AddLocation(Vector2 location)
@@ -56,17 +54,17 @@ public class Region
     return locations.Contains(v);
   }
 
-  public IEnumerable GetLocations()
+  public IEnumerable<Vector2Int> GetLocations()
   {
     foreach (var location in locations) {
       yield return location;
     }
   }
 
-  public IEnumerable GetInternalConnections()
+  public IEnumerable<Border> GetConnections()
   {
-    foreach (var region in internalConnections) {
-      yield return region;
+    foreach (var border in neighborBorders) {
+      yield return border;
     }
   }
 

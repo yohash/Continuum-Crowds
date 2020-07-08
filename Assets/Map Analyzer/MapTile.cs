@@ -8,7 +8,7 @@ public class MapTile
   [SerializeField] Vector2Int corner;
   public Vector2Int Corner { get { return corner; } private set { corner = value; } }
 
-  public List<Region> BorderRegions;
+  public List<Border> Borders;
   public List<MapTile> NeighborTiles;
   public List<MapTile> DiagonalNeighbors;
 
@@ -36,19 +36,23 @@ public class MapTile
     assemble();
   }
 
-  private void assemble()
+  public void AssembleInterconnects()
   {
-    assembleRegions();
-    assembleInternalConnections();
     assembleNeighborConnections();
   }
 
-  private void assembleRegions()
+  private void assemble()
   {
-    BorderRegions = new List<Region>();
+    assembleBorders();
+    assembleInternalConnections();
+  }
+
+  private void assembleBorders()
+  {
+    Borders = new List<Border>();
 
     // cache
-    Region region = new Region(this);
+    Border border = new Border(this);
 
     // this algorithm assumes (0,0) is the upper-left of the h[,] matrix
     //    - GetLength(0) is the length in the x direction
@@ -56,125 +60,125 @@ public class MapTile
     int x;
     int y;
 
-    // trigger to help build continuous regions
+    // trigger to help build continuous borders
     bool valid = false;
 
     // scan the top
     y = 0;
     for (x = 0; x < g.GetLength(0); x++) {
       if (g[x, y] < 1) {
-        region.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Vector2(x, y) + corner);
         valid = true;
       } else {
-        // sharp break in discomfort, unpassable location, close off this region
+        // sharp break in discomfort, unpassable location, close off this border
         if (valid) {
-          BorderRegions.Add(region);
-          region = new Region(this);
+          Borders.Add(border);
+          border = new Border(this);
         }
         valid = false;
       }
     }
-    if (valid) { BorderRegions.Add(region); }
+    if (valid) { Borders.Add(border); }
     // scan the bottom
-    region = new Region(this);
+    border = new Border(this);
     y = g.GetLength(1) - 1;
     for (x = 0; x < g.GetLength(0); x++) {
       if (g[x, y] < 1) {
-        region.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Vector2(x, y) + corner);
         valid = true;
       } else {
-        // sharp break in discomfort, unpassable location, close off this region
+        // sharp break in discomfort, unpassable location, close off this border
         if (valid) {
-          BorderRegions.Add(region);
-          region = new Region(this);
+          Borders.Add(border);
+          border = new Border(this);
         }
         valid = false;
       }
     }
-    if (valid) { BorderRegions.Add(region); }
+    if (valid) { Borders.Add(border); }
     // scan the left
-    region = new Region(this);
+    border = new Border(this);
     x = 0;
     for (y = 0; y < g.GetLength(1); y++) {
       if (g[x, y] < 1) {
-        region.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Vector2(x, y) + corner);
         valid = true;
       } else {
-        // sharp break in discomfort, unpassable location, close off this region
+        // sharp break in discomfort, unpassable location, close off this border
         if (valid) {
-          BorderRegions.Add(region);
-          region = new Region(this);
+          Borders.Add(border);
+          border = new Border(this);
         }
         valid = false;
       }
     }
-    if (valid) { BorderRegions.Add(region); }
+    if (valid) { Borders.Add(border); }
     // scan the right
-    region = new Region(this);
+    border = new Border(this);
     x = g.GetLength(0) - 1;
     for (y = 0; y < g.GetLength(1); y++) {
       if (g[x, y] < 1) {
-        region.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Vector2(x, y) + corner);
         valid = true;
       } else {
-        // sharp break in discomfort, unpassable location, close off this region
+        // sharp break in discomfort, unpassable location, close off this border
         if (valid) {
-          BorderRegions.Add(region);
-          region = new Region(this);
+          Borders.Add(border);
+          border = new Border(this);
         }
         valid = false;
       }
     }
-    if (valid) { BorderRegions.Add(region); }
+    if (valid) { Borders.Add(border); }
   }
 
   private void assembleInternalConnections()
   {
     // init our grouping tracker
-    var groupedRegions = new List<List<Region>>();
+    var groupedBorders = new List<List<Border>>();
     // track our current group
-    var currentGroup = new List<Region>();
-    // copy our list of regions
-    // we'll remove regions from this list as they are connected
-    var unknownRegions = new List<Region>();
-    unknownRegions.AddRange(BorderRegions);
+    var currentGroup = new List<Border>();
+    // copy our list of borders
+    // we'll remove borders from this list as they are connected
+    var unknownBorders = new List<Border>();
+    unknownBorders.AddRange(Borders);
 
-    // remove regions from this list as they are connected
-    while (unknownRegions.Count > 0) {
-      // seed with the region at [0]
-      var seedRegion = unknownRegions[0];
-      unknownRegions.RemoveAt(0);
-      // start this group with this region
-      currentGroup.Add(seedRegion);
+    // remove borders from this list as they are connected
+    while (unknownBorders.Count > 0) {
+      // seed with the border at [0]
+      var seed = unknownBorders[0];
+      unknownBorders.RemoveAt(0);
+      // start this group with this border
+      currentGroup.Add(seed);
 
       // create a list of known locations that we'll fill up as we go
       var knownLocations = new List<Vector2Int>();
-      // fill known locations with the entire seed region
-      foreach (Vector2Int loc in seedRegion.GetLocations()) { knownLocations.Add(loc); }
+      // fill known locations with the entire seed border
+      foreach (Vector2Int loc in seed.GetLocations()) { knownLocations.Add(loc); }
 
       // create a queue we'll pull locations from
       var testLocations = new Queue<Vector2Int>();
       // seed with location at [0]
       testLocations.Enqueue(knownLocations[0]);
 
-      // begin to flood the regions
+      // begin to flood the borders
       while (testLocations.Count > 0) {
         var currentLocation = testLocations.Dequeue();
-        // is this new test location part of a region?
-        if (BorderRegions.Any(region => region.Contains(currentLocation))) {
-          // if so, is this region allready in the current group of regions?
-          if (currentGroup.Any(region => region.Contains(currentLocation))) {
-            // this region is already tracked in the current group, do nothing
+        // is this new test location part of a border?
+        if (Borders.Any(border => border.Contains(currentLocation))) {
+          // if so, is this border allready in the current group of borders?
+          if (currentGroup.Any(border => border.Contains(currentLocation))) {
+            // this border is already tracked in the current group, do nothing
           } else {
-            // if not, then this is a new region to add to the group!
-            foreach (var newRegion in BorderRegions.Where(region => region.Contains(currentLocation))) {
+            // if not, then this is a new border to add to the group!
+            foreach (var newBorder in Borders.Where(border => border.Contains(currentLocation))) {
               // add to current group
-              currentGroup.Add(newRegion);
+              currentGroup.Add(newBorder);
               // add all locations to known locations
-              foreach (Vector2Int loc in newRegion.GetLocations()) { knownLocations.Add(loc); }
-              // remove from our unknown regions list
-              if (unknownRegions.Contains(newRegion)) {
-                unknownRegions.RemoveAt(unknownRegions.IndexOf(newRegion));
+              foreach (Vector2Int loc in newBorder.GetLocations()) { knownLocations.Add(loc); }
+              // remove from our unknown borders list
+              if (unknownBorders.Contains(newBorder)) {
+                unknownBorders.RemoveAt(unknownBorders.IndexOf(newBorder));
               }
             }
           }
@@ -195,11 +199,11 @@ public class MapTile
           if (knownLocations.Contains(neighbor)) {
             continue;
           }
-          // make sure this region isn't already in our test queue
+          // make sure this border isn't already in our test queue
           if (testLocations.Contains(neighbor)) {
             continue;
           }
-          // make sure this neighbor is not an impassable region
+          // make sure this neighbor is not an impassable border
           if (g[neighbor.x - corner.x, neighbor.y - corner.y] >= 1) {
             continue;
           }
@@ -211,17 +215,17 @@ public class MapTile
         knownLocations.Add(currentLocation);
       }
 
-      // region has been flooded, and all connected border regions should have been
+      // border has been flooded, and all connected border borders should have been
       // added to the currentGroup. Start a new group
-      groupedRegions.Add(currentGroup);
-      currentGroup = new List<Region>();
+      groupedBorders.Add(currentGroup);
+      currentGroup = new List<Border>();
     }
 
-    // store all internal connections to regions
-    foreach (var regionGroup in groupedRegions) {
-      foreach (var region in regionGroup) {
-        foreach (var connection in regionGroup) {
-          region.AddConnection(connection);
+    // store all internal connections to borders
+    foreach (var borderGroup in groupedBorders) {
+      foreach (var border in borderGroup) {
+        foreach (var connection in borderGroup) {
+          border.AddConnection(connection);
         }
       }
     }
@@ -229,18 +233,19 @@ public class MapTile
 
   private void assembleNeighborConnections()
   {
-    // start with a region
-    foreach (var region in BorderRegions) {
+    // start with a border
+    foreach (var border in Borders) {
       // foreach neighbor tile
       foreach (var tile in NeighborTiles) {
-        // cycle through each of their regions
-        foreach (var testRegion in tile.BorderRegions) {
-          // if any point in any region is within 1-space from this region, it is connecting
-          // cycle through each point in this region
-          foreach (var location in region.GetLocations()) {
+        // cycle through each of their borders
+        foreach (var testBorder in tile.Borders) {
+          // if any point in any border is within 1-space from this border, it is connecting
+          // cycle through each point in this border
+          foreach (var location in border.GetLocations()) {
             // cycle through each NSEW direction
             foreach (var direction in CCvals.ENSWint) {
               var testLocation = location + direction;
+
             }
           }
         }

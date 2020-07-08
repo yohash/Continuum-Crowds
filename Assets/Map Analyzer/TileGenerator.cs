@@ -55,8 +55,8 @@ public class TileGenerator : MonoBehaviour
 		if (viewRegions) {
 			float dy = 0.1f;
 			foreach (var tile in Tiles) {
-				foreach (var region in tile.BorderRegions) {
-					foreach (Vector2Int location in region.GetLocations()) {
+				foreach (var border in tile.Borders) {
+					foreach (Vector2Int location in border.GetLocations()) {
 						// handy call shortener
 						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
 
@@ -71,13 +71,13 @@ public class TileGenerator : MonoBehaviour
 		}
 		if (viewRegionConnections) {
 			foreach (var tile in Tiles) {
-				foreach (var region in tile.BorderRegions) {
-					foreach (Region connection in region.GetInternalConnections()) {
+				foreach (var border in tile.Borders) {
+					foreach (var connection in border.GetConnections()) {
 						// handy call shortener
 						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
 						Vector3 hgt = Vector3.up * 0.25f;
 
-						Debug.DrawLine(hgt + region.Average.ToXYZ(height(region.Average)),
+						Debug.DrawLine(hgt + border.Average.ToXYZ(height(border.Average)),
 							hgt + connection.Average.ToXYZ(height(connection.Average)),
 							Color.blue);
 					}
@@ -132,6 +132,9 @@ public class TileGenerator : MonoBehaviour
 				}
 			}
 		}
+
+		// now that tiles are generated, build all connections between tiles
+
 	}
 
 	// ***************************************************************************
