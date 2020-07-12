@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public class TileGenerator : MonoBehaviour
 {
@@ -72,7 +71,7 @@ public class TileGenerator : MonoBehaviour
 		if (viewRegionConnections) {
 			foreach (var tile in Tiles) {
 				foreach (var border in tile.Borders) {
-					foreach (var connection in border.GetConnections()) {
+					foreach (var connection in border.GetNeighbors()) {
 						// handy call shortener
 						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
 						Vector3 hgt = Vector3.up * 0.25f;
@@ -118,16 +117,16 @@ public class TileGenerator : MonoBehaviour
 
 		foreach (var tile in Tiles) {
 			foreach (var neighbor in Tiles) {
-				if (tile != neighbor && !tile.NeighborTiles.Contains(neighbor)) {
+				if (tile != neighbor) {
 					if ((tile.Corner - neighbor.Corner).magnitude == TileSize) {
 						// this tile is within one TileSize, it is a neighbor
-						tile.NeighborTiles.Add(neighbor);
+						tile.NeighborTiles[(tile.Corner - neighbor.Corner).ToDirection()] = neighbor;
 					} else if (
 							Mathf.Abs(tile.Corner.x - neighbor.Corner.x) == TileSize &&
 							Mathf.Abs(tile.Corner.y - neighbor.Corner.y) == TileSize
 					) {
 						// this tile is a diagonal neighbor
-						tile.DiagonalNeighbors.Add(neighbor);
+						//tile.DiagonalNeighbors.Add(neighbor);
 					}
 				}
 			}

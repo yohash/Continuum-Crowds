@@ -1,37 +1,28 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
 public class Border
 {
-  [NonSerialized] private MapTile tile;
   [SerializeField] private List<Vector2Int> locations;
 
   [NonSerialized] private List<Border> neighborBorders;
 
-  public List<Vector2Int> connections = new List<Vector2Int>();
+  public DIRECTION Direction { get; private set; }
 
-  public void AddConnection(Border connection)
-  {
-    if (connection != this && !neighborBorders.Contains(connection)) {
-      neighborBorders.Add(connection);
-      connections.Add(connection.Average);
-    }
-  }
+  // containers
+  private MapTile tile;
 
-  public void AddNeighbor(Border neighbor)
-  {
-    if (neighbor != this && !neighborBorders.Contains(neighbor)) {
-      neighborBorders.Add(neighbor);
-    }
-  }
+  private Region region;
+  public Region Region { get { return region; } set { region = value; } }
 
-  public Border(MapTile tile)
+  public Border(MapTile tile, DIRECTION d)
   {
     this.tile = tile;
     locations = new List<Vector2Int>();
+
+    Direction = d;
 
     neighborBorders = new List<Border>();
   }
@@ -42,18 +33,19 @@ public class Border
   }
   public void AddLocation(Vector2Int location)
   {
-    if (locations.Contains(location)) {
-      Debug.LogWarning("Region already contains location: " + location);
-      return;
-    }
-    locations.Add(location);
+    if (!locations.Contains(location)) { locations.Add(location); }
   }
 
   public bool Contains(Vector2Int v)
   {
     return locations.Contains(v);
   }
-
+  public void AddNeighbor(Border neighbor)
+  {
+    if (neighbor != this && !neighborBorders.Contains(neighbor)) {
+      neighborBorders.Add(neighbor);
+    }
+  }
   public IEnumerable<Vector2Int> GetLocations()
   {
     foreach (var location in locations) {
@@ -61,7 +53,7 @@ public class Border
     }
   }
 
-  public IEnumerable<Border> GetConnections()
+  public IEnumerable<Border> GetNeighbors()
   {
     foreach (var border in neighborBorders) {
       yield return border;
