@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Region
@@ -42,10 +41,24 @@ public class Region
     return borders.Contains(b);
   }
 
+  public void TryRemoveBorder(Border b)
+  {
+    if (borders.Contains(b)) {
+      borders.Remove(b);
+    }
+  }
+
   public IEnumerable<Border> Borders()
   {
     foreach (var b in borders) {
       yield return b;
+    }
+  }
+
+  public IEnumerable<Vector2Int> Locations()
+  {
+    foreach (var loc in locations) {
+      yield return loc;
     }
   }
 }

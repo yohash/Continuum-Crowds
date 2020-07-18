@@ -37,14 +37,17 @@ public static class FileUtility
     createDirectory(path);
     string completePath = path + filename + ".txt";
 
+    int width = matrix.GetLength(0);
+    int height = matrix.GetLength(1);
+
     // assemble string
     string file = "";
-    for (int i = 0; i < matrix.GetLength(0); i++) {
-      for (int k = 0; k < matrix.GetLength(1); k++) {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
         file = string.Concat(
           file,
-          matrix[i, k],
-          k == matrix.GetLength(1) - 1 ? "" : ", "
+          matrix[x, y],
+          x == width - 1 ? "" : ", "
         );
       }
       file = string.Concat(file, "\n");
@@ -60,14 +63,17 @@ public static class FileUtility
     createDirectory(path);
     string completePath = path + filename + ".txt";
 
+    int width = matrix.GetLength(0);
+    int height = matrix.GetLength(1);
+
     // assemble string
     string file = "";
-    for (int i = 0; i < matrix.GetLength(0); i++) {
-      for (int k = 0; k < matrix.GetLength(1); k++) {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
         file = string.Concat(
           file,
-          $"({matrix[i, k].x},{matrix[i, k].y})",
-          k == matrix.GetLength(1) - 1 ? "" : ", "
+          $"({matrix[x, y].x},{matrix[x, y].y})",
+          x == width - 1 ? "" : ", "
         );
       }
       file = string.Concat(file, "\n");
@@ -94,11 +100,11 @@ public static class FileUtility
     int rows = readfile.Length;
     int columns = readfile[0].Count(ch => ch == ',') + 1;
 
-    var data = new float[columns, rows];
-    for (int i = 0; i < rows; i++) {
-      string[] lineData = readfile[i].Split(',');
-      for (int k = 0; k < columns; k++) {
-        data[i, k] = float.Parse(lineData[k]);
+    var data = new float[rows, columns];
+    for (int y = 0; y < rows; y++) {
+      string[] lineData = readfile[y].Split(',');
+      for (int x = 0; x < columns; x++) {
+        data[x, y] = float.Parse(lineData[x]);
       }
     }
 

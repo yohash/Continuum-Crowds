@@ -58,6 +58,8 @@ public class HeightMapGenerator : MonoBehaviour
 			}
 		}
 
+		Debug.Log($"{this}.GenerateHeightMap() - Height map generated for map {MapSize}");
+
 		HeightMap = TextureGenerator.TextureFromMatrix(h);
 	}
 

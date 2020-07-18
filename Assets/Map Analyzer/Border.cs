@@ -5,15 +5,24 @@ using UnityEngine;
 [System.Serializable]
 public class Border
 {
-  [SerializeField] private List<Vector2Int> locations;
-
-  [NonSerialized] private List<Border> neighborBorders;
-
   public DIRECTION Direction { get; private set; }
 
-  // containers
-  private MapTile tile;
+  [SerializeField] private List<Vector2Int> locations;
 
+  /// <summary>
+  /// Neighboring borders in nearby tiles
+  /// </summary>
+  private List<Border> neighborBorders;
+
+  /// <summary>
+  /// Reference to the containing tile
+  /// </summary>
+  private MapTile tile;
+  public MapTile Tile {  get { return tile; } private set { tile = value; } }
+
+  /// <summary>
+  /// Reference to the containing Region
+  /// </summary>
   private Region region;
   public Region Region { get { return region; } set { region = value; } }
 

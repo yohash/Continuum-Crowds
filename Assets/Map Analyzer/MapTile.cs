@@ -38,7 +38,7 @@ public class MapTile
 
   public void AssembleInterconnects()
   {
-    collapseBorders();
+    //collapseBorders();
     assembleBorderNeighbors();
   }
 
@@ -228,15 +228,6 @@ public class MapTile
       groupedBorders.Add(currentGroup);
       currentGroup = new List<Border>();
     }
-
-    // connect all borders together
-    //foreach (var borderGroup in groupedBorders) {
-    //  foreach (var border in borderGroup) {
-    //    foreach (var connection in borderGroup) {
-    //      border.AddConnection(connection);
-    //    }
-    //  }
-    //}
   }
 
   /// <summary>
@@ -275,6 +266,7 @@ public class MapTile
 
   private void assembleBorderNeighbors()
   {
+    var deleteBorders = new List<Border>();
     // iterate over every region
     foreach (var region in Regions) {
       // iterate over all borders in this region
@@ -293,8 +285,19 @@ public class MapTile
               border.AddNeighbor(confirmed);
             }
           }
+        } else {
+          // there is no neighboring tile. Delete this border, as it borders nothing
+          deleteBorders.Add(border);
         }
       }
     }
+
+    //// delete all borders found to be irrelevant
+    //foreach (var delete in deleteBorders) {
+    //  // reomve the border from this tile
+    //  Borders.Remove(delete);
+    //  // remove the border from its region
+    //  delete.Region.TryRemoveBorder(delete);
+    //}
   }
 }
