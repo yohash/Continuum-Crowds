@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -21,13 +22,19 @@ public class TileGenerator : MonoBehaviour
 	private bool viewTiles;
 	private bool viewRegions;
 	private bool viewBorders;
+	private bool viewNeighborBorders;
 	public void ViewTiles(bool show) { viewTiles = show; }
-	public void ViewRegions(bool show) { viewRegions = show; }
+  public void ViewRegions(bool show) { viewRegions = show; }
 	public void ViewBorders(bool show) { viewBorders = show; }
+	public void ViewNeighbors(bool show) { viewNeighborBorders = show; }
+	public void ViewTileIndex(string i)
+  {
+		if (int.TryParse(i, out int index)) { tileIndex = index; }
+  }
 
-	public int SHOW_TILE;
-	public Vector2 CORNER;
-	public DIRECTION SHOW_DIRECTION;
+	private int tileIndex;
+
+	private List<Color> borderColors = new List<Color>();
 
 	// ***************************************************************************
 	//  MONOBEHAVIOURS
@@ -36,9 +43,8 @@ public class TileGenerator : MonoBehaviour
 	{
 		float dy = 0.1f;
 
-		if (Tiles.Count > SHOW_TILE) {
-			var tile = Tiles[SHOW_TILE];
-			CORNER = tile.Corner;
+		if (viewTiles && Tiles.Count > tileIndex && tileIndex >= 0) {
+			var tile = Tiles[tileIndex];
 			for (int x = 0; x < tile.Height.GetLength(0); x++) {
 				for (int y = 1; y < tile.Height.GetLength(1); y++) {
 					Debug.DrawLine(
@@ -57,78 +63,83 @@ public class TileGenerator : MonoBehaviour
 					);
 				}
 			}
-
-			foreach (var border in tile.Borders.Where(b => b.Direction == SHOW_DIRECTION)) {
-				foreach (var location in border.GetLocations()) {
-					// handy call shortener
-					float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
-
-					Vector3 hgt = location.ToXYZ(height(location) + dy);
-
-					Debug.DrawLine(hgt, hgt + Vector3.forward, Color.yellow);
-					Debug.DrawLine(hgt + Vector3.forward, hgt + Vector3.forward + Vector3.right, Color.yellow);
-					Debug.DrawLine(hgt + Vector3.forward + Vector3.right, hgt + Vector3.right, Color.yellow);
-					Debug.DrawLine(hgt + Vector3.right, hgt, Color.yellow);
-				}
-			}
 		}
 
-		if (viewTiles) {
-			foreach (var tile in Tiles) {
-				for (int x = 0; x < tile.Height.GetLength(0); x++) {
-					for (int y = 1; y < tile.Height.GetLength(1); y++) {
-						Debug.DrawLine(
-							new Vector3(x + tile.Corner.x + 0.5f, tile.Height[x, y - 1] + dy, y - 1 + tile.Corner.y + 0.5f),
-							new Vector3(x + tile.Corner.x + 0.5f, tile.Height[x, y] + dy, y + tile.Corner.y + 0.5f),
-							Color.green
-						);
-					}
-				}
-				for (int x = 1; x < tile.Height.GetLength(0); x++) {
-					for (int y = 0; y < tile.Height.GetLength(1); y++) {
-						Debug.DrawLine(
-							new Vector3(x - 1 + tile.Corner.x + 0.5f, tile.Height[x - 1, y] + dy, y + tile.Corner.y + 0.5f),
-							new Vector3(x + tile.Corner.x + 0.5f, tile.Height[x, y] + dy, y + tile.Corner.y + 0.5f),
-							Color.green
-						);
-					}
-				}
-			}
-		}
 		if (viewRegions) {
 			foreach (var tile in Tiles) {
 				foreach (var region in tile.Regions) {
-					foreach (Vector2Int location in region.Locations()) {
+					foreach (var location in region.Locations()) {
 						// handy call shortener
 						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
 
-						Vector3 hgt = location.ToXYZ(height(location) + dy);
-						Debug.DrawLine(hgt, hgt + Vector3.forward, Color.red);
-						Debug.DrawLine(hgt + Vector3.forward, hgt + Vector3.forward + Vector3.right, Color.red);
-						Debug.DrawLine(hgt + Vector3.forward + Vector3.right, hgt + Vector3.right, Color.red);
-						Debug.DrawLine(hgt + Vector3.right, hgt, Color.red);
+						var hgt = location.ToXYZ(height(location) + dy);
+						drawSquare(hgt, Color.red);
 					}
 				}
 			}
 		}
 
 		if (viewBorders) {
+			int i = 0;
 			foreach (var tile in Tiles) {
 				foreach (var border in tile.Borders) {
-					foreach (var location in border.GetLocations()) {
-						// handy call shortener
-						float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
-
-						Vector3 hgt = location.ToXYZ(height(location) + dy);
-
-						Debug.DrawLine(hgt, hgt + Vector3.forward, Color.yellow);
-						Debug.DrawLine(hgt + Vector3.forward, hgt + Vector3.forward + Vector3.right, Color.yellow);
-						Debug.DrawLine(hgt + Vector3.forward + Vector3.right, hgt + Vector3.right, Color.yellow);
-						Debug.DrawLine(hgt + Vector3.right, hgt, Color.yellow);
+					if (i + 1 > borderColors.Count) {
+						borderColors.Add(new Color(Random.value, Random.value, Random.value));
 					}
+					var c = borderColors[i++];
+					drawBorder(border, c);
 				}
 			}
 		}
+
+		if (viewNeighborBorders) {
+			int i = 0;
+			var allBorders = new List<Border>();
+			foreach (var tile in Tiles) {
+				foreach (var border in tile.Borders) {
+					allBorders.Add(border);
+				}
+			}
+
+			while (allBorders.Count > 0) {
+				if (i + 1 > borderColors.Count) {
+					borderColors.Add(new Color(Random.value, Random.value, Random.value));
+				}
+				var c = borderColors[i++];
+
+				var border = allBorders[0];
+				drawBorder(border, c);
+				foreach (var neighbor in border.GetNeighbors()) {
+					if (allBorders.Contains(neighbor)) {
+						// draw the neighbors
+						drawBorder(neighbor, c);
+						allBorders.Remove(neighbor);
+					}
+				}
+				allBorders.Remove(border);
+			}
+		}
+	}
+
+	private void drawBorder(Border border, Color c)
+	{
+		float dy = 0.1f;
+		foreach (var location in border.GetLocations()) {
+			float height(Vector2Int v) { 
+				return border.Tile.Height[v.x - border.Tile.Corner.x, v.y - border.Tile.Corner.y]; 
+			}
+			var hgt = location.ToXYZ(height(location) + dy);
+			drawSquare(hgt, c);
+		}
+	}
+
+	private void drawSquare(Vector3 corner, Color c)
+	{
+		Debug.DrawLine(corner, corner + Vector3.forward, c);
+		Debug.DrawLine(corner + Vector3.forward, corner + Vector3.forward + Vector3.right, c);
+		Debug.DrawLine(corner + Vector3.forward + Vector3.right, corner + Vector3.right, c);
+		Debug.DrawLine(corner + Vector3.right, corner, c);
+
 	}
 
 	// ***************************************************************************
@@ -171,7 +182,6 @@ public class TileGenerator : MonoBehaviour
 						// this tile is within one TileSize, it is a neighbor
 						var dir = (neighbor.Corner - tile.Corner).ToDirection();
 						tile.NeighborTiles[dir] = neighbor;
-						Debug.Log($"\t\tTile {tile.Corner}, {dir} neighbor: {neighbor.Corner}");
 					} else if (
 							Mathf.Abs(tile.Corner.x - neighbor.Corner.x) == TileSize &&
 							Mathf.Abs(tile.Corner.y - neighbor.Corner.y) == TileSize
@@ -186,15 +196,7 @@ public class TileGenerator : MonoBehaviour
 		// now that tiles are generated, build all connections between tiles
 		Debug.Log($"\tPairing up borders with neighbors...");
 		foreach (var tile in Tiles) {
-			Debug.Log($"\t\tTile {tile.Corner}");
-			int ri = 1;
-      foreach (var region in tile.Regions) {
-        foreach (var border in region.Borders()) {
-					Debug.Log($"\t\t\t(r: {ri}) - {border.Direction} border");
-        }
-				ri++;
-			}
-			Debug.Log($"\t\tAssembling interconnects...");
+			Debug.Log($"\t\tAssembling interconnects for tile {tile.Corner}...");
 			tile.AssembleInterconnects();
 		}
 	}

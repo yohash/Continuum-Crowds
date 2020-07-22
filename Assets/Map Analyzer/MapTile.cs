@@ -54,36 +54,14 @@ public class MapTile
 
     // cache
     Border border;
-
-    // this algorithm assumes (0,0) is the upper-left of the h[,] matrix
-    //    - GetLength(0) is the length in the x direction
-    //    - GetLength(1) is the length in the y direction
-    int x;
-    int y;
+    int x, y;
 
     // trigger to help build continuous borders
     bool valid = false;
 
-    // scan the top (NORTH)
+    // scan the bottom (y=0, SOUTH)
     y = 0;
-    border = new Border(this, DIRECTION.NORTH);
-    for (x = 0; x < g.GetLength(0); x++) {
-      if (g[x, y] < 1) {
-        border.AddLocation(new Vector2(x, y) + corner);
-        valid = true;
-      } else {
-        // sharp break in discomfort, unpassable location, close off this border
-        if (valid) {
-          Borders.Add(border);
-          border = new Border(this, DIRECTION.NORTH);
-        }
-        valid = false;
-      }
-    }
-    if (valid) { Borders.Add(border); }
-    // scan the bottom (SOUTH)
     border = new Border(this, DIRECTION.SOUTH);
-    y = g.GetLength(1) - 1;
     for (x = 0; x < g.GetLength(0); x++) {
       if (g[x, y] < 1) {
         border.AddLocation(new Vector2(x, y) + corner);
@@ -98,7 +76,24 @@ public class MapTile
       }
     }
     if (valid) { Borders.Add(border); }
-    // scan the left (WEST)
+    // scan the top (y=length, NORTH)
+    border = new Border(this, DIRECTION.NORTH);
+    y = g.GetLength(1) - 1;
+    for (x = 0; x < g.GetLength(0); x++) {
+      if (g[x, y] < 1) {
+        border.AddLocation(new Vector2(x, y) + corner);
+        valid = true;
+      } else {
+        // sharp break in discomfort, unpassable location, close off this border
+        if (valid) {
+          Borders.Add(border);
+          border = new Border(this, DIRECTION.NORTH);
+        }
+        valid = false;
+      }
+    }
+    if (valid) { Borders.Add(border); }
+    // scan the left (x=0, WEST)
     border = new Border(this, DIRECTION.WEST);
     x = 0;
     for (y = 0; y < g.GetLength(1); y++) {
@@ -115,7 +110,7 @@ public class MapTile
       }
     }
     if (valid) { Borders.Add(border); }
-    // scan the right (EAST)  
+    // scan the right (x=length, EAST)  
     border = new Border(this, DIRECTION.EAST);
     x = g.GetLength(0) - 1;
     for (y = 0; y < g.GetLength(1); y++) {
@@ -250,8 +245,6 @@ public class MapTile
           if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
             // and get the two neighboring borders opposing these borders
 
-            // STOP - just create border neighbrs first
-            //    assembleBorderNeighbors()
           }
         }
       }
@@ -292,12 +285,12 @@ public class MapTile
       }
     }
 
-    //// delete all borders found to be irrelevant
-    //foreach (var delete in deleteBorders) {
-    //  // reomve the border from this tile
-    //  Borders.Remove(delete);
-    //  // remove the border from its region
-    //  delete.Region.TryRemoveBorder(delete);
-    //}
+    // delete all borders found to be irrelevant
+    foreach (var delete in deleteBorders) {
+      // reomve the border from this tile
+      Borders.Remove(delete);
+      // remove the border from its region
+      delete.Region.TryRemoveBorder(delete);
+    }
   }
 }
