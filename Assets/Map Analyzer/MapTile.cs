@@ -38,8 +38,8 @@ public class MapTile
 
   public void AssembleInterconnects()
   {
-    //collapseBorders();
     assembleBorderNeighbors();
+    collapseBorders();
   }
 
   private void assembleTile()
@@ -234,8 +234,10 @@ public class MapTile
   /// </summary>
   private void collapseBorders()
   {
+    var collapsePairs = new List<List<Border>>();
     // iterate over every region
     foreach (var region in Regions) {
+      var collapse = new List<Border>();
       // iterate over all borders in this region
       foreach (var border in region.Borders()) {
         // for every border, iterate over all other borders in the same direction
@@ -244,12 +246,45 @@ public class MapTile
           // get the tile in the direction of these two borders
           if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
             // and get the two neighboring borders opposing these borders
-
+            var borderB = neighbor.Borders.Where(b => b
+              .Contains(border.GetLocations().First() + border.Direction.ToVector())
+            ).FirstOrDefault();
+            var cardinalB = neighbor.Borders.Where(b => b
+              .Contains(cardinal.GetLocations().First() + cardinal.Direction.ToVector())
+            ).FirstOrDefault();
+            // get the regions of both of these borders
+            var regionB = neighbor.Regions.Where(r => r.ContainsBorder(borderB));
+            var regionC = neighbor.Regions.Where(r => r.ContainsBorder(cardinalB));
+            // finally, if these two regions are the same, store the borders to collapse
+            if (regionB == regionC) {
+              collapse.TryAdd(border);
+              collapse.TryAdd(cardinal);
+            }
           }
         }
       }
+      if (collapse.Count > 0) {
+        collapsePairs.Add(collapse);
+      }
     }
 
+    // collapse the stored borders into one
+    foreach (var pair in collapsePairs) {
+      var baseBorder = pair[0];
+      // collapse all pairs into base
+      for (int i = 1; i < pair.Count; i++) {
+        // add all locations to the base border
+        foreach (var location in pair[i].GetLocations()) {
+          baseBorder.AddLocation(location);
+        }
+        // remove the new location from (1) region and (2) tile, (3) neighbor border
+        pair[i].Tile.Borders.Remove(pair[i]);
+        pair[i].Region.TryRemoveBorder(pair[i]);
+        foreach (var neighbor in pair[i].GetNeighbors()) {
+          // create a remove function
+        }
+      }
+    }
     // conditions fulfilled:
     //   1 - two borders on this tile share the same region
     //   2 - these two borders share the same avg x-or-y (on same side of the tile)

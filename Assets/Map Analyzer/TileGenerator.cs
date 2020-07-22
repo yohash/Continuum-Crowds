@@ -31,6 +31,7 @@ public class TileGenerator : MonoBehaviour
   {
 		if (int.TryParse(i, out int index)) { tileIndex = index; }
   }
+	public void ShuffleColors() { borderColors.Clear(); }
 
 	private int tileIndex;
 
@@ -106,7 +107,6 @@ public class TileGenerator : MonoBehaviour
 					borderColors.Add(new Color(Random.value, Random.value, Random.value));
 				}
 				var c = borderColors[i++];
-
 				var border = allBorders[0];
 				drawBorder(border, c);
 				foreach (var neighbor in border.GetNeighbors()) {
@@ -139,7 +139,6 @@ public class TileGenerator : MonoBehaviour
 		Debug.DrawLine(corner + Vector3.forward, corner + Vector3.forward + Vector3.right, c);
 		Debug.DrawLine(corner + Vector3.forward + Vector3.right, corner + Vector3.right, c);
 		Debug.DrawLine(corner + Vector3.right, corner, c);
-
 	}
 
 	// ***************************************************************************
