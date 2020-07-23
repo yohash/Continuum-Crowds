@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using UnityEngine;
 
 [System.Serializable]
@@ -38,8 +39,9 @@ public class MapTile
 
   public void AssembleInterconnects()
   {
-    assembleBorderNeighbors();
+    purgeEdges();
     collapseBorders();
+    assembleBorderNeighbors();
   }
 
   private void assembleTile()
@@ -242,34 +244,70 @@ public class MapTile
       foreach (var border in region.Borders()) {
         // for every border, iterate over all other borders in the same direction
         // (that aren't this same <border> being tested)
-        foreach (var cardinal in region.Borders().Where(b => b.Direction == border.Direction)) {
+        Debug.Log($"\t testing  border {border.Average}");
+
+        if (collapse.Contains(border)) {
+          Debug.Log("\t\t\t already collapsing this border...");
+          continue;
+        }
+
+        var cardinalNeighbors = region.Borders()
+              .Where(b => b.Direction == border.Direction && b != border);
+
+        Debug.Log($"\t\tborder {border.Average} direction = {border.Direction}, there are " +
+          cardinalNeighbors.Count() + " others in this REGION to test");
+
+        foreach (var cardinal in cardinalNeighbors) {
+          Debug.Log($"\t\t testing cardinal neighbor border {cardinal.Average}");
+
+          if (collapse.Contains(cardinal)) {
+            Debug.Log("\t\t\t already collapsing this cardinal neighbor...");
+            continue;
+          }
+
           // get the tile in the direction of these two borders
           if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
             // and get the two neighboring borders opposing these borders
-            var borderB = neighbor.Borders.Where(b => b
-              .Contains(border.GetLocations().First() + border.Direction.ToVector())
-            ).FirstOrDefault();
-            var cardinalB = neighbor.Borders.Where(b => b
-              .Contains(cardinal.GetLocations().First() + cardinal.Direction.ToVector())
-            ).FirstOrDefault();
-            // get the regions of both of these borders
-            var regionB = neighbor.Regions.Where(r => r.ContainsBorder(borderB));
-            var regionC = neighbor.Regions.Where(r => r.ContainsBorder(cardinalB));
+            var borderB = neighbor.Borders.Where(b =>
+                    border.GetLocations().Any(loc => b.Contains(loc + border.Direction.ToVector())) &&
+                    b.Direction == border.Direction.Opposite())
+                  .FirstOrDefault();
+            var cardinalB = neighbor.Borders.Where(b =>
+                    cardinal.GetLocations().Any(loc => b.Contains(loc + cardinal.Direction.ToVector())) &&
+                    b.Direction == border.Direction.Opposite())
+                  .FirstOrDefault();
+
+            Debug.Log($"\t\t\t {border.Direction} pairs sought for {border.Average}, {cardinal.Average}");
+            Debug.Log($"\t\t\t {borderB?.Direction} opposing pairs got {borderB?.Average}, {cardinalB?.Average}");
+
             // finally, if these two regions are the same, store the borders to collapse
-            if (regionB == regionC) {
+            if (borderB != null && cardinalB != null && borderB.Region == cardinalB.Region) {
+              if (collapse.Count > 0 && collapse[0].Direction != border.Direction) {
+                Debug.Log($"\t\tCollapsing in a new direction {collapse[0].Direction} to {border.Direction}");
+                Debug.Log($"\t\tstoring... " + string.Join(", ", collapse.Select(b => b.Average).ToList()));
+                collapsePairs.Add(collapse);
+                collapse = new List<Border>();
+              }
               collapse.TryAdd(border);
               collapse.TryAdd(cardinal);
+              Debug.Log("\t\t\tEquality test succeeded! Collapse = " +
+                string.Join(", ", collapse.Select(b => b.Average).ToList()));
             }
           }
         }
       }
       if (collapse.Count > 0) {
+        Debug.Log($"\t\tDone with this Region, Collapsing... " + string.Join(", ", collapse.Select(b => b.Average).ToList()));
         collapsePairs.Add(collapse);
       }
     }
 
+    Debug.Log("Collapsing, found groups: " + collapsePairs.Count);
+
     // collapse the stored borders into one
     foreach (var pair in collapsePairs) {
+      Debug.Log("\tCollapsing " + pair[0].Direction + ": " +
+                string.Join(", ", pair.Select(b => b.Average).ToList()));
       var baseBorder = pair[0];
       // collapse all pairs into base
       for (int i = 1; i < pair.Count; i++) {
@@ -292,9 +330,32 @@ public class MapTile
     //   4 - these accompanying borders are members of the same region on their tile
   }
 
-  private void assembleBorderNeighbors()
+  private void purgeEdges()
   {
     var deleteBorders = new List<Border>();
+    // iterate over every region
+    foreach (var region in Regions) {
+      // iterate over all borders in this region
+      foreach (var border in region.Borders()) {
+        // get the neighboring tile in the same direction as this border
+        if (!NeighborTiles.TryGetValue(border.Direction, out var tile)) {
+          // there is no neighboring tile. Delete this border, as it borders nothing
+          deleteBorders.Add(border);
+        }
+      }
+    }
+
+    // delete all borders found to be irrelevant
+    foreach (var delete in deleteBorders) {
+      // reomve the border from this tile
+      Borders.Remove(delete);
+      // remove the border from its region
+      delete.Region.TryRemoveBorder(delete);
+    }
+  }
+
+  private void assembleBorderNeighbors()
+  {
     // iterate over every region
     foreach (var region in Regions) {
       // iterate over all borders in this region
@@ -313,19 +374,8 @@ public class MapTile
               border.AddNeighbor(confirmed);
             }
           }
-        } else {
-          // there is no neighboring tile. Delete this border, as it borders nothing
-          deleteBorders.Add(border);
         }
       }
-    }
-
-    // delete all borders found to be irrelevant
-    foreach (var delete in deleteBorders) {
-      // reomve the border from this tile
-      Borders.Remove(delete);
-      // remove the border from its region
-      delete.Region.TryRemoveBorder(delete);
     }
   }
 }
