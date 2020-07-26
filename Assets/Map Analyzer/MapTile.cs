@@ -267,6 +267,7 @@ public class MapTile
 
           // get the tile in the direction of these two borders
           if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
+            Debug.Log("\t\t testing in direction " + border.Direction.Opposite() + ", " + border.Direction.Opposite().ToVector());
             // and get the two neighboring borders opposing these borders
             var borderB = neighbor.Borders.Where(b =>
                     border.GetLocations().Any(loc => b.Contains(loc + border.Direction.ToVector())) &&
@@ -277,8 +278,22 @@ public class MapTile
                     b.Direction == border.Direction.Opposite())
                   .FirstOrDefault();
 
+            var opposingPairs = neighbor.Borders.Where(b =>
+                    border.GetLocations().Any(loc => b.Direction == border.Direction.Opposite())).ToList();
+
             Debug.Log($"\t\t\t {border.Direction} pairs sought for {border.Average}, {cardinal.Average}");
-            Debug.Log($"\t\t\t {borderB?.Direction} opposing pairs got {borderB?.Average}, {cardinalB?.Average}");
+
+            foreach (var bord in opposingPairs) {
+              Debug.Log($"\t\t\t\tTesting location in border {bord.Average}: {string.Join(", ", bord.GetLocations().ToList())}");
+              foreach (var loc in border.GetLocations()) {
+                if (bord.Contains(loc + border.Direction.ToVector())) {
+                  Debug.Log("\t\t\t\t\tManual check found a paid: " + bord.Average);
+                  continue;
+                }
+              }
+            }
+            Debug.Log($"\t\t\t\t viable opposing pairs: {string.Join(", ", opposingPairs.Select(b => b.Average).ToList())}");
+            Debug.Log($"\t\t\t {border.Direction.Opposite()} opposing pairs got {borderB?.Average}, {cardinalB?.Average}");
 
             // finally, if these two regions are the same, store the borders to collapse
             if (borderB != null && cardinalB != null && borderB.Region == cardinalB.Region) {
@@ -323,11 +338,6 @@ public class MapTile
         }
       }
     }
-    // conditions fulfilled:
-    //   1 - two borders on this tile share the same region
-    //   2 - these two borders share the same avg x-or-y (on same side of the tile)
-    //   3 - both borders have an accompanying border on the neighboring tile
-    //   4 - these accompanying borders are members of the same region on their tile
   }
 
   private void purgeEdges()
