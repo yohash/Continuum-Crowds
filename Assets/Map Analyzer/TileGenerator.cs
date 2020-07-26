@@ -196,22 +196,33 @@ public class TileGenerator : MonoBehaviour
     Debug.Log($"Taking stock...");
     foreach (var tile in Tiles) {
       Debug.Log("\t Tile: " + tile.Corner);
-      foreach (var border in tile.Borders) {
-
-      }
+      Debug.Log($"\t\t{DIRECTION.EAST} Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.EAST).Select(b => b.Average)));
+      Debug.Log($"\t\t{DIRECTION.WEST } Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.WEST).Select(b => b.Average)));
+      Debug.Log($"\t\t{DIRECTION.SOUTH  } Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.SOUTH).Select(b => b.Average)));
+      Debug.Log($"\t\t{DIRECTION.NORTH} Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.NORTH).Select(b => b.Average)));
     }
 
     // now that tiles are generated, build all connections between tiles
     Debug.Log($"Pairing up borders with neighbors...");
-    for (int i = Tiles.Count-1; i >= 0; i--) {
-      Debug.Log($"Assembling interconnects for tile {Tiles[i].Corner}...");
-		Tiles[i].AssembleInterconnects();
-    }
-
-    // foreach (var tile in Tiles) {
-    //   Debug.Log($"Assembling interconnects for tile {tile.Corner}...");
-    //   tile.AssembleInterconnects();
+    // for (int i = Tiles.Count-1; i >= 0; i--) {
+    //   Debug.Log($"Assembling interconnects for tile {Tiles[i].Corner}...");
+    // Tiles[i].AssembleInterconnects();
     // }
+
+    foreach (var tile in Tiles) {
+      Debug.Log($"Assembling interconnects for tile {tile.Corner}...");
+      tile.AssembleInterconnects();
+    }
+    
+
+    Debug.Log($"Taking stock...");
+    foreach (var tile in Tiles) {
+      Debug.Log("\t Tile: " + tile.Corner);
+      Debug.Log($"\t\t{DIRECTION.EAST} Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.EAST).Select(b => b.Average)));
+      Debug.Log($"\t\t{DIRECTION.WEST } Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.WEST).Select(b => b.Average)));
+      Debug.Log($"\t\t{DIRECTION.SOUTH  } Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.SOUTH).Select(b => b.Average)));
+      Debug.Log($"\t\t{DIRECTION.NORTH} Border: " + string.Join(", ", tile.Borders.Where(b => b.Direction == DIRECTION.NORTH).Select(b => b.Average)));
+    }
   }
 
   // ***************************************************************************
