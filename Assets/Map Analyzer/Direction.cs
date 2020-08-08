@@ -1,6 +1,19 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public enum DIRECTION { NORTH, SOUTH, EAST, WEST }
+
+public static class Directions
+{
+  public static IEnumerable<DIRECTION> Each()
+  {
+    yield return DIRECTION.NORTH;
+    yield return DIRECTION.EAST;
+    yield return DIRECTION.SOUTH;
+    yield return DIRECTION.WEST;
+  }
+}
+
 public static class DirectionExtensions
 {
   public static Vector2Int ToVector(this DIRECTION d)

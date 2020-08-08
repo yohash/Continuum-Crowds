@@ -15,6 +15,7 @@ public class MapTile
   public List<Region> Regions;
 
   private int tileSize;
+  public int TileSize { get { return tileSize; } }
 
   private float[,] h;
   private float[,] g;
@@ -240,30 +241,20 @@ public class MapTile
     // iterate over every region
     foreach (var region in Regions) {
       var collapse = new List<Border>();
+
       // iterate over all borders in this region
       foreach (var border in region.Borders()) {
+        // if already collapsing this border, don't repeat the process
+        if (collapse.Contains(border)) { continue; }
+
         // for every border, iterate over all other borders in the same direction
         // (that aren't this same <border> being tested)
-        Debug.Log($"\t testing  border {border.Average}");
-
-        if (collapse.Contains(border)) {
-          Debug.Log("\t\t\t already collapsing this border...");
-          continue;
-        }
-
         var cardinalNeighbors = region.Borders()
               .Where(b => b.Direction == border.Direction && b != border);
 
-        Debug.Log($"\t\tborder {border.Average} direction = {border.Direction}, there are " +
-          cardinalNeighbors.Count() + " others in this REGION to test");
-
         foreach (var cardinal in cardinalNeighbors) {
-          Debug.Log($"\t\t testing cardinal neighbor border {cardinal.Average}");
-
-          if (collapse.Contains(cardinal)) {
-            Debug.Log("\t\t\t already collapsing this cardinal neighbor...");
-            continue;
-          }
+          // if allready collapsing this neighboring border, don't repeat
+          if (collapse.Contains(cardinal)) { continue; }
 
           // get the tile in the direction of these two borders
           if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
@@ -276,38 +267,26 @@ public class MapTile
                     cardinal.GetLocations().Any(loc => b.Contains(loc + cardinal.Direction.ToVector())) &&
                     b.Direction == border.Direction.Opposite())
                   .FirstOrDefault();
-
-            Debug.Log($"\t\t\t {border.Direction} pairs sought for {border.Average}, {cardinal.Average}");
-            Debug.Log($"\t\t\t {borderB?.Direction} opposing pairs got {borderB?.Average}, {cardinalB?.Average}");
-
+            
             // finally, if these two regions are the same, store the borders to collapse
             if (borderB != null && cardinalB != null && borderB.Region == cardinalB.Region) {
               if (collapse.Count > 0 && collapse[0].Direction != border.Direction) {
-                Debug.Log($"\t\tCollapsing in a new direction {collapse[0].Direction} to {border.Direction}");
-                Debug.Log($"\t\tstoring... " + string.Join(", ", collapse.Select(b => b.Average).ToList()));
                 collapsePairs.Add(collapse);
                 collapse = new List<Border>();
               }
               collapse.TryAdd(border);
               collapse.TryAdd(cardinal);
-              Debug.Log("\t\t\tEquality test succeeded! Collapse = " +
-                string.Join(", ", collapse.Select(b => b.Average).ToList()));
             }
           }
         }
       }
       if (collapse.Count > 0) {
-        Debug.Log($"\t\tDone with this Region, Collapsing... " + string.Join(", ", collapse.Select(b => b.Average).ToList()));
         collapsePairs.Add(collapse);
       }
     }
 
-    Debug.Log("Collapsing, found groups: " + collapsePairs.Count);
-
     // collapse the stored borders into one
     foreach (var pair in collapsePairs) {
-      Debug.Log("\tCollapsing " + pair[0].Direction + ": " +
-                string.Join(", ", pair.Select(b => b.Average).ToList()));
       var baseBorder = pair[0];
       // collapse all pairs into base
       for (int i = 1; i < pair.Count; i++) {

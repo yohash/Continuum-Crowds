@@ -46,20 +46,15 @@ public class TileGenerator : MonoBehaviour
 
 		if (viewTiles && Tiles.Count > tileIndex && tileIndex >= 0) {
 			var tile = Tiles[tileIndex];
-			for (int x = 0; x < tile.Height.GetLength(0); x++) {
-				for (int y = 1; y < tile.Height.GetLength(1); y++) {
-					Debug.DrawLine(
-						new Vector3(x + tile.Corner.x + 0.5f, tile.Height[x, y - 1] + dy, y - 1 + tile.Corner.y + 0.5f),
-						new Vector3(x + tile.Corner.x + 0.5f, tile.Height[x, y] + dy, y + tile.Corner.y + 0.5f),
-						Color.green
-					);
-				}
-			}
-			for (int x = 1; x < tile.Height.GetLength(0); x++) {
-				for (int y = 0; y < tile.Height.GetLength(1); y++) {
-					Debug.DrawLine(
-						new Vector3(x - 1 + tile.Corner.x + 0.5f, tile.Height[x - 1, y] + dy, y + tile.Corner.y + 0.5f),
-						new Vector3(x + tile.Corner.x + 0.5f, tile.Height[x, y] + dy, y + tile.Corner.y + 0.5f),
+
+			float height(int x, int y) { return tile.Height[x - tile.Corner.x, y - tile.Corner.y] + dy; }
+			for (int x = tile.Corner.x; x < tile.Corner.x + tile.TileSize-1; x++) {
+				for (int y = tile.Corner.y; y < tile.Corner.y + tile.TileSize-1; y++) {
+					drawSquare(
+						new Vector3(x, height(x, y), y),
+						new Vector3(x + 1, height(x + 1, y), y),
+						new Vector3(x + 1, height(x + 1, y + 1), y + 1),
+						new Vector3(x, height(x, y + 1), y + 1),
 						Color.green
 					);
 				}
@@ -141,6 +136,14 @@ public class TileGenerator : MonoBehaviour
 		Debug.DrawLine(corner + Vector3.right, corner, c);
 	}
 
+	private void drawSquare(Vector3 c1, Vector3 c2, Vector3 c3, Vector3 c4, Color c)
+	{
+		Debug.DrawLine(c1, c2, c);
+		Debug.DrawLine(c2, c3, c);
+		Debug.DrawLine(c3, c4, c);
+		Debug.DrawLine(c4, c1, c);
+	}
+
 	// ***************************************************************************
 	//  TILE GENERATION
 	// ***************************************************************************
@@ -198,6 +201,23 @@ public class TileGenerator : MonoBehaviour
 			Debug.Log($"\t\tAssembling interconnects for tile {tile.Corner}...");
 			tile.AssembleInterconnects();
 		}
+
+		Debug.Log("Final accouting:");
+		foreach (var tile in Tiles) {
+			Debug.Log("\tTile " + tile.Corner + ": " + tile.Borders.Count + " borders");
+			foreach (var dir in Directions.Each()) {
+				var matching = tile.Borders.Where(b => b.Direction == dir);
+				if (matching.Count() > 0) { Debug.Log($"\t\t\t" + dir); }
+				int num = 1;
+				foreach (var card in matching) {
+					Debug.Log($"\t\t\t\t({num++}) - {card.Average}:  " + string.Join(", ", card.GetLocations()));
+					int n = 1;
+					foreach (var neighb in card.GetNeighbors()) {
+						Debug.Log($"\t\t\t\t\t(Neighbor {n++}) - {neighb.Average}");
+					}
+				}
+			}
+		}
 	}
 
 	// ***************************************************************************
@@ -206,9 +226,13 @@ public class TileGenerator : MonoBehaviour
 	public void LoadCsvFiles()
 	{
 		string path = $"{FileUtility.PATH}/{FileUtility.DATA_FOLDER}/{Filename}/{FileUtility.CSV_FOLDER}/";
+		Debug.Log("Loading files at: " + path + Filename + "_*");
 
 		h = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_H.txt");
+		Debug.Log($"\tSuccessfully loaded height map, h: {h.GetLength(0)}x{h.GetLength(1)}");
+
 		g = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_g.txt");
+		Debug.Log($"\tSuccessfully loaded discomfort, g: {g.GetLength(0)}x{g.GetLength(1)}");
 
 		float[,] dhdx = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_dHdx.txt");
 		float[,] dhdy = FileUtility.LoadCsvIntoFloatMatrix(path + Filename + "_dHdy.txt");
@@ -220,6 +244,8 @@ public class TileGenerator : MonoBehaviour
 				dh[i, k] = new Vector2(dhdx[i, k], dhdy[i, k]);
 			}
 		}
+
+		Debug.Log($"\tSuccessfully assembled height gradient, dh: {dh.GetLength(0)}x{dh.GetLength(1)}");
 	}
 
 	public void SerializeAndSaveTiles()
