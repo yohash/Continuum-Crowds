@@ -23,7 +23,7 @@ public static class DirectionExtensions
       case DIRECTION.SOUTH: return new Vector2Int(0, -1);
       case DIRECTION.EAST: return new Vector2Int(1, 0);
       case DIRECTION.WEST:
-      default: return new Vector2Int(0, -1);
+      default: return new Vector2Int(-1, 0);
     }
   }
 

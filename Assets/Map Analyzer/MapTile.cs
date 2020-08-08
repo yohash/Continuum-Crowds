@@ -113,7 +113,7 @@ public class MapTile
       }
     }
     if (valid) { Borders.Add(border); }
-    // scan the right (x=length, EAST)  
+    // scan the right (x=length, EAST)
     border = new Border(this, DIRECTION.EAST);
     x = g.GetLength(0) - 1;
     for (y = 0; y < g.GetLength(1); y++) {
@@ -260,14 +260,14 @@ public class MapTile
           if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
             // and get the two neighboring borders opposing these borders
             var borderB = neighbor.Borders.Where(b =>
-                    border.GetLocations().Any(loc => b.Contains(loc + border.Direction.ToVector())) &&
-                    b.Direction == border.Direction.Opposite())
+                    b.Direction == border.Direction.Opposite() &&
+                    border.GetLocations().Any(loc => b.Contains(loc + border.Direction.ToVector())))
                   .FirstOrDefault();
             var cardinalB = neighbor.Borders.Where(b =>
-                    cardinal.GetLocations().Any(loc => b.Contains(loc + cardinal.Direction.ToVector())) &&
-                    b.Direction == border.Direction.Opposite())
+                    b.Direction == cardinal.Direction.Opposite() &&
+                    cardinal.GetLocations().Any(loc => b.Contains(loc + cardinal.Direction.ToVector())))
                   .FirstOrDefault();
-            
+
             // finally, if these two regions are the same, store the borders to collapse
             if (borderB != null && cardinalB != null && borderB.Region == cardinalB.Region) {
               if (collapse.Count > 0 && collapse[0].Direction != border.Direction) {
@@ -302,11 +302,6 @@ public class MapTile
         }
       }
     }
-    // conditions fulfilled:
-    //   1 - two borders on this tile share the same region
-    //   2 - these two borders share the same avg x-or-y (on same side of the tile)
-    //   3 - both borders have an accompanying border on the neighboring tile
-    //   4 - these accompanying borders are members of the same region on their tile
   }
 
   private void purgeEdges()

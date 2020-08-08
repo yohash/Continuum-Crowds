@@ -24,13 +24,13 @@ public class TileGenerator : MonoBehaviour
 	private bool viewBorders;
 	private bool viewNeighborBorders;
 	public void ViewTiles(bool show) { viewTiles = show; }
-  public void ViewRegions(bool show) { viewRegions = show; }
+	public void ViewRegions(bool show) { viewRegions = show; }
 	public void ViewBorders(bool show) { viewBorders = show; }
 	public void ViewNeighbors(bool show) { viewNeighborBorders = show; }
 	public void ViewTileIndex(string i)
-  {
+	{
 		if (int.TryParse(i, out int index)) { tileIndex = index; }
-  }
+	}
 	public void ShuffleColors() { borderColors.Clear(); }
 
 	private int tileIndex;
@@ -48,8 +48,8 @@ public class TileGenerator : MonoBehaviour
 			var tile = Tiles[tileIndex];
 
 			float height(int x, int y) { return tile.Height[x - tile.Corner.x, y - tile.Corner.y] + dy; }
-			for (int x = tile.Corner.x; x < tile.Corner.x + tile.TileSize-1; x++) {
-				for (int y = tile.Corner.y; y < tile.Corner.y + tile.TileSize-1; y++) {
+			for (int x = tile.Corner.x; x < tile.Corner.x + tile.TileSize - 1; x++) {
+				for (int y = tile.Corner.y; y < tile.Corner.y + tile.TileSize - 1; y++) {
 					drawSquare(
 						new Vector3(x, height(x, y), y),
 						new Vector3(x + 1, height(x + 1, y), y),
@@ -120,8 +120,9 @@ public class TileGenerator : MonoBehaviour
 	{
 		float dy = 0.1f;
 		foreach (var location in border.GetLocations()) {
-			float height(Vector2Int v) { 
-				return border.Tile.Height[v.x - border.Tile.Corner.x, v.y - border.Tile.Corner.y]; 
+			float height(Vector2Int v)
+			{
+				return border.Tile.Height[v.x - border.Tile.Corner.x, v.y - border.Tile.Corner.y];
 			}
 			var hgt = location.ToXYZ(height(location) + dy);
 			drawSquare(hgt, c);
