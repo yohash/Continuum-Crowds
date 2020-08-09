@@ -11,8 +11,6 @@ public class TileGenerator : MonoBehaviour
 
   public List<MapTile> Tiles;
 
-  public Vector2 DRAW_ME = Vector2.zero;
-
   // terrain fields
   private float[,] h;
   private float[,] g;
@@ -44,12 +42,10 @@ public class TileGenerator : MonoBehaviour
   {
     float dy = 0.1f;
 
-    var hgt = Tiles.FirstOrDefault(t => t.ContainsPoint(DRAW_ME))?.Height[DRAW_ME.x, DRAW_ME.y];
-
     if (viewTiles && Tiles.Count > tileIndex && tileIndex >= 0) {
       var tile = Tiles[tileIndex];
 
-      float height(int x, int y) { return tile.Height[x - tile.Corner.x, y - tile.Corner.y] + dy; }
+      float height(int x, int y) { return tile.Height(x, y) + dy; }
       for (int x = tile.Corner.x; x < tile.Corner.x + tile.TileSize - 1; x++) {
         for (int y = tile.Corner.y; y < tile.Corner.y + tile.TileSize - 1; y++) {
           drawSquare(
@@ -68,10 +64,10 @@ public class TileGenerator : MonoBehaviour
         foreach (var region in tile.Regions) {
           foreach (var location in region.Locations()) {
             // handy call shortener
-            float height(Vector2Int v) { return tile.Height[v.x - tile.Corner.x, v.y - tile.Corner.y]; }
+            float height(Vector2Int v) { return tile.Height(v.x, v.y); }
 
-            var hgt = location.ToXYZ(height(location) + dy);
-            drawSquare(hgt, Color.red);
+            var hrgt = location.ToXYZ(height(location) + dy);
+            drawSquare(hrgt, Color.red);
           }
         }
       }
@@ -124,7 +120,7 @@ public class TileGenerator : MonoBehaviour
     foreach (var location in border.GetLocations()) {
       float height(Vector2Int v)
       {
-        return border.Tile.Height[v.x - border.Tile.Corner.x, v.y - border.Tile.Corner.y];
+        return border.Tile.Height(v.x, v.y);
       }
       var hgt = location.ToXYZ(height(location) + dy);
       drawSquare(hgt, c);
@@ -199,10 +195,13 @@ public class TileGenerator : MonoBehaviour
     }
 
     // now that tiles are generated, build all connections between tiles
-    Debug.Log($"\tPairing up borders with neighbors...");
     foreach (var tile in Tiles) {
       Debug.Log($"Assembling interconnects for tile {tile.Corner}...");
       tile.AssembleInterconnects();
+    }
+    foreach (var tile in Tiles) {
+      Debug.Log($"Assembling neighbors for {tile.Corner}...");
+      tile.AssembleBorderNeighbors();
     }
 
     Debug.Log("Final accouting:");

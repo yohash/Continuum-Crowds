@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Region
@@ -50,8 +51,10 @@ public class Region
 
   public IEnumerable<Border> Borders()
   {
-    foreach (var b in borders) {
-      yield return b;
+    foreach (var d in Directions.Each()) {
+      foreach (var b in borders.Where(bord => bord.Direction == d)) {
+        yield return b;
+      }
     }
   }
 

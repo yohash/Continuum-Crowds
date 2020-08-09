@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -20,9 +21,6 @@ public class MapTile
   private float[,] g;
   private Vector2[,] dh;
 
-  public float[,] Height { get { return h; } }
-  public float[,] Discomfort { get { return g; } }
-
   public MapTile(Vector2Int corner, float[,] h, float[,] g, Vector2[,] dh)
   {
     this.h = h;
@@ -37,11 +35,25 @@ public class MapTile
     assembleTile();
   }
 
+  public bool ContainsPoint(Vector2 v)
+  {
+    return ContainsPoint(v.x, v.y);
+  }
+  public bool ContainsPoint(float x, float y)
+  {
+    return x < corner.x + tileSize &&
+           x >= corner.x &&
+           y < corner.y + tileSize &&
+           y >= corner.y;
+  }
+  public float Height(int x, int y)
+  {
+    return ContainsPoint(x, y) ? h[x - corner.x, y - corner.y] : float.MinValue;
+  }
   public void AssembleInterconnects()
   {
     purgeEdges();
     collapseBorders();
-    assembleBorderNeighbors();
   }
 
   private void assembleTile()
@@ -269,7 +281,9 @@ public class MapTile
 
             // finally, if these two regions are the same, store the borders to collapse
             if (borderB != null && cardinalB != null && borderB.Region == cardinalB.Region) {
+              Debug.Log($"\tFound a collapsable pair {border.Direction}:  " + border.Average + " - " + cardinal.Average);
               if (collapse.Count > 0 && collapse[0].Direction != border.Direction) {
+                Debug.Log($"\t\tAdding group in direction {collapse[0].Direction}:   {string.Join(", ", collapse.Select(b => b.Average))}");
                 collapsePairs.Add(collapse);
                 collapse = new List<Border>();
               }
@@ -279,27 +293,48 @@ public class MapTile
           }
         }
       }
-      if (collapse.Count > 0) {
+      // final add
+      if (collapse.Count > 1) {
+        Debug.Log($"\t\tAdding group in direction {collapse[0].Direction}:   {string.Join(", ", collapse.Select(b => b.Average))}");
         collapsePairs.Add(collapse);
+        collapse = new List<Border>();
       }
     }
 
-    // collapse the stored borders into one
-    foreach (var pair in collapsePairs) {
-      var baseBorder = pair[0];
-      // collapse all pairs into base
-      for (int i = 1; i < pair.Count; i++) {
-        // add all locations to the base border
-        foreach (var location in pair[i].GetLocations()) {
-          baseBorder.AddLocation(location);
-        }
-        // remove the new location from (1) region and (2) tile, (3) neighbor border
-        pair[i].Tile.Borders.Remove(pair[i]);
-        pair[i].Region.TryRemoveBorder(pair[i]);
-        foreach (var neighbor in pair[i].GetNeighbors()) {
-          // create a remove function
+    Debug.Log($"\t{collapsePairs[0][0].Tile.corner} Tracking all collapsable pairs: ");
+    foreach (var g in collapsePairs) {
+      Debug.Log($"\t\t{g[0].Direction} - {string.Join(", ", g.Select(b => b.Average))}");
+    }
+
+    // collapse any borders into each other
+    if (collapsePairs.Count > 0) {
+      foreach (var collapseGroup in collapsePairs) {
+        var baseBorder = collapseGroup[0];
+        Debug.Log($"\t\tCollapsing {baseBorder.Direction} border: " + baseBorder.Average);
+
+        for (int i = 1; i < collapseGroup.Count; i++) {
+          Debug.Log("\t\t\tmerging border: " + collapseGroup[i].Average);
+          // add all locations to the base border
+          foreach (var location in collapseGroup[i].GetLocations()) {
+            baseBorder.AddLocation(location);
+          }
+
+          // delete this extraneous border
+          tryRemoveBorder(collapseGroup[i]);
         }
       }
+    }
+  }
+
+  private void tryRemoveBorder(Border b)
+  {
+    Debug.Log($"\t\t\tDELETING useless border: " + b.ID);
+    if (Borders.Contains(b)) {
+      Borders.Remove(b);
+      Debug.Log("\t\t\t\tborder exists in list - " + Borders.Contains(b));
+    }
+    foreach (var region in Regions.Where(r => r.ContainsBorder(b))) {
+      region.TryRemoveBorder(b);
     }
   }
 
@@ -327,25 +362,22 @@ public class MapTile
     }
   }
 
-  private void assembleBorderNeighbors()
+  public void AssembleBorderNeighbors()
   {
-    // iterate over every region
-    foreach (var region in Regions) {
-      // iterate over all borders in this region
-      foreach (var border in region.Borders()) {
-        // get the neighboring tile in the same direction as this border
-        if (NeighborTiles.TryGetValue(border.Direction, out var tile)) {
-          // get this tile's borders that align with the edge of the border in question
-          var opposingBorders = tile.Borders.Where(b => b.Direction == border.Direction.Opposite());
-          var dir = border.Direction.ToVector();
+    // iterate over all borders
+    foreach (var border in Borders) {
+      // get the neighboring tile in the same direction as this border
+      if (NeighborTiles.TryGetValue(border.Direction, out var tile)) {
+        // get this tile's borders that align with the edge of the border in question
+        var opposingBorders = tile.Borders.Where(b => b.Direction == border.Direction.Opposite());
+        var dir = border.Direction.ToVector();
 
-          // iterate over all locations in this border being tested
-          foreach (var location in border.GetLocations()) {
-            // collect the borders that are adjacent to the border being tested
-            var neighbor = opposingBorders.Where(b => b.Contains(location + dir));
-            foreach (var confirmed in neighbor) {
-              border.AddNeighbor(confirmed);
-            }
+        // iterate over all locations in this border being tested
+        foreach (var location in border.GetLocations()) {
+          // collect the borders that are adjacent to the border being tested
+          var neighbor = opposingBorders.Where(b => b.Contains(location + dir));
+          foreach (var confirmed in neighbor) {
+            border.AddNeighbor(confirmed);
           }
         }
       }

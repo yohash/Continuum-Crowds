@@ -7,6 +7,8 @@ public class Border
 {
   public DIRECTION Direction { get; private set; }
 
+  public Guid ID;
+
   [SerializeField] private List<Vector2Int> locations;
 
   /// <summary>
@@ -18,7 +20,7 @@ public class Border
   /// Reference to the containing tile
   /// </summary>
   private MapTile tile;
-  public MapTile Tile {  get { return tile; } private set { tile = value; } }
+  public MapTile Tile { get { return tile; } private set { tile = value; } }
 
   /// <summary>
   /// Reference to the containing Region
@@ -34,6 +36,8 @@ public class Border
     Direction = d;
 
     neighborBorders = new List<Border>();
+
+    ID = Guid.NewGuid();
   }
 
   public void AddLocation(Vector2 location)
