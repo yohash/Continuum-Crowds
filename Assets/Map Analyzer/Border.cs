@@ -7,14 +7,46 @@ public class Border
 {
   public DIRECTION Direction { get; private set; }
 
-  public Guid ID;
+  public Guid ID { get { return _id; } private set { _id = value; } }
+  [SerializeField] private Guid _id;
 
-  [SerializeField] private List<Vector2Int> locations;
+  /// <summary>
+  /// All integer locations that comprise this border
+  /// </summary>
+  private List<Vector2Int> locations;
+
+  public IEnumerable<Vector2Int> GetLocations()
+  {
+    foreach (var location in locations) { yield return location; }
+  }
+  public void AddLocation(Vector2 location)
+  {
+    AddLocation(Vector2Int.RoundToInt(location));
+  }
+  public void AddLocation(Vector2Int location)
+  {
+    if (!locations.Contains(location)) { locations.Add(location); }
+  }
+  public bool Contains(Vector2Int v)
+  {
+    return locations.Contains(v);
+  }
 
   /// <summary>
   /// Neighboring borders in nearby tiles
   /// </summary>
   private List<Border> neighborBorders;
+
+  public IEnumerable<Border> GetNeighbors()
+  {
+    foreach (var border in neighborBorders) { yield return border; }
+  }
+  public void AddNeighbor(Border neighbor)
+  {
+    if (neighbor != this && !neighborBorders.Contains(neighbor)) {
+      neighborBorders.Add(neighbor);
+    }
+  }
 
   /// <summary>
   /// Reference to the containing tile
@@ -31,46 +63,12 @@ public class Border
   public Border(MapTile tile, DIRECTION d)
   {
     this.tile = tile;
-    locations = new List<Vector2Int>();
-
     Direction = d;
 
+    locations = new List<Vector2Int>();
     neighborBorders = new List<Border>();
 
     ID = Guid.NewGuid();
-  }
-
-  public void AddLocation(Vector2 location)
-  {
-    AddLocation(Vector2Int.RoundToInt(location));
-  }
-  public void AddLocation(Vector2Int location)
-  {
-    if (!locations.Contains(location)) { locations.Add(location); }
-  }
-
-  public bool Contains(Vector2Int v)
-  {
-    return locations.Contains(v);
-  }
-  public void AddNeighbor(Border neighbor)
-  {
-    if (neighbor != this && !neighborBorders.Contains(neighbor)) {
-      neighborBorders.Add(neighbor);
-    }
-  }
-  public IEnumerable<Vector2Int> GetLocations()
-  {
-    foreach (var location in locations) {
-      yield return location;
-    }
-  }
-
-  public IEnumerable<Border> GetNeighbors()
-  {
-    foreach (var border in neighborBorders) {
-      yield return border;
-    }
   }
 
   [SerializeField] private Vector2Int _average;

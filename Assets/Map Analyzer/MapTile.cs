@@ -6,17 +6,18 @@ using UnityEngine;
 [System.Serializable]
 public class MapTile
 {
-  [SerializeField] Vector2Int corner;
   public Vector2Int Corner { get { return corner; } private set { corner = value; } }
+  [SerializeField] private Vector2Int corner;
+  
+  public int TileSize { get { return tileSize; } }
+  [SerializeField] private int tileSize;
 
-  public List<Border> Borders;
+  // public tile contents
+  [NonSerialized] public List<Border> Borders;
+  [NonSerialized] public List<Region> Regions;
   public Dictionary<DIRECTION, MapTile> NeighborTiles;
 
-  public List<Region> Regions;
-
-  private int tileSize;
-  public int TileSize { get { return tileSize; } }
-
+  // defining tile data
   private float[,] h;
   private float[,] g;
   private Vector2[,] dh;
@@ -26,7 +27,7 @@ public class MapTile
     this.h = h;
     this.g = g;
     this.dh = dh;
-    this.Corner = corner;
+    this.corner = corner;
 
     tileSize = h.GetLength(0);
 
@@ -50,12 +51,8 @@ public class MapTile
   {
     return ContainsPoint(x, y) ? h[x - corner.x, y - corner.y] : float.MinValue;
   }
-  public void AssembleInterconnects()
-  {
-    collapseBorders();
-  }
 
-  public void AssembleBorderNeighbors()
+  public void ConnectBordersToNeighbors()
   {
     // iterate over all borders
     foreach (var border in Borders) {
@@ -268,7 +265,7 @@ public class MapTile
   /// 4. See if the NEIGHBORS borders are from the same [Region]
   /// 5. If so, then the two borders in this region are continuous, and can be merged
   /// </summary>
-  private void collapseBorders()
+  public void MergeBorders()
   {
     var collapsePairs = new List<List<Border>>();
     // iterate over every region

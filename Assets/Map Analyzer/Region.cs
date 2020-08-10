@@ -4,51 +4,33 @@ using UnityEngine;
 
 public class Region
 {
+  /// <summary>
+  /// All integer locations that comprise this Region
+  /// </summary>
   private List<Vector2Int> locations;
-  private List<Border> borders;
 
-  public Region()
+  public IEnumerable<Vector2Int> Locations()
   {
-    locations = new List<Vector2Int>();
-    borders = new List<Border>();
+    foreach (var loc in locations) { yield return loc; }
   }
-
   public void AddLocation(Vector2Int v)
   {
     if (!locations.Contains(v)) { locations.Add(v); }
   }
-
   public bool ContainsLocation(Vector2Int v)
   {
     return locations.Contains(v);
   }
-
   public Vector2Int GetFirst()
   {
     if (locations.Count > 0) { return locations[0]; }
     return Vector2Int.zero;
   }
 
-  public void AddBorder(Border b)
-  {
-    if (!borders.Contains(b)) {
-      borders.Add(b);
-      b.Region = this;
-    }
-  }
-
-  public bool ContainsBorder(Border b)
-  {
-    return borders.Contains(b);
-  }
-
-  public void TryRemoveBorder(Border b)
-  {
-    if (borders.Contains(b)) {
-      borders.Remove(b);
-    }
-  }
-
+  /// <summary>
+  /// All borders that are contained within this Region
+  /// </summary>
+  private List<Border> borders;
   public IEnumerable<Border> Borders()
   {
     foreach (var d in Directions.Each()) {
@@ -57,11 +39,25 @@ public class Region
       }
     }
   }
-
-  public IEnumerable<Vector2Int> Locations()
+  public void AddBorder(Border b)
   {
-    foreach (var loc in locations) {
-      yield return loc;
+    if (!borders.Contains(b)) {
+      borders.Add(b);
+      b.Region = this;
     }
+  }
+  public bool ContainsBorder(Border b)
+  {
+    return borders.Contains(b);
+  }
+  public void TryRemoveBorder(Border b)
+  {
+    if (borders.Contains(b)) { borders.Remove(b); }
+  }
+
+  public Region()
+  {
+    locations = new List<Vector2Int>();
+    borders = new List<Border>();
   }
 }

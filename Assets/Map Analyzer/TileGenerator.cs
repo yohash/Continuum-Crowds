@@ -148,14 +148,14 @@ public class TileGenerator : MonoBehaviour
   // ***************************************************************************
   public void GenerateCCTiles()
   {
-    int sizeX = h.GetLength(0);
-    int sizeY = h.GetLength(1);
-
     if (h.GetLength(0) != g.GetLength(0) || g.GetLength(0) != dh.GetLength(0) ||
         h.GetLength(1) != g.GetLength(1) || g.GetLength(1) != dh.GetLength(1)) {
       Debug.LogError("Cannot generate Tiles, dimensions disagree. Re-load heightmaps.");
       return;
     }
+
+    int sizeX = h.GetLength(0);
+    int sizeY = h.GetLength(1);
 
     Debug.Log($"Generating tiles (size = {TileSize}) for height map dimension: {sizeX} x {sizeY}");
     int numTilesX = Mathf.CeilToInt((float)sizeX / (float)TileSize);
@@ -196,29 +196,12 @@ public class TileGenerator : MonoBehaviour
 
     // now that tiles are generated, build all connections between tiles
     foreach (var tile in Tiles) {
-      Debug.Log($"Assembling interconnects for tile {tile.Corner}...");
-      tile.AssembleInterconnects();
+      Debug.Log($"Merging tile borders for tile {tile.Corner}...");
+      tile.MergeBorders();
     }
     foreach (var tile in Tiles) {
       Debug.Log($"Assembling neighbors for {tile.Corner}...");
-      tile.AssembleBorderNeighbors();
-    }
-
-    Debug.Log("Final accouting:");
-    foreach (var tile in Tiles) {
-      Debug.Log("\tTile " + tile.Corner + ": " + tile.Borders.Count + " borders");
-      foreach (var dir in Directions.Each()) {
-        var matching = tile.Borders.Where(b => b.Direction == dir);
-        if (matching.Count() > 0) { Debug.Log($"\t\t" + dir); }
-        int num = 1;
-        foreach (var card in matching) {
-          Debug.Log($"\t\t\t({num++}) - [{card.ID}]:\t\t" + string.Join(", ", card.GetLocations()));
-          int n = 1;
-          foreach (var neighb in card.GetNeighbors()) {
-            Debug.Log($"\t\t\t\t(Neighbor {n++}) - [{neighb.ID}]");
-          }
-        }
-      }
+      tile.ConnectBordersToNeighbors();
     }
   }
 
