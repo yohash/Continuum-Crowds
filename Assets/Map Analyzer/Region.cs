@@ -4,6 +4,15 @@ using UnityEngine;
 
 public class Region
 {
+  public Region()
+  {
+    locations = new List<Vector2Int>();
+    borders = new List<Border>();
+  }
+
+  // *******************************************************************
+  //    REGION
+  // *******************************************************************
   /// <summary>
   /// All integer locations that comprise this Region
   /// </summary>
@@ -53,11 +62,5 @@ public class Region
   public void TryRemoveBorder(Border b)
   {
     if (borders.Contains(b)) { borders.Remove(b); }
-  }
-
-  public Region()
-  {
-    locations = new List<Vector2Int>();
-    borders = new List<Border>();
   }
 }
