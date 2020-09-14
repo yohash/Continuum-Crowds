@@ -6,8 +6,8 @@ using UnityEngine;
 [System.Serializable]
 public class MapTile
 {
-  public Vector2Int Corner { get { return corner; } private set { corner = value; } }
-  [SerializeField] private Vector2Int corner;
+  public Location Corner { get { return corner; } private set { corner = value; } }
+  [SerializeField] private Location corner;
   
   public int TileSize { get { return tileSize; } }
   [SerializeField] private int tileSize;
@@ -22,7 +22,7 @@ public class MapTile
   private float[,] g;
   private Vector2[,] dh;
 
-  public MapTile(Vector2Int corner, float[,] h, float[,] g, Vector2[,] dh)
+  public MapTile(Location corner, float[,] h, float[,] g, Vector2[,] dh)
   {
     this.h = h;
     this.g = g;
@@ -97,7 +97,7 @@ public class MapTile
     border = new Border(this, DIRECTION.SOUTH);
     for (x = 0; x < g.GetLength(0); x++) {
       if (g[x, y] < 1) {
-        border.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Location(x, y) + corner);
         valid = true;
       } else {
         // sharp break in discomfort, unpassable location, close off this border
@@ -114,7 +114,7 @@ public class MapTile
     y = g.GetLength(1) - 1;
     for (x = 0; x < g.GetLength(0); x++) {
       if (g[x, y] < 1) {
-        border.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Location(x, y) + corner);
         valid = true;
       } else {
         // sharp break in discomfort, unpassable location, close off this border
@@ -131,7 +131,7 @@ public class MapTile
     x = 0;
     for (y = 0; y < g.GetLength(1); y++) {
       if (g[x, y] < 1) {
-        border.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Location(x, y) + corner);
         valid = true;
       } else {
         // sharp break in discomfort, unpassable location, close off this border
@@ -148,7 +148,7 @@ public class MapTile
     x = g.GetLength(0) - 1;
     for (y = 0; y < g.GetLength(1); y++) {
       if (g[x, y] < 1) {
-        border.AddLocation(new Vector2(x, y) + corner);
+        border.AddLocation(new Location(x, y) + corner);
         valid = true;
       } else {
         // sharp break in discomfort, unpassable location, close off this border
@@ -187,7 +187,7 @@ public class MapTile
       foreach (var loc in seed.GetLocations()) { region.AddLocation(loc); }
 
       // create a queue we'll pull locations from
-      var testLocations = new Queue<Vector2Int>();
+      var testLocations = new Queue<Location>();
       // seed with location at [0]
       testLocations.Enqueue(region.GetFirst());
 

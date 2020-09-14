@@ -63,9 +63,9 @@ public class TileGenerator : MonoBehaviour
         foreach (var region in tile.Regions) {
           foreach (var location in region.Locations()) {
             // handy call shortener
-            float height(Vector2Int v) { return tile.Height(v.x, v.y); }
+            float height(Location v) { return tile.Height(v.x, v.y); }
 
-            var hrgt = location.ToXYZ(height(location) + dy);
+            var hrgt = location.ToVector3(height(location) + dy);
             drawSquare(hrgt, Color.red);
           }
         }
@@ -117,11 +117,11 @@ public class TileGenerator : MonoBehaviour
   {
     float dy = 0.1f;
     foreach (var location in border.GetLocations()) {
-      float height(Vector2Int v)
+      float height(Location v)
       {
         return border.Tile.Height(v.x, v.y);
       }
-      var hgt = location.ToXYZ(height(location) + dy);
+      var hgt = location.ToVector3(height(location) + dy);
       drawSquare(hgt, c);
     }
   }
@@ -164,7 +164,7 @@ public class TileGenerator : MonoBehaviour
     Tiles = new List<MapTile>();
     for (int x = 0; x < numTilesX; x++) {
       for (int y = 0; y < numTilesY; y++) {
-        Vector2Int corner = new Vector2Int(x * TileSize, y * TileSize);
+        Location corner = new Location(x * TileSize, y * TileSize);
         Tiles.Add(new MapTile(
               corner,
               h.SubMatrix(x * TileSize, y * TileSize, TileSize, TileSize),
@@ -178,7 +178,7 @@ public class TileGenerator : MonoBehaviour
     foreach (var tile in Tiles) {
       foreach (var neighbor in Tiles) {
         if (tile != neighbor) {
-          if ((tile.Corner - neighbor.Corner).magnitude == TileSize) {
+          if ((tile.Corner - neighbor.Corner).magnitude() == TileSize) {
             // this tile is within one TileSize, it is a neighbor
             var dir = (neighbor.Corner - tile.Corner).ToDirection();
             tile.NeighborTiles[dir] = neighbor;

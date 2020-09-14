@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 public class Region
 {
   public Region()
   {
-    locations = new List<Vector2Int>();
+    locations = new List<Location>();
     borders = new List<Border>();
   }
 
@@ -16,24 +14,24 @@ public class Region
   /// <summary>
   /// All integer locations that comprise this Region
   /// </summary>
-  private List<Vector2Int> locations;
+  private List<Location> locations;
 
-  public IEnumerable<Vector2Int> Locations()
+  public IEnumerable<Location> Locations()
   {
     foreach (var loc in locations) { yield return loc; }
   }
-  public void AddLocation(Vector2Int v)
+  public void AddLocation(Location v)
   {
     if (!locations.Contains(v)) { locations.Add(v); }
   }
-  public bool ContainsLocation(Vector2Int v)
+  public bool ContainsLocation(Location v)
   {
     return locations.Contains(v);
   }
-  public Vector2Int GetFirst()
+  public Location GetFirst()
   {
     if (locations.Count > 0) { return locations[0]; }
-    return Vector2Int.zero;
+    return Location.zero;
   }
 
   /// <summary>
@@ -43,8 +41,10 @@ public class Region
   public IEnumerable<Border> Borders()
   {
     foreach (var d in Directions.Each()) {
-      foreach (var b in borders.Where(bord => bord.Direction == d)) {
-        yield return b;
+      foreach (var b in borders) {
+        if (b.Direction == d) {
+          yield return b;
+        }
       }
     }
   }

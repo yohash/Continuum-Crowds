@@ -40,7 +40,11 @@ public static class DirectionExtensions
 
   public static DIRECTION ToDirection(this Vector2Int v)
   {
-    return ((Vector2)v).ToDirection();
+    return v.ToDirection();
+  }
+  public static DIRECTION ToDirection(this Location l)
+  {
+    return l.ToVector2().ToDirection();
   }
 
   public static DIRECTION ToDirection(this Vector2 v)

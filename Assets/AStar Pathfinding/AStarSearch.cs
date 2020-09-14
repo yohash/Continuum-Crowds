@@ -3,27 +3,27 @@ using System.Collections.Generic;
 using Priority_Queue;
 
 [Serializable]
-public class AStarSearch
+public class AStarSearch<T>
 {
-  public List<IPathable> Path;
+  public List<IPathable<T>> Path;
 
-  private SimplePriorityQueue<IPathable> frontier;
+  private SimplePriorityQueue<IPathable<T>> frontier;
 
-  private Dictionary<IPathable, IPathable> cameFrom;
-  private Dictionary<IPathable, float> costSoFar;
+  private Dictionary<IPathable<T>, IPathable<T>> cameFrom;
+  private Dictionary<IPathable<T>, float> costSoFar;
 
   public AStarSearch()
   {
     // init the queues and dictionary
-    frontier = new SimplePriorityQueue<IPathable>();
+    frontier = new SimplePriorityQueue<IPathable<T>>();
 
-    Path = new List<IPathable>();
+    Path = new List<IPathable<T>>();
 
-    cameFrom = new Dictionary<IPathable, IPathable>();
-    costSoFar = new Dictionary<IPathable, float>();
+    cameFrom = new Dictionary<IPathable<T>, IPathable<T>>();
+    costSoFar = new Dictionary<IPathable<T>, float>();
   }
 
-  public void ComputePath(IPathable start, IPathable end, Action<List<IPathable>> onComplete)
+  public void ComputePath(IPathable<T> start, IPathable<T> end, Action<List<IPathable<T>>> onComplete)
   {
     // init the queues and dictionary
     frontier.Clear();
@@ -35,7 +35,7 @@ public class AStarSearch
     cameFrom[start] = start;
     costSoFar[start] = 0;
 
-    IPathable currentNode;
+    IPathable<T> currentNode;
 
     // start Grid* (A* pathfinding for the power grid)
     while (frontier.Count > 0) {

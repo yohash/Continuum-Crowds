@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Border : IPathable
+public class Border : IPathable<Border> 
 {
   public DIRECTION Direction { get; private set; }
 
@@ -36,7 +36,7 @@ public class Border : IPathable
     this.tile = tile;
     Direction = d;
 
-    locations = new List<Vector2Int>();
+    locations = new List<Location>();
     neighborBorders = new List<Border>();
 
     ID = Guid.NewGuid();
@@ -45,20 +45,20 @@ public class Border : IPathable
   /// <summary>
   /// All integer locations that comprise this border
   /// </summary>
-  private List<Vector2Int> locations;
-  public IEnumerable<Vector2Int> GetLocations()
+  private List<Location> locations;
+  public IEnumerable<Location> GetLocations()
   {
     foreach (var location in locations) { yield return location; }
   }
-  public void AddLocation(Vector2 location)
+  public void AddLocation(int x, int y)
   {
-    AddLocation(Vector2Int.RoundToInt(location));
+    AddLocation(new Location(x, y));
   }
-  public void AddLocation(Vector2Int location)
+  public void AddLocation(Location location)
   {
     if (!locations.Contains(location)) { locations.Add(location); }
   }
-  public bool Contains(Vector2Int v)
+  public bool Contains(Location v)
   {
     return locations.Contains(v);
   }
@@ -81,22 +81,22 @@ public class Border : IPathable
   // *******************************************************************
   //    IPathable
   // *******************************************************************
-  public List<IPathable> Neighbors()
+  public IEnumerable<IPathable<Border>> Neighbors()
   {
     throw new NotImplementedException();
   }
 
-  public Dictionary<IPathable, float> CostByNeighbor()
+  public Dictionary<IPathable<Border>, float> CostByNeighbor()
   {
     throw new NotImplementedException();
   }
 
-  public float Heuristic(IPathable endGoal)
+  public float Heuristic(IPathable<Border> endGoal)
   {
     throw new NotImplementedException();
   }
 
-  public float Cost(IPathable neighbor)
+  public float Cost(IPathable<Border> neighbor)
   {
     throw new NotImplementedException();
   }
