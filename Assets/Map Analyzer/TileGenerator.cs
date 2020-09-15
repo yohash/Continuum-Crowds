@@ -145,7 +145,7 @@ public class TileGenerator : MonoBehaviour
   // ***************************************************************************
   //  TILE GENERATION
   // ***************************************************************************
-  public void GenerateCCTiles()
+  public void GenerateTiles()
   {
     if (h.GetLength(0) != g.GetLength(0) || g.GetLength(0) != dh.GetLength(0) ||
         h.GetLength(1) != g.GetLength(1) || g.GetLength(1) != dh.GetLength(1)) {

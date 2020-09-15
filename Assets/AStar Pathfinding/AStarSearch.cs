@@ -45,7 +45,7 @@ public class AStarSearch<T>
 
       foreach (var neighbor in currentNode.Neighbors()) {
         // add the cost of traversal from currentNode -> neighbor
-        float newCost = costSoFar[currentNode] + currentNode.CostByNeighbor()[neighbor];
+        float newCost = costSoFar[currentNode] + currentNode.Cost(neighbor);
 
         if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) {
           // track the cost so far for this node

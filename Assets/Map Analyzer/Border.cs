@@ -81,22 +81,17 @@ public class Border : IPathable<Border>
   // *******************************************************************
   //    IPathable
   // *******************************************************************
-  public IEnumerable<IPathable<Border>> Neighbors()
+  public IEnumerable<Border> Neighbors()
   {
     throw new NotImplementedException();
   }
 
-  public Dictionary<IPathable<Border>, float> CostByNeighbor()
+  public float Heuristic(Border endGoal)
   {
     throw new NotImplementedException();
   }
 
-  public float Heuristic(IPathable<Border> endGoal)
-  {
-    throw new NotImplementedException();
-  }
-
-  public float Cost(IPathable<Border> neighbor)
+  public float Cost(Border neighbor)
   {
     throw new NotImplementedException();
   }

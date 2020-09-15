@@ -23,6 +23,15 @@ public class Region
   public void AddLocation(Location v)
   {
     if (!locations.Contains(v)) { locations.Add(v); }
+    // pair up locations with neighbors so they are pathable
+    foreach (var dir in Directions.Each()) {
+      var neighbor = v + dir.ToVector();
+      if (ContainsLocation(neighbor)) {
+        // pair up these two locations
+        neighbor.AddNeighbor(v);
+        v.AddNeighbor(neighbor);
+      }
+    }
   }
   public bool ContainsLocation(Location v)
   {

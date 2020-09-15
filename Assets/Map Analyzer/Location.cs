@@ -7,33 +7,39 @@ public partial struct Location : IEquatable<Location>, IPathable<Location>
   public readonly int x;
   public readonly int y;
 
+  private Dictionary<Location, float> costByNeighbor;
+
   public Location(int x, int y)
   {
     this.x = x;
     this.y = y;
+    costByNeighbor = new Dictionary<Location, float>();
+  }
+
+  public void AddNeighbor(Location loc)
+  {
+    // TODO: integrate height difference for more realistic cost
+    costByNeighbor[loc] = 1;
   }
 
   // *******************************************************************
   //    IPathable
   // *******************************************************************
-  public IEnumerable<IPathable<Location>> Neighbors()
+  public IEnumerable<Location> Neighbors()
   {
-    throw new NotImplementedException();
+    foreach (var neighbor in costByNeighbor.Keys) {
+      yield return neighbor;
+    }
   }
 
-  public Dictionary<IPathable<Location>, float> CostByNeighbor()
+  public float Heuristic(Location endGoal)
   {
-    throw new NotImplementedException();
+    return (float)(this - endGoal).magnitude();
   }
 
-  public float Heuristic(IPathable<Location> endGoal)
+  public float Cost(Location neighbor)
   {
-    throw new NotImplementedException();
-  }
-
-  public float Cost(IPathable<Location> neighbor)
-  {
-    throw new NotImplementedException();
+    return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 
   // *******************************************************************
