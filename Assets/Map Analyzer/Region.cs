@@ -72,4 +72,15 @@ public class Region
   {
     if (borders.Contains(b)) { borders.Remove(b); }
   }
+  public void ConnectBorders()
+  {
+    foreach (var b1 in borders) {
+      foreach (var b2 in borders) {
+        if (!b1.Equals(b2)) {
+          b1.AddNeighbor(b2);
+          b2.AddNeighbor(b1);
+        }
+      }
+    }
+  }
 }

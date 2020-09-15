@@ -3,12 +3,43 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Border : IPathable<Border> 
+public class Border : IPathable<Border>
 {
   public DIRECTION Direction { get; private set; }
 
   public Guid ID { get { return _id; } private set { _id = value; } }
   [SerializeField] private Guid _id;
+
+  private Dictionary<Border, float> costByNeighbor;
+
+  /// <summary>
+  /// Basic constructor takes a containg-tile and the border's
+  /// direction relative to the tile
+  /// </summary>
+  /// <param name="tile"></param>
+  /// <param name="d"></param>
+  public Border(MapTile tile, DIRECTION d)
+  {
+    this.tile = tile;
+    Direction = d;
+
+    locations = new List<Location>();
+    costByNeighbor = new Dictionary<Border, float>();
+
+    ID = Guid.NewGuid();
+  }
+
+  /// <summary>
+  /// Add a border that is connecting, either in neighboring tile
+  /// or within the same tile, sharing a region
+  /// </summary>
+  /// <param name="neighbor"></param>
+  public void AddNeighbor(Border neighbor)
+  {
+    if (this == neighbor) { return; }
+    // TODO: integrate AStar path cost
+    costByNeighbor[neighbor] = 1;
+  }
 
   // *******************************************************************
   //    Border
@@ -24,23 +55,6 @@ public class Border : IPathable<Border>
   /// </summary>
   private Region region;
   public Region Region { get { return region; } set { region = value; } }
-
-  /// <summary>
-  /// Basic constructor takes a containg-tile and the border's
-  /// direction relative to the tile
-  /// </summary>
-  /// <param name="tile"></param>
-  /// <param name="d"></param>
-  public Border(MapTile tile, DIRECTION d)
-  {
-    this.tile = tile;
-    Direction = d;
-
-    locations = new List<Location>();
-    neighborBorders = new List<Border>();
-
-    ID = Guid.NewGuid();
-  }
 
   /// <summary>
   /// All integer locations that comprise this border
@@ -63,27 +77,12 @@ public class Border : IPathable<Border>
     return locations.Contains(v);
   }
 
-  /// <summary>
-  /// Neighboring borders in nearby tiles
-  /// </summary>
-  private List<Border> neighborBorders;
-  public IEnumerable<Border> GetNeighbors()
-  {
-    foreach (var border in neighborBorders) { yield return border; }
-  }
-  public void AddNeighbor(Border neighbor)
-  {
-    if (neighbor != this && !neighborBorders.Contains(neighbor)) {
-      neighborBorders.Add(neighbor);
-    }
-  }
-
   // *******************************************************************
   //    IPathable
   // *******************************************************************
   public IEnumerable<Border> Neighbors()
   {
-    throw new NotImplementedException();
+    foreach (var border in costByNeighbor.Keys) { yield return border; }
   }
 
   public float Heuristic(Border endGoal)
@@ -93,6 +92,6 @@ public class Border : IPathable<Border>
 
   public float Cost(Border neighbor)
   {
-    throw new NotImplementedException();
+    return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 }

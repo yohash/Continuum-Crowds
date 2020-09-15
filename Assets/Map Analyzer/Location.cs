@@ -18,6 +18,7 @@ public partial struct Location : IEquatable<Location>, IPathable<Location>
 
   public void AddNeighbor(Location loc)
   {
+    if (this == loc) { return; }
     // TODO: integrate height difference for more realistic cost
     costByNeighbor[loc] = 1;
   }

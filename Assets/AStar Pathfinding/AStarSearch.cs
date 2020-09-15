@@ -23,7 +23,7 @@ public class AStarSearch<T> where T : IPathable<T>
     costSoFar = new Dictionary<T, float>();
   }
 
-  public void ComputePath(T start, T end, Action<List<T>> onComplete)
+  public void ComputePath(T start, T end, Action<List<T>, float> onComplete)
   {
     // init the queues and dictionary
     frontier.Clear();
@@ -73,6 +73,6 @@ public class AStarSearch<T> where T : IPathable<T>
     // reverse the path so it reads forwards
     Path.Reverse();
     // call the completion callback
-    onComplete(Path);
+    onComplete(Path, costSoFar[end]);
   }
 }

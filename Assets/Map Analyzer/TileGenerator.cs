@@ -101,7 +101,7 @@ public class TileGenerator : MonoBehaviour
         var c = borderColors[i++];
         var border = allBorders[0];
         drawBorder(border, c);
-        foreach (var neighbor in border.GetNeighbors()) {
+        foreach (var neighbor in border.Neighbors()) {
           if (allBorders.Contains(neighbor)) {
             // draw the neighbors
             drawBorder(neighbor, c);

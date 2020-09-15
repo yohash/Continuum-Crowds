@@ -73,6 +73,11 @@ public class MapTile
       }
     }
     purge();
+    // connect all borders internal to a region
+    // for pathfinding purposes
+    foreach (var region in Regions) {
+      region.ConnectBorders();
+    }
   }
 
   private void assembleTile()
@@ -354,7 +359,7 @@ public class MapTile
         continue;
       }
       // see if there are any neighbors, if not, delete this border
-      if (border.GetNeighbors().Count() == 0) {
+      if (border.Neighbors().Count() == 0) {
         deleteBorders.Add(border);
         continue;
       }
