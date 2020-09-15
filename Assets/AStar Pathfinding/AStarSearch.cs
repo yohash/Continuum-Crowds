@@ -3,27 +3,27 @@ using System.Collections.Generic;
 using Priority_Queue;
 
 [Serializable]
-public class AStarSearch<T>
+public class AStarSearch<T> where T : IPathable<T>
 {
-  public List<IPathable<T>> Path;
+  public List<T> Path;
 
-  private SimplePriorityQueue<IPathable<T>> frontier;
+  private SimplePriorityQueue<T> frontier;
 
-  private Dictionary<IPathable<T>, IPathable<T>> cameFrom;
-  private Dictionary<IPathable<T>, float> costSoFar;
+  private Dictionary<T, T> cameFrom;
+  private Dictionary<T, float> costSoFar;
 
   public AStarSearch()
   {
     // init the queues and dictionary
-    frontier = new SimplePriorityQueue<IPathable<T>>();
+    frontier = new SimplePriorityQueue<T>();
 
-    Path = new List<IPathable<T>>();
+    Path = new List<T>();
 
-    cameFrom = new Dictionary<IPathable<T>, IPathable<T>>();
-    costSoFar = new Dictionary<IPathable<T>, float>();
+    cameFrom = new Dictionary<T, T>();
+    costSoFar = new Dictionary<T, float>();
   }
 
-  public void ComputePath(IPathable<T> start, IPathable<T> end, Action<List<IPathable<T>>> onComplete)
+  public void ComputePath(T start, T end, Action<List<T>> onComplete)
   {
     // init the queues and dictionary
     frontier.Clear();
@@ -35,13 +35,13 @@ public class AStarSearch<T>
     cameFrom[start] = start;
     costSoFar[start] = 0;
 
-    IPathable<T> currentNode;
+    T currentNode;
 
     // start Grid* (A* pathfinding for the power grid)
     while (frontier.Count > 0) {
       currentNode = frontier.Dequeue();
       // termination condition
-      if (currentNode == end) { break; }
+      if (currentNode.Equals(end)) { break; }
 
       foreach (var neighbor in currentNode.Neighbors()) {
         // add the cost of traversal from currentNode -> neighbor
@@ -65,7 +65,7 @@ public class AStarSearch<T>
     Path.Clear();
     // assemble the path backwards
     currentNode = end;
-    while (currentNode != start) {
+    while (!currentNode.Equals(start)) {
       Path.Add(currentNode);
       currentNode = cameFrom[currentNode];
     }
