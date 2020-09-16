@@ -72,15 +72,27 @@ public class TileGenerator : MonoBehaviour
       }
     }
 
-    if (viewBorders) {
+    if (viewBorders && Tiles.Count > tileIndex && tileIndex >= 0) {
+      var tile = Tiles[tileIndex];
+
       int i = 0;
-      foreach (var tile in Tiles) {
-        foreach (var border in tile.Borders) {
-          if (i + 1 > borderColors.Count) {
-            borderColors.Add(new Color(Random.value, Random.value, Random.value));
+      foreach (var border in tile.Borders) {
+        if (i + 1 > borderColors.Count) {
+          borderColors.Add(new Color(Random.value, Random.value, Random.value));
+        }
+        var c = borderColors[i++];
+        drawBorder(border, c);
+
+        foreach (var neighbor in border.Neighbors()) {
+          foreach (var l1 in border.GetLocations()) {
+            foreach (var l2 in neighbor.GetLocations()) {
+              Debug.DrawLine(
+                  new Vector3(l1.x + 0.5f, tile.Height(l1), l1.y + 0.5f),
+                  new Vector3(l2.x + 0.5f, neighbor.Tile.Height(l2), l2.y + 0.5f),
+                  Color.yellow
+              );
+            }
           }
-          var c = borderColors[i++];
-          drawBorder(border, c);
         }
       }
     }

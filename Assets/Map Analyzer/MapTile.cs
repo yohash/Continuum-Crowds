@@ -51,6 +51,10 @@ public class MapTile
   {
     return ContainsPoint(x, y) ? h[x - corner.x, y - corner.y] : float.MinValue;
   }
+  public float Height(Location l)
+  {
+    return Height(l.x, l.y);
+  }
 
   public void ConnectBordersToNeighbors()
   {
