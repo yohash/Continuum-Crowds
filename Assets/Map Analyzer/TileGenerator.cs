@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class TileGenerator : MonoBehaviour
 {
@@ -230,7 +231,7 @@ public class TileGenerator : MonoBehaviour
       foreach (var region in tile.Regions) {
         // connect all borders internal to a region
         // for pathfinding purposes
-        region.ConnectBorders();
+        Task.Run(() => region.ConnectBorders());
       }
     }
   }
