@@ -205,14 +205,33 @@ public class TileGenerator : MonoBehaviour
       }
     }
 
-    // now that tiles are generated, build all connections between tiles
+    // now that tiles are generated, collapse all borders that share regions
+    // all common borders must be merged before we connect neighbors
     foreach (var tile in Tiles) {
       Debug.Log($"Merging tile borders for tile {tile.Corner}...");
-      tile.MergeBorders();
+      tile.MergeCommonBorders();
     }
+
+    // connect merged borders to neighboring tiles
     foreach (var tile in Tiles) {
       Debug.Log($"Assembling neighbors for {tile.Corner}...");
       tile.ConnectBordersToNeighbors();
+    }
+
+    // purge all dangling borders that have no connections
+    Debug.Log($"Deleting borders on outside edges, or with no neighbor...");
+    foreach (var tile in Tiles) {
+      tile.PurgeBorders();
+    }
+
+    // purge all dangling borders that have no connections
+    Debug.Log($"Connecting all borders that share a region...");
+    foreach (var tile in Tiles) {
+      foreach (var region in tile.Regions) {
+        // connect all borders internal to a region
+        // for pathfinding purposes
+        region.ConnectBorders();
+      }
     }
   }
 

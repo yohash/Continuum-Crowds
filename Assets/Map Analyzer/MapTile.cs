@@ -76,12 +76,6 @@ public class MapTile
         }
       }
     }
-    purge();
-    // connect all borders internal to a region
-    // for pathfinding purposes
-    foreach (var region in Regions) {
-      region.ConnectBorders();
-    }
   }
 
   private void assembleTile()
@@ -274,7 +268,7 @@ public class MapTile
   /// 4. See if the NEIGHBORS borders are from the same [Region]
   /// 5. If so, then the two borders in this region are continuous, and can be merged
   /// </summary>
-  public void MergeBorders()
+  public void MergeCommonBorders()
   {
     var collapsePairs = new List<List<Border>>();
     // iterate over every region
@@ -351,7 +345,7 @@ public class MapTile
     }
   }
 
-  private void purge()
+  public void PurgeBorders()
   {
     var deleteBorders = new List<Border>();
     // iterate over all borders in this region
