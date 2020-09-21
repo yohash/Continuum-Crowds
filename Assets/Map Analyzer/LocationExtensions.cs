@@ -25,7 +25,7 @@ public static class LocationExtensions
   }
 }
 
-public partial struct Location
+public partial class Location
 {
   // *******************************************************************
   //    Extensions

@@ -28,7 +28,7 @@ public class Region
       var neighbor = v + dir.ToVector();
       if (ContainsLocation(neighbor)) {
         // pair up these two locations
-        neighbor.AddNeighbor(v);
+        locations.Find(loc => loc == neighbor).AddNeighbor(v);
         v.AddNeighbor(neighbor);
       }
     }
@@ -71,16 +71,5 @@ public class Region
   public void TryRemoveBorder(Border b)
   {
     if (borders.Contains(b)) { borders.Remove(b); }
-  }
-  public void ConnectBorders()
-  {
-    foreach (var b1 in borders) {
-      foreach (var b2 in borders) {
-        if (!b1.Equals(b2)) {
-          b1.AddNeighbor(b2);
-          b2.AddNeighbor(b1);
-        }
-      }
-    }
   }
 }

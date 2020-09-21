@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 [Serializable]
-public partial struct Location : IEquatable<Location>, IPathable<Location>
+public partial class Location : IEquatable<Location>, IPathable<Location>
 {
   public readonly int x;
   public readonly int y;
@@ -23,6 +23,8 @@ public partial struct Location : IEquatable<Location>, IPathable<Location>
     costByNeighbor[loc] = 1;
   }
 
+  public IPathable<Location> Pathable { get { return this; } }
+
   // *******************************************************************
   //    IPathable
   // *******************************************************************
@@ -41,6 +43,11 @@ public partial struct Location : IEquatable<Location>, IPathable<Location>
   public float Cost(Location neighbor)
   {
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
+  }
+
+  public override string ToString()
+  {
+    return $"({x}, {y})";
   }
 
   // *******************************************************************

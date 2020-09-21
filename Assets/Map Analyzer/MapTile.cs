@@ -71,7 +71,7 @@ public class MapTile
           // collect the borders that are adjacent to the border being tested
           var neighbor = opposingBorders.Where(b => b.Contains(location + dir));
           foreach (var confirmed in neighbor) {
-            border.AddNeighbor(confirmed);
+            border.AddNeighbor(confirmed, 1);
           }
         }
       }

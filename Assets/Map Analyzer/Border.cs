@@ -34,11 +34,10 @@ public class Border : IPathable<Border>
   /// or within the same tile, sharing a region
   /// </summary>
   /// <param name="neighbor"></param>
-  public void AddNeighbor(Border neighbor)
+  public void AddNeighbor(Border neighbor, float cost)
   {
     if (this == neighbor) { return; }
-    // TODO: integrate AStar path cost
-    costByNeighbor[neighbor] = 1;
+    costByNeighbor[neighbor] = cost;
   }
 
   // *******************************************************************
