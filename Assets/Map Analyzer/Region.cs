@@ -25,10 +25,11 @@ public class Region
     if (!locations.Contains(v)) { locations.Add(v); }
     // pair up locations with neighbors so they are pathable
     foreach (var dir in Directions.Each()) {
-      var neighbor = v + dir.ToVector();
-      if (ContainsLocation(neighbor)) {
+      var neighborRef = v + dir.ToVector();
+      if (ContainsLocation(neighborRef)) {
         // pair up these two locations
-        locations.Find(loc => loc == neighbor).AddNeighbor(v);
+        var neighbor = locations.Find(loc => loc == neighborRef);
+        neighbor.AddNeighbor(v);
         v.AddNeighbor(neighbor);
       }
     }

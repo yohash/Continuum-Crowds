@@ -37,7 +37,7 @@ public class AStarSearch<T> where T : IPathable<T>
 
     T currentNode;
 
-    // start Grid* (A* pathfinding for the power grid)
+    // start A*
     while (frontier.Count > 0) {
       currentNode = frontier.Dequeue();
       // termination condition

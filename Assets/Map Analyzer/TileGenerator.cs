@@ -256,7 +256,6 @@ public class TileGenerator : MonoBehaviour
 
               // perform the search, and record the cost with the neighbors
               aStar.ComputePath(loc1, loc2, (path, cost) => {
-                Debug.Log($"computed a cost from {loc1} to {loc2}, cost is {cost}");
                 b1.AddNeighbor(b2, cost);
                 b2.AddNeighbor(b1, cost);
               });
