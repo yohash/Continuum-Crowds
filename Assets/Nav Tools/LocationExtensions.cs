@@ -30,24 +30,34 @@ public partial class Location
   // *******************************************************************
   //    Extensions
   // *******************************************************************
-  public static Location zero {
-    get { return new Location(0, 0); }
-  }
+  public static Location zero { get { return new Location(0, 0); } }
+  public static Location one { get { return new Location(1, 1); } }
 
   public static Location operator +(Location l1, Location l2)
   {
     return new Location(l1.x + l2.x, l1.y + l2.y);
   }
-  public static Location operator +(Location l1, Vector2 l2)
-  {
-    return new Location(l1.x + (int)Math.Round(l2.x, 0), l1.y + (int)Math.Round(l2.y, 0));
-  }
   public static Location operator -(Location l1, Location l2)
   {
     return new Location(l1.x - l2.x, l1.y - l2.y);
   }
+  // *******************************************************************
+  //    Extensions for Unity classes
+  // *******************************************************************
+  public static Location operator +(Location l1, Vector2 l2)
+  {
+    return new Location(l1.x + (int)Math.Round(l2.x, 0), l1.y + (int)Math.Round(l2.y, 0));
+  }
   public static Location operator -(Location l1, Vector2 l2)
   {
     return new Location(l1.x - (int)Math.Round(l2.x, 0), l1.y - (int)Math.Round(l2.y, 0));
+  }
+  public static Location operator +(Location l1, Vector2Int l2)
+  {
+    return new Location(l1.x + l2.x, l1.y + l2.y);
+  }
+  public static Location operator -(Location l1, Vector2Int l2)
+  {
+    return new Location(l1.x - l2.x, l1.y - l2.y);
   }
 }

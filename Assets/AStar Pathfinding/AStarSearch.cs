@@ -5,7 +5,7 @@ using Priority_Queue;
 [Serializable]
 public class AStarSearch<T> where T : IPathable<T>
 {
-  public List<T> Path;
+  private List<T> path;
 
   private SimplePriorityQueue<T> frontier;
 
@@ -17,7 +17,7 @@ public class AStarSearch<T> where T : IPathable<T>
     // init the queues and dictionary
     frontier = new SimplePriorityQueue<T>();
 
-    Path = new List<T>();
+    path = new List<T>();
 
     cameFrom = new Dictionary<T, T>();
     costSoFar = new Dictionary<T, float>();
@@ -62,17 +62,17 @@ public class AStarSearch<T> where T : IPathable<T>
     }
 
     // create the path array and start it with the end point
-    Path.Clear();
+    path.Clear();
     // assemble the path backwards
     currentNode = end;
     while (!currentNode.Equals(start)) {
-      Path.Add(currentNode);
+      path.Add(currentNode);
       currentNode = cameFrom[currentNode];
     }
-    Path.Add(start);
+    path.Add(start);
     // reverse the path so it reads forwards
-    Path.Reverse();
+    path.Reverse();
     // call the completion callback
-    onComplete(Path, costSoFar[end]);
+    onComplete(path, costSoFar[end]);
   }
 }

@@ -16,6 +16,8 @@ public partial class Location : IEquatable<Location>, IPathable<Location>
     costByNeighbor = new Dictionary<Location, float>();
   }
 
+  public IPathable<Location> Pathable { get { return this; } }
+
   public void AddNeighbor(Location loc)
   {
     if (this == loc) { return; }
@@ -23,8 +25,10 @@ public partial class Location : IEquatable<Location>, IPathable<Location>
     costByNeighbor[loc] = 1;
   }
 
-  public IPathable<Location> Pathable { get { return this; } }
-
+  public override string ToString()
+  {
+    return $"({x}, {y})";
+  }
   // *******************************************************************
   //    IPathable
   // *******************************************************************
@@ -43,11 +47,6 @@ public partial class Location : IEquatable<Location>, IPathable<Location>
   public float Cost(Location neighbor)
   {
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
-  }
-
-  public override string ToString()
-  {
-    return $"({x}, {y})";
   }
 
   // *******************************************************************
