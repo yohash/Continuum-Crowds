@@ -16,6 +16,13 @@ public partial class Location : IEquatable<Location>, IPathable<Location>
     costByNeighbor = new Dictionary<Location, float>();
   }
 
+  public Location(double x, double y)
+  {
+    this.x = (int)Math.Round(x, 0);
+    this.y = (int)Math.Round(y, 0);
+    costByNeighbor = new Dictionary<Location, float>();
+  }
+
   public IPathable<Location> Pathable { get { return this; } }
 
   public void AddNeighbor(Location loc)

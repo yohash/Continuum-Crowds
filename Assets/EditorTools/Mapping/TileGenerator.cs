@@ -1,10 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System.Threading.Tasks;
 
 public class TileGenerator : MonoBehaviour
 {
+  // *********************************************
+  // TEMOPORARY - DELETE AFTER SERIALIZATIONS
+  public static TileGenerator Instant;
+  public float[,] H { get { return h; } }
+  public float[,] G { get { return g; } }
+  public Vector2[,] DH { get { return dh; } }
+  // *********************************************
+
   public string Filename = "Test";
   public void SetFilename(string filename) { Filename = filename; }
 
@@ -39,6 +46,11 @@ public class TileGenerator : MonoBehaviour
   // ***************************************************************************
   //  MONOBEHAVIOURS
   // ***************************************************************************
+  private void Awake()
+  {
+    Instant = this;
+  }
+
   private void Update()
   {
     float dy = 0.1f;
