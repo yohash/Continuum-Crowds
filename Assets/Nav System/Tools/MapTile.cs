@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
 
 [System.Serializable]
@@ -8,7 +9,7 @@ public class MapTile
 {
   public Location Corner { get { return corner; } private set { corner = value; } }
   [SerializeField] private Location corner;
-  
+
   public int TileSize { get { return tileSize; } }
   [SerializeField] private int tileSize;
 
@@ -40,6 +41,10 @@ public class MapTile
   {
     return ContainsPoint(v.x, v.y);
   }
+  public bool ContainsPoint(Location location)
+  {
+    return ContainsPoint(location.x, location.y);
+  }
   public bool ContainsPoint(float x, float y)
   {
     return x < corner.x + tileSize &&
@@ -54,6 +59,18 @@ public class MapTile
   public float Height(Location l)
   {
     return Height(l.x, l.y);
+  }
+
+  public Location GetLocation(Location location)
+  {
+    if (ContainsPoint(location)) {
+      foreach (var region in Regions) {
+        if (region.ContainsLocation(location)) {
+          return region.GetLocation(location);
+        }
+      }
+    }
+    return location;
   }
 
   public void ConnectBordersToNeighbors()

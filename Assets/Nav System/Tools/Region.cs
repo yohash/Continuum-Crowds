@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 
+/// <summary>
+/// TODO Can the Locations be a hash list for O(1) access?
+/// </summary>
 public class Region
 {
   public Region()
@@ -34,9 +37,18 @@ public class Region
       }
     }
   }
-  public bool ContainsLocation(Location v)
+  public bool ContainsLocation(Location location)
   {
-    return locations.Contains(v);
+    return locations.Contains(location);
+  }
+  public Location GetLocation(Location location)
+  {
+    if (ContainsLocation(location)) {
+      foreach (var loc in locations) {
+        if (loc == location) { return loc; }
+      }
+    }
+    return Location.zero;
   }
   public Location GetFirst()
   {
