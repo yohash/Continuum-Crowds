@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 public class AStarTester : MonoBehaviour
 {
@@ -37,6 +38,8 @@ public class AStarTester : MonoBehaviour
 
   private NavSystem navSystem;
 
+  private Stopwatch timer;
+
   // ***************************************************************************
   //  Monobehaviours
   // ***************************************************************************
@@ -46,6 +49,8 @@ public class AStarTester : MonoBehaviour
 
     startTile = null;
     endTile = null;
+
+    timer = new Stopwatch();
   }
 
   private void Update()
@@ -125,13 +130,19 @@ public class AStarTester : MonoBehaviour
   public void FindPath()
   {
     if (startLocation != null && endLocation != null) {
-      var search = new AStarSearch<Location>();
-      search.ComputePath(startLocation, endLocation, storePath);
+      timer.Reset();
+      timer.Start();
+      Task.Run(() => {
+        var search = new AStarSearch<Location>();
+        search.ComputePath(startLocation, endLocation, storePath);
+      });
     }
   }
 
   private void storePath(List<Location> path, float cost)
   {
+    timer.Stop();
+    UnityEngine.Debug.Log("Computed path in: " + timer.Elapsed);
     State = A_STAR_TESTER_STATE.SHOWING_PATH;
     this.path = path;
     this.cost = cost;
@@ -151,14 +162,14 @@ public class AStarTester : MonoBehaviour
   private void drawPath()
   {
     if (path.Count < 2) {
-      Debug.LogWarning("Path has insufficient points. Points: " + path.Count);
+      UnityEngine.Debug.LogWarning("Path has insufficient points. Points: " + path.Count);
       return;
     }
 
     for (int i = 0; i < path.Count - 1; i++) {
       float y1 = startTile.Height(path[i]);
       float y2 = startTile.Height(path[i + 1]);
-      Debug.DrawLine(path[i].ToVector3(y1), path[i + 1].ToVector3(y2), Color.yellow);
+      UnityEngine.Debug.DrawLine(path[i].ToVector3(y1), path[i + 1].ToVector3(y2), Color.yellow);
     }
   }
 }
