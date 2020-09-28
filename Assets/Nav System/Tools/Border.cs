@@ -86,11 +86,29 @@ public class Border : IPathable<Border>
 
   public float Heuristic(Border endGoal)
   {
-    throw new NotImplementedException();
+    return (float)(average - endGoal.average).magnitude();
   }
 
   public float Cost(Border neighbor)
   {
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
+  }
+
+  private Location average {
+    get {
+      return locations.Count == 0 ? 
+        Location.zero : 
+        getAvg();
+    }
+  }
+
+  private Location getAvg()
+  {
+    Location l = Location.zero;
+    foreach (var item in locations) {
+      l += item;
+    }
+    l /= locations.Count;
+    return l;
   }
 }

@@ -41,6 +41,10 @@ public partial class Location
   {
     return new Location(l1.x - l2.x, l1.y - l2.y);
   }
+  public static Location operator /(Location l, float d)
+  {
+    return new Location(l.x / d, l.y / d);
+  }
   // *******************************************************************
   //    Extensions for Unity classes
   // *******************************************************************

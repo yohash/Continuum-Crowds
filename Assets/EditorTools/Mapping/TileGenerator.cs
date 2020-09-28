@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class TileGenerator : MonoBehaviour
 {
@@ -257,21 +258,21 @@ public class TileGenerator : MonoBehaviour
           foreach (var b2 in region.Borders()) {
             if (!b1.Equals(b2)) {
               // thread the AStar work to speed up process
-              //Task.Run(() => {
-              // get first locations in each border
-              // TODO: get the closest two
-              var loc1 = region.Locations().First(l => l == b1.GetLocations().First());
-              var loc2 = region.Locations().First(l => l == b2.GetLocations().First());
+              Task.Run(() => {
+                // get first locations in each border
+                // TODO: get the closest two
+                var loc1 = region.Locations().First(l => l == b1.GetLocations().First());
+                var loc2 = region.Locations().First(l => l == b2.GetLocations().First());
 
-              // Create a new AStarSearch of type locaiton
-              var aStar = new AStarSearch<Location>();
+                // Create a new AStarSearch of type location
+                var aStar = new AStarSearch<Location>();
 
-              // perform the search, and record the cost with the neighbors
-              aStar.ComputePath(loc1, loc2, (path, cost) => {
-                b1.AddNeighbor(b2, cost);
-                b2.AddNeighbor(b1, cost);
+                // perform the search, and record the cost with the neighbors
+                aStar.ComputePath(loc1, loc2, (path, cost) => {
+                  b1.AddNeighbor(b2, cost);
+                  b2.AddNeighbor(b1, cost);
+                });
               });
-              //});
             }
           }
         }
