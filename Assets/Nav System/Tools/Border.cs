@@ -50,12 +50,6 @@ public class Border : IPathable<Border>
   public MapTile Tile { get { return tile; } private set { tile = value; } }
 
   /// <summary>
-  /// Reference to the containing Region
-  /// </summary>
-  private Region region;
-  public Region Region { get { return region; } set { region = value; } }
-
-  /// <summary>
   /// All integer locations that comprise this border
   /// </summary>
   private List<Location> locations;
@@ -86,7 +80,7 @@ public class Border : IPathable<Border>
 
   public float Heuristic(Border endGoal)
   {
-    return (float)(average - endGoal.average).magnitude();
+    return (float)(Average - endGoal.Average).magnitude();
   }
 
   public float Cost(Border neighbor)
@@ -94,11 +88,15 @@ public class Border : IPathable<Border>
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 
-  private Location average {
+  private Location _average = null;
+  public Location Average {
     get {
-      return locations.Count == 0 ? 
-        Location.zero : 
-        getAvg();
+      if (_average == null) {
+        _average = locations.Count == 0 ?
+          Location.zero :
+          getAvg();
+      }
+      return _average;
     }
   }
 

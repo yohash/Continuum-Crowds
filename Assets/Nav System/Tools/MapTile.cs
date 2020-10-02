@@ -14,7 +14,6 @@ public class MapTile
 
   // public tile contents
   [NonSerialized] public List<Border> Borders;
-  [NonSerialized] public List<Region> Regions;
   public Dictionary<DIRECTION, MapTile> NeighborTiles;
 
   // defining tile data
@@ -58,18 +57,6 @@ public class MapTile
   public float Height(Location l)
   {
     return Height(l.x, l.y);
-  }
-
-  public Location GetLocation(Location location)
-  {
-    if (ContainsPoint(location)) {
-      foreach (var region in Regions) {
-        if (region.ContainsLocation(location)) {
-          return region.GetLocation(location);
-        }
-      }
-    }
-    return location;
   }
 
   public void ConnectBordersToNeighbors()
@@ -186,7 +173,7 @@ public class MapTile
     // init our grouping tracker
     var groupedBorders = new List<List<Border>>();
     // init new list of regions
-    Regions = new List<Region>();
+    var regions = new List<List<Location>>();
     // tracker for our current group
     var currentGroup = new List<Border>();
     // copy our list of borders
@@ -201,14 +188,14 @@ public class MapTile
       currentGroup.Add(seed);
 
       // create a list of known locations that we'll fill up as we go
-      var region = new Region();
+      var region = new List<Location>();
       // fill known locations with the entire seed border
-      foreach (var loc in seed.GetLocations()) { region.AddLocation(loc); }
+      foreach (var loc in seed.GetLocations()) { region.Add(loc); }
 
       // create a queue we'll pull locations from
       var testLocations = new Queue<Location>();
       // seed with location at [0]
-      testLocations.Enqueue(region.GetFirst());
+      testLocations.Enqueue(region.First());
 
       // begin to flood the borders
       while (testLocations.Count > 0) {
@@ -224,7 +211,7 @@ public class MapTile
               // add to current group
               currentGroup.Add(newBorder);
               // add all locations to known locations
-              foreach (var loc in newBorder.GetLocations()) { region.AddLocation(loc); }
+              foreach (var loc in newBorder.GetLocations()) { region.Add(loc); }
               // remove from our unknown borders list
               if (unknownBorders.Contains(newBorder)) {
                 unknownBorders.RemoveAt(unknownBorders.IndexOf(newBorder));
@@ -245,7 +232,7 @@ public class MapTile
             continue;
           }
           // make sure this neighbor is not already a known location
-          if (region.ContainsLocation(neighbor)) {
+          if (region.Contains(neighbor)) {
             continue;
           }
           // make sure this border isn't already in our test queue
@@ -261,103 +248,19 @@ public class MapTile
         }
 
         // now that we've tested all neighbors, add this node to known locations
-        region.AddLocation(currentLocation);
+        region.Add(currentLocation);
       }
 
       // region has been flooded, and all connected borders tagged
-      foreach (var border in currentGroup) {
-        region.AddBorder(border);
-      }
+      //foreach (var border in currentGroup) {
+      //  region.AddBorder(border);
+      //}
       // save the region
-      Regions.Add(region);
+      regions.Add(region);
       // all connected borders should have been
       // added to the currentGroup. Start a new group
       groupedBorders.Add(currentGroup);
       currentGroup = new List<Border>();
-    }
-  }
-
-  /// <summary>
-  /// 1. For each internal region, look for borders in matching directions
-  /// 2. Then, look at the neighbor tile in the direction of these two borders
-  /// 3. From said neighbor, find the two borders that match up with these borders
-  /// 4. See if the NEIGHBORS borders are from the same [Region]
-  /// 5. If so, then the two borders in this region are continuous, and can be merged
-  /// </summary>
-  public void MergeCommonBorders()
-  {
-    var collapsePairs = new List<List<Border>>();
-    // iterate over every region
-    foreach (var region in Regions) {
-      var collapse = new List<Border>();
-
-      // iterate over all borders in this region
-      foreach (var border in region.Borders()) {
-        // if already collapsing this border, don't repeat the process
-        if (collapse.Contains(border)) { continue; }
-
-        // for every border, iterate over all other borders in the same direction
-        // (that aren't this same <border> being tested)
-        var cardinalNeighbors = region.Borders()
-              .Where(b => b.Direction == border.Direction && b != border);
-
-        foreach (var cardinal in cardinalNeighbors) {
-          // if allready collapsing this neighboring border, don't repeat
-          if (collapse.Contains(cardinal)) { continue; }
-
-          // get the tile in the direction of these two borders
-          if (NeighborTiles.TryGetValue(border.Direction, out var neighbor)) {
-            // and get the two neighboring borders opposing these borders
-            var borderB = neighbor.Borders.Where(b =>
-                    b.Direction == border.Direction.Opposite() &&
-                    border.GetLocations().Any(loc => b.Contains(loc + border.Direction.ToVector())))
-                  .FirstOrDefault();
-            var cardinalB = neighbor.Borders.Where(b =>
-                    b.Direction == cardinal.Direction.Opposite() &&
-                    cardinal.GetLocations().Any(loc => b.Contains(loc + cardinal.Direction.ToVector())))
-                  .FirstOrDefault();
-
-            // finally, if these two regions are the same, store the borders to collapse
-            if (borderB != null && cardinalB != null && borderB.Region == cardinalB.Region) {
-              if (collapse.Count > 0 && collapse[0].Direction != border.Direction) {
-                collapsePairs.Add(collapse);
-                collapse = new List<Border>();
-              }
-              collapse.TryAdd(border);
-              collapse.TryAdd(cardinal);
-            }
-          }
-        }
-      }
-      // final add
-      if (collapse.Count > 1) {
-        collapsePairs.Add(collapse);
-        collapse = new List<Border>();
-      }
-    }
-
-    // collapse any borders into each other
-    if (collapsePairs.Count > 0) {
-      foreach (var collapseGroup in collapsePairs) {
-        var baseBorder = collapseGroup[0];
-        for (int i = 1; i < collapseGroup.Count; i++) {
-          // add all locations to the base border
-          foreach (var location in collapseGroup[i].GetLocations()) {
-            baseBorder.AddLocation(location);
-          }
-
-          // delete this extraneous border
-          tryRemoveBorder(collapseGroup[i]);
-        }
-      }
-    }
-  }
-
-  private void tryRemoveBorder(Border b)
-  {
-    if (Borders.Contains(b)) { Borders.Remove(b); }
-    foreach (var region in Regions.Where(r => r.ContainsBorder(b))) {
-      region.TryRemoveBorder(b);
     }
   }
 
@@ -383,8 +286,6 @@ public class MapTile
     foreach (var delete in deleteBorders) {
       // reomve the border from this tile
       Borders.Remove(delete);
-      // remove the border from its region
-      delete.Region.TryRemoveBorder(delete);
     }
   }
 }

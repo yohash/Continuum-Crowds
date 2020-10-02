@@ -73,29 +73,6 @@ public class TileGenerator : MonoBehaviour
       }
     }
 
-    if (viewRegions && Tiles.Count > tileIndex && tileIndex >= 0) {
-      var tile = Tiles[tileIndex];
-
-      int i = 0;
-      foreach (var region in tile.Regions) {
-        foreach (var location in region.Locations()) {
-          // handy call shortener
-          float height(Location v) { return tile.Height(v.x, v.y); }
-
-          var hrgt = location.ToVector3(height(location) + dy);
-          drawSquare(hrgt, Color.red);
-
-          foreach (var neighbor in location.Pathable.Neighbors()) {
-            Debug.DrawLine(
-              location.ToVector3(tile.Height(location)) + new Vector3(0.5f, 0, 0.5f),
-              neighbor.ToVector3(tile.Height(neighbor)) + new Vector3(0.5f, 0, 0.5f),
-              Color.blue
-            );
-          }
-        }
-      }
-    }
-
 
     if (viewBorders && Tiles.Count > tileIndex && tileIndex >= 0) {
       var tile = Tiles[tileIndex];
@@ -230,13 +207,6 @@ public class TileGenerator : MonoBehaviour
       }
     }
 
-    // now that tiles are generated, collapse all borders that share regions
-    // all common borders must be merged before we connect neighbors
-    foreach (var tile in Tiles) {
-      Debug.Log($"Merging tile borders for tile {tile.Corner}...");
-      tile.MergeCommonBorders();
-    }
-
     // connect merged borders to neighboring tiles
     foreach (var tile in Tiles) {
       Debug.Log($"Assembling neighbors for {tile.Corner}...");
@@ -250,30 +220,27 @@ public class TileGenerator : MonoBehaviour
     }
 
     // purge all dangling borders that have no connections
-    Debug.Log($"Connecting all borders that share a region...");
+    Debug.Log($"Connecting all borders...");
     foreach (var tile in Tiles) {
-      foreach (var region in tile.Regions) {
-        // connect all borders internal to a reg
-        foreach (var b1 in region.Borders()) {
-          foreach (var b2 in region.Borders()) {
-            if (!b1.Equals(b2)) {
-              // thread the AStar work to speed up process
-              Task.Run(() => {
-                // get first locations in each border
-                // TODO: get the closest two
-                var loc1 = region.Locations().First(l => l == b1.GetLocations().First());
-                var loc2 = region.Locations().First(l => l == b2.GetLocations().First());
+      // connect all borders internal to the tile
+      foreach (var b1 in tile.Borders) {
+        foreach (var b2 in tile.Borders.Where(b => b != b1)) {
+          if (!b1.Equals(b2)) {
+            // thread the AStar work to speed up process
+            Task.Run(() => {
+              // get border's central location
+              var loc1 = b1.Average;
+              var loc2 = b2.Average;
 
-                // Create a new AStarSearch of type location
-                var aStar = new AStarSearch<Location>();
+              // Create a new AStarSearch of type location
+              var aStar = new AStarSearch<Location>();
 
-                // perform the search, and record the cost with the neighbors
-                aStar.ComputePath(loc1, loc2, (path, cost) => {
-                  b1.AddNeighbor(b2, cost);
-                  b2.AddNeighbor(b1, cost);
-                });
+              // perform the search, and record the cost with the neighbors
+              aStar.ComputePath(loc1, loc2, (path, cost) => {
+                b1.AddNeighbor(b2, cost);
+                b2.AddNeighbor(b1, cost);
               });
-            }
+            });
           }
         }
       }
