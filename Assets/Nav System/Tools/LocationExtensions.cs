@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class LocationExtensions
@@ -27,11 +29,26 @@ public static class LocationExtensions
 
 public partial class Location
 {
+  private static Location zero = new Location(0, 0);
+  private static Location left = new Location(1, 0);
+  private static Location right = new Location(-1, 0);
+  private static Location up = new Location(0, 1);
+  private static Location down = new Location(0, -1);
   // *******************************************************************
   //    Extensions
   // *******************************************************************
-  public static Location zero { get { return new Location(0, 0); } }
-  public static Location one { get { return new Location(1, 1); } }
+  public static Location Zero { get { return zero; } }
+  public static Location Left { get { return left; } }
+  public static Location Right { get { return right; } }
+  public static Location Up { get { return up; } }
+  public static Location Down { get { return down; } }
+  public static IEnumerable<Location> Directions()
+  {
+    yield return left;
+    yield return up;
+    yield return right;
+    yield return down;
+  }
 
   public static Location operator +(Location l1, Location l2)
   {

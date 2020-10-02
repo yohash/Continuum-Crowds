@@ -232,11 +232,11 @@ public class TileGenerator : MonoBehaviour
               var loc1 = b1.Average;
               var loc2 = b2.Average;
 
-              // Create a new AStarSearch of type location
-              var aStar = new AStarSearch<Location>();
+              // Create a new AStarSearch
+              var aStar = new AStarSearch();
 
               // perform the search, and record the cost with the neighbors
-              aStar.ComputePath(loc1, loc2, (path, cost) => {
+              aStar.ComputePath(loc1, loc2, tile, (path, cost) => {
                 b1.AddNeighbor(b2, cost);
                 b2.AddNeighbor(b1, cost);
               });

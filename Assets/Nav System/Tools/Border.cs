@@ -93,7 +93,7 @@ public class Border : IPathable<Border>
     get {
       if (_average == null) {
         _average = locations.Count == 0 ?
-          Location.zero :
+          Location.Zero :
           getAvg();
       }
       return _average;
@@ -102,7 +102,7 @@ public class Border : IPathable<Border>
 
   private Location getAvg()
   {
-    Location l = Location.zero;
+    Location l = Location.Zero;
     foreach (var item in locations) {
       l += item;
     }

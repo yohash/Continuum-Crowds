@@ -118,8 +118,8 @@ public class AStarTester : MonoBehaviour
   public void Clear()
   {
     State = A_STAR_TESTER_STATE.NONE;
-    startLocation = Location.zero;
-    endLocation = Location.zero;
+    startLocation = Location.Zero;
+    endLocation = Location.Zero;
 
     startTile = null;
     endTile = null;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 [Serializable]
-public partial class Location : IEquatable<Location>, IPathable<Location>
+public partial class Location : IEquatable<Location>
 {
   public readonly int x;
   public readonly int y;
@@ -23,8 +23,6 @@ public partial class Location : IEquatable<Location>, IPathable<Location>
     costByNeighbor = new Dictionary<Location, float>();
   }
 
-  public IPathable<Location> Pathable { get { return this; } }
-
   public void AddNeighbor(Location loc)
   {
     if (this == loc) { return; }
@@ -35,25 +33,6 @@ public partial class Location : IEquatable<Location>, IPathable<Location>
   public override string ToString()
   {
     return $"({x}, {y})";
-  }
-  // *******************************************************************
-  //    IPathable
-  // *******************************************************************
-  public IEnumerable<Location> Neighbors()
-  {
-    foreach (var neighbor in costByNeighbor.Keys) {
-      yield return neighbor;
-    }
-  }
-
-  public float Heuristic(Location endGoal)
-  {
-    return (float)(this - endGoal).magnitude();
-  }
-
-  public float Cost(Location neighbor)
-  {
-    return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 
   // *******************************************************************

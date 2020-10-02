@@ -2,7 +2,104 @@
 using System.Collections.Generic;
 using Priority_Queue;
 
-[Serializable]
+/// <summary>
+/// Generic form of AStarSaarch will search Locations in a 
+/// Tile.
+/// 
+/// Requires a location inside a tile, and a MapTile class
+/// that will contains all searchable points
+/// </summary>
+public class AStarSearch
+{
+  private List<Location> path;
+
+  private SimplePriorityQueue<Location> frontier;
+
+  private Dictionary<Location, Location> cameFrom;
+  private Dictionary<Location, float> costSoFar;
+
+  public AStarSearch()
+  {
+    // init the queues and dictionary
+    frontier = new SimplePriorityQueue<Location>();
+
+    path = new List<Location>();
+
+    cameFrom = new Dictionary<Location, Location>();
+    costSoFar = new Dictionary<Location, float>();
+  }
+
+  public void ComputePath(
+      Location start,
+      Location end,
+      MapTile tile,
+      Action<List<Location>, float> onComplete)
+  {
+    // init the queues and dictionary
+    frontier.Clear();
+    cameFrom.Clear();
+    costSoFar.Clear();
+
+    // initialize our tracking components and queue
+    frontier.Enqueue(start, 0);
+    cameFrom[start] = start;
+    costSoFar[start] = 0;
+
+    Location currentNode;
+
+    // start A*
+    while (frontier.Count > 0) {
+      currentNode = frontier.Dequeue();
+      // termination condition
+      if (currentNode.Equals(end)) { break; }
+      // create inline heuristic function
+      float Heuristic(Location node)
+      {
+        return (float)(end - node).magnitude();
+      }
+
+      foreach (var direction in Location.Directions()) {
+        // compute neighbors in each direction
+        var neighbor = currentNode + direction;
+        // skip this node if it's not pathable
+        if (!tile.IsPathable(neighbor)) { continue; }
+        // add the cost of traversal from currentNode -> neighbor
+        float newCost = costSoFar[currentNode] + 1; // currentNode.Cost(neighbor);
+
+        if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) {
+          // track the cost so far for this node
+          costSoFar[neighbor] = newCost;
+          float priority = newCost + Heuristic(neighbor);
+          // make sure frontier doesn't include this prospect
+          if (!frontier.Contains(neighbor)) {
+            frontier.Enqueue(neighbor, priority);
+          }
+          // store the "came from" chain into the dictionary
+          cameFrom[neighbor] = currentNode;
+        }
+      }
+    }
+
+    // create the path array and start it with the end point
+    path.Clear();
+    // assemble the path backwards
+    currentNode = end;
+    while (!currentNode.Equals(start)) {
+      path.Add(currentNode);
+      currentNode = cameFrom[currentNode];
+    }
+    path.Add(start);
+    // reverse the path so it reads forwards
+    path.Reverse();
+    // call the completion callback
+    onComplete(path, costSoFar[end]);
+  }
+}
+
+/// <summary>
+/// Typed AStarSearch for any type that implements IPathable
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class AStarSearch<T> where T : IPathable<T>
 {
   private List<T> path;

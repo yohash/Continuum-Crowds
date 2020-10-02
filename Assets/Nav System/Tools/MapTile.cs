@@ -50,6 +50,10 @@ public class MapTile
            y < corner.y + tileSize &&
            y >= corner.y;
   }
+  public bool IsPathable(Location l)
+  {
+    return Discomfort(l.x, l.y) >= 1;
+  }
   public float Height(int x, int y)
   {
     return ContainsPoint(x, y) ? h[x - corner.x, y - corner.y] : float.MinValue;
@@ -57,6 +61,10 @@ public class MapTile
   public float Height(Location l)
   {
     return Height(l.x, l.y);
+  }
+  public float Discomfort(int x, int y)
+  {
+    return ContainsPoint(x, y) ? g[x - corner.x, y - corner.y] : float.MaxValue;
   }
 
   public void ConnectBordersToNeighbors()
