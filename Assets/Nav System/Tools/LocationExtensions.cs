@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,7 +26,7 @@ public static class LocationExtensions
   }
 }
 
-public partial class Location
+public partial struct Location
 {
   private static Location zero = new Location(0, 0);
   private static Location left = new Location(1, 0);

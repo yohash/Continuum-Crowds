@@ -88,10 +88,10 @@ public class Border : IPathable<Border>
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 
-  private Location _average = null;
+  private Location _average = Location.Zero;
   public Location Average {
     get {
-      if (_average == null) {
+      if (_average.Equals(Location.Zero)) {
         _average = locations.Count == 0 ?
           Location.Zero :
           getAvg();

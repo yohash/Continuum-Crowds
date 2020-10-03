@@ -231,8 +231,8 @@ public class AStarTester : MonoBehaviour
   private void setTextDisplay()
   {
     StateText.text = State.ToString();
-    StartLocationText.text = startLocation?.ToString();
-    EndLocationText.text = endLocation?.ToString();
+    StartLocationText.text = startLocation.ToString();
+    EndLocationText.text = endLocation.ToString();
     StartTileText.text = startTile?.Corner.ToString();
     EndTileText.text = endTile?.Corner.ToString();
     CostText.text = cost.ToString();
