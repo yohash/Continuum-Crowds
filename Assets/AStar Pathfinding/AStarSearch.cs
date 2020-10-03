@@ -33,7 +33,7 @@ public class AStarSearch
       Location start,
       Location end,
       MapTile tile,
-      Action<List<Location>, float> onComplete)
+      Action<bool, List<Location>, float> onComplete)
   {
     // init the queues and dictionary
     frontier.Clear();
@@ -82,17 +82,23 @@ public class AStarSearch
 
     // create the path array and start it with the end point
     path.Clear();
-    // assemble the path backwards
-    currentNode = end;
-    while (!currentNode.Equals(start)) {
-      path.Add(currentNode);
-      currentNode = cameFrom[currentNode];
+    try {
+      // assemble the path backwards
+      currentNode = end;
+      while (!currentNode.Equals(start)) {
+        path.Add(currentNode);
+        currentNode = cameFrom[currentNode];
+      }
+      path.Add(start);
+      // reverse the path so it reads forwards
+      path.Reverse();
+      // call the completion callback
+      onComplete(true, path, costSoFar[end]);
+    } catch {
+      // we did not find a path, return start position
+      path.Add(start);
+      onComplete(false, path, 0);
     }
-    path.Add(start);
-    // reverse the path so it reads forwards
-    path.Reverse();
-    // call the completion callback
-    onComplete(path, costSoFar[end]);
   }
 }
 
