@@ -210,7 +210,7 @@ public class TileGenerator : MonoBehaviour
     // connect merged borders to neighboring tiles
     foreach (var tile in Tiles) {
       Debug.Log($"Assembling neighbors for {tile.Corner}...");
-      tile.ConnectBordersToNeighbors();
+      tile.ConnectBordersAcrossTiles();
     }
 
     // purge all dangling borders that have no connections
@@ -219,32 +219,12 @@ public class TileGenerator : MonoBehaviour
       tile.PurgeBorders();
     }
 
-    //// connect borders to neighbors
-    //Debug.Log($"Connecting all borders...");
-    //foreach (var tile in Tiles) {
-    //  // connect all borders internal to the tile
-    //  foreach (var b1 in tile.Borders) {
-    //    foreach (var b2 in tile.Borders.Where(b => b != b1)) {
-    //      if (!b1.Equals(b2)) {
-    //        // thread the AStar work to speed up process
-    //        Task.Run(() => {
-    //          // get border's central location
-    //          var loc1 = b1.Average;
-    //          var loc2 = b2.Average;
-
-    //          // Create a new AStarSearch
-    //          var aStar = new AStarSearch();
-
-    //          // perform the search, and record the cost with the neighbors
-    //          aStar.ComputePath(loc1, loc2, tile, (successful, path, cost) => {
-    //            b1.AddNeighbor(b2, cost);
-    //            b2.AddNeighbor(b1, cost);
-    //          });
-    //        });
-    //      }
-    //    }
-    //  }
-    //}
+    // connect borders to neighbors
+    Debug.Log($"Connecting all borders...");
+    foreach (var tile in Tiles) {
+      // connect all borders internal to the tile
+      tile.AssembleInternalBorderMesh();
+    }
   }
 
   // ***************************************************************************

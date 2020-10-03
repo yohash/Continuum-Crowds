@@ -89,7 +89,7 @@ public class MapTile
   /// STEP 2 - Connect borders to neighboring borders AFTER all neighboring
   /// tiles have been added
   /// </summary>
-  public void ConnectBordersToNeighbors()
+  public void ConnectBordersAcrossTiles()
   {
     // iterate over all borders
     foreach (var border in Borders) {
@@ -141,10 +141,10 @@ public class MapTile
   }
 
   /// <summary>
-  /// STEP 4 - connect all remaing borders internally, completing the border
-  /// mesh
+  /// STEP 4 - connect all remaing borders internally, completing 
+  /// the border mesh
   /// </summary>
-  public async void assembleInternalConnections()
+  public async void AssembleInternalBorderMesh()
   {
     var pathTasks = new List<Task>();
     foreach (var b1 in Borders) {
