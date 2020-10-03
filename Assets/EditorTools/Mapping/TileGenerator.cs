@@ -219,7 +219,7 @@ public class TileGenerator : MonoBehaviour
       tile.PurgeBorders();
     }
 
-    // purge all dangling borders that have no connections
+    // connect borders to neighbors
     Debug.Log($"Connecting all borders...");
     foreach (var tile in Tiles) {
       // connect all borders internal to the tile

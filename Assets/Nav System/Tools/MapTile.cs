@@ -35,6 +35,9 @@ public class MapTile
     assembleTile();
   }
 
+  // ***************************************************************************
+  //  Tile Acecssors
+  // ***************************************************************************
   public bool ContainsPoint(Vector2 v)
   {
     return ContainsPoint(v.x, v.y);
@@ -67,6 +70,9 @@ public class MapTile
     return ContainsPoint(x, y) ? g[x - corner.x, y - corner.y] : float.MaxValue;
   }
 
+  // ***************************************************************************
+  //  PUBLIC TILE MANAGEMENT TOOLS
+  // ***************************************************************************
   public void ConnectBordersToNeighbors()
   {
     // iterate over all borders
@@ -89,6 +95,34 @@ public class MapTile
     }
   }
 
+  public void PurgeBorders()
+  {
+    var deleteBorders = new List<Border>();
+    // iterate over all borders in this region
+    foreach (var border in Borders) {
+      // get the neighboring tile in the same direction as this border
+      if (!NeighborTiles.TryGetValue(border.Direction, out var tile)) {
+        // there is no neighboring tile. Delete this border, as it borders nothing
+        deleteBorders.Add(border);
+        continue;
+      }
+      // see if there are any neighbors, if not, delete this border
+      if (border.Neighbors().Count() == 0) {
+        deleteBorders.Add(border);
+        continue;
+      }
+    }
+
+    // delete all borders found to be irrelevant
+    foreach (var delete in deleteBorders) {
+      // reomve the border from this tile
+      Borders.Remove(delete);
+    }
+  }
+
+  // ***************************************************************************
+  //  PRIVATE METHODS
+  // ***************************************************************************
   private void assembleTile()
   {
     assembleBorders();
@@ -269,31 +303,6 @@ public class MapTile
       // added to the currentGroup. Start a new group
       groupedBorders.Add(currentGroup);
       currentGroup = new List<Border>();
-    }
-  }
-
-  public void PurgeBorders()
-  {
-    var deleteBorders = new List<Border>();
-    // iterate over all borders in this region
-    foreach (var border in Borders) {
-      // get the neighboring tile in the same direction as this border
-      if (!NeighborTiles.TryGetValue(border.Direction, out var tile)) {
-        // there is no neighboring tile. Delete this border, as it borders nothing
-        deleteBorders.Add(border);
-        continue;
-      }
-      // see if there are any neighbors, if not, delete this border
-      if (border.Neighbors().Count() == 0) {
-        deleteBorders.Add(border);
-        continue;
-      }
-    }
-
-    // delete all borders found to be irrelevant
-    foreach (var delete in deleteBorders) {
-      // reomve the border from this tile
-      Borders.Remove(delete);
     }
   }
 }
