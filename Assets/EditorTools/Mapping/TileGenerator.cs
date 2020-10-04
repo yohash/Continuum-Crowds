@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
 
@@ -27,11 +26,9 @@ public class TileGenerator : MonoBehaviour
 
   // viewables
   private bool viewTiles;
-  private bool viewRegions;
   private bool viewBorders;
   private bool viewNeighborBorders;
   public void ViewTiles(bool show) { viewTiles = show; }
-  public void ViewRegions(bool show) { viewRegions = show; }
   public void ViewBorders(bool show) { viewBorders = show; }
   public void ViewNeighbors(bool show) { viewNeighborBorders = show; }
   public void ViewTileIndex(string i)
@@ -225,6 +222,9 @@ public class TileGenerator : MonoBehaviour
       // connect all borders internal to the tile
       tile.AssembleInternalBorderMesh();
     }
+
+
+    Debug.Log("Completed generating Map Tiles");
   }
 
   // ***************************************************************************

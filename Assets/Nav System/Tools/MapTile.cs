@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
-[System.Serializable]
 public class MapTile
 {
   public Location Corner { get { return corner; } private set { corner = value; } }
