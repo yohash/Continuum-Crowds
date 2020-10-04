@@ -56,7 +56,7 @@ public class MapTile
   }
   public bool IsPathable(Location l)
   {
-    return Discomfort(l.x, l.y) >= 1;
+    return Discomfort(l.x, l.y) <= 1;
   }
   public float Height(int x, int y)
   {
@@ -145,9 +145,11 @@ public class MapTile
   /// </summary>
   public async void AssembleInternalBorderMesh()
   {
+    int num = 0;
     var pathTasks = new List<Task>();
     foreach (var b1 in Borders) {
       foreach (var b2 in Borders.Where(b => !b.Equals(b1))) {
+        Debug.Log($"MapTile {corner} path task {b1.Average}->{b2.Average}, task {num++}");
         pathTasks.Add(
           Task.Run(() => {
             // get border's central location
@@ -163,13 +165,14 @@ public class MapTile
                 b1.AddNeighbor(b2, cost);
                 b2.AddNeighbor(b1, cost);
               }
+              Debug.Log($"\tpath task {b1.Average}->{b2.Average} successful = {successful}, cost = {cost}");
             });
           })
         );
       }
     }
     // wait for the pathfinding to complete
-    await Task.WhenAll(pathTasks);
+    //await Task.WhenAll(pathTasks);
   }
 
   // ***************************************************************************
