@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
+using System.Linq;
 
 public class TileGenerator : MonoBehaviour
 {
@@ -59,7 +60,7 @@ public class TileGenerator : MonoBehaviour
       float height(int x, int y) { return tile.Height(x, y) + dy; }
       for (int x = tile.Corner.x; x < tile.Corner.x + tile.TileSize - 1; x++) {
         for (int y = tile.Corner.y; y < tile.Corner.y + tile.TileSize - 1; y++) {
-          drawSquare(
+          Drawings.DrawSquare(
             new Vector3(x, height(x, y), y),
             new Vector3(x + 1, height(x + 1, y), y),
             new Vector3(x + 1, height(x + 1, y + 1), y + 1),
@@ -77,50 +78,32 @@ public class TileGenerator : MonoBehaviour
       int i = 0;
       foreach (var border in tile.Borders) {
         if (i + 1 > borderColors.Count) {
-          borderColors.Add(new Color(Random.value, Random.value, Random.value));
+          borderColors.Add(new Color(
+              Random.Range(0, 0.5f),
+              Random.Range(0, 0.5f),
+              Random.Range(0, 0.5f))
+          );
         }
         var c = borderColors[i++];
         drawBorder(border, c);
-
-        foreach (var neighbor in border.Neighbors()) {
-          foreach (var l1 in border.GetLocations()) {
-            foreach (var l2 in neighbor.GetLocations()) {
-              Debug.DrawLine(
-                  new Vector3(l1.x + 0.5f, tile.Height(l1), l1.y + 0.5f),
-                  new Vector3(l2.x + 0.5f, neighbor.Tile.Height(l2), l2.y + 0.5f),
-                  Color.yellow
-              );
-            }
-          }
-        }
       }
     }
 
-    if (viewNeighborBorders) {
+    if (viewNeighborBorders && Tiles.Count > tileIndex && tileIndex >= 0) {
       int i = 0;
-      var allBorders = new List<Border>();
-      foreach (var tile in Tiles) {
-        foreach (var border in tile.Borders) {
-          allBorders.Add(border);
-        }
-      }
-
-      while (allBorders.Count > 0) {
+      var tile = Tiles[tileIndex];
+      //foreach (var tile in Tiles) {
+      foreach (var border in tile.Borders) {
         if (i + 1 > borderColors.Count) {
           borderColors.Add(new Color(Random.value, Random.value, Random.value));
         }
         var c = borderColors[i++];
-        var border = allBorders[0];
         drawBorder(border, c);
-        foreach (var neighbor in border.Neighbors()) {
-          if (allBorders.Contains(neighbor)) {
-            // draw the neighbors
-            drawBorder(neighbor, c);
-            allBorders.Remove(neighbor);
-          }
+        foreach (var kvp in border.PathByNeighbor) {
+          Drawings.DrawPath(kvp.Value, tile.Height(kvp.Key.Average), Color.blue);
         }
-        allBorders.Remove(border);
       }
+      //}
     }
   }
 
@@ -133,25 +116,10 @@ public class TileGenerator : MonoBehaviour
         return border.Tile.Height(v.x, v.y);
       }
       var hgt = location.ToVector3(height(location) + dy);
-      drawSquare(hgt, c);
+      Drawings.DrawSquare(hgt, c);
     }
   }
 
-  private void drawSquare(Vector3 corner, Color c)
-  {
-    Debug.DrawLine(corner, corner + Vector3.forward, c);
-    Debug.DrawLine(corner + Vector3.forward, corner + Vector3.forward + Vector3.right, c);
-    Debug.DrawLine(corner + Vector3.forward + Vector3.right, corner + Vector3.right, c);
-    Debug.DrawLine(corner + Vector3.right, corner, c);
-  }
-
-  private void drawSquare(Vector3 c1, Vector3 c2, Vector3 c3, Vector3 c4, Color c)
-  {
-    Debug.DrawLine(c1, c2, c);
-    Debug.DrawLine(c2, c3, c);
-    Debug.DrawLine(c3, c4, c);
-    Debug.DrawLine(c4, c1, c);
-  }
 
   // ***************************************************************************
   //  TILE GENERATION
@@ -222,7 +190,6 @@ public class TileGenerator : MonoBehaviour
       // connect all borders internal to the tile
       tile.AssembleInternalBorderMesh();
     }
-
 
     Debug.Log("Completed generating Map Tiles");
   }

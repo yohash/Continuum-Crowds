@@ -7,6 +7,10 @@ public class Border : IPathable<Border>
 {
   public DIRECTION Direction { get; private set; }
 
+  // TODO: Remove this when debug lines are no longer needed
+  public Dictionary<Border, List<Location>> PathByNeighbor
+    = new Dictionary<Border, List<Location>>();
+
   public Guid ID { get { return _id; } private set { _id = value; } }
   [SerializeField] private Guid _id;
 
@@ -34,10 +38,11 @@ public class Border : IPathable<Border>
   /// or within the same tile, sharing a region
   /// </summary>
   /// <param name="neighbor"></param>
-  public void AddNeighbor(Border neighbor, float cost)
+  public void AddNeighbor(Border neighbor, float cost, List<Location> path)
   {
     if (this == neighbor) { return; }
     costByNeighbor[neighbor] = cost;
+    PathByNeighbor[neighbor] = path;
   }
 
   // *******************************************************************

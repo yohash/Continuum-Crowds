@@ -56,7 +56,9 @@ public class MapTile
   }
   public bool IsPathable(Location l)
   {
-    return Discomfort(l.x, l.y) <= 1;
+    // TODO: Replace this with a ref to a public global var that 
+    //        defines the max pathable slope
+    return Discomfort(l.x, l.y) < 1; ;
   }
   public float Height(int x, int y)
   {
@@ -103,7 +105,7 @@ public class MapTile
           // collect the borders that are adjacent to the border being tested
           var neighbor = opposingBorders.Where(b => b.Contains(location + dir));
           foreach (var confirmed in neighbor) {
-            border.AddNeighbor(confirmed, 1);
+            border.AddNeighbor(confirmed, 1, new List<Location>() { border.Average, confirmed.Average });
           }
         }
       }
@@ -145,27 +147,22 @@ public class MapTile
   /// </summary>
   public async void AssembleInternalBorderMesh()
   {
-    int num = 0;
     var pathTasks = new List<Task>();
     foreach (var b1 in Borders) {
       foreach (var b2 in Borders.Where(b => !b.Equals(b1))) {
-        Debug.Log($"MapTile {corner} path task {b1.Average}->{b2.Average}, task {num++}");
         pathTasks.Add(
           Task.Run(() => {
-            // get border's central location
+            // get border's central location and search from it
             var loc1 = b1.Average;
             var loc2 = b2.Average;
-
-            // Create a new AStarSearch
             var aStar = new AStarSearch();
 
             // perform the search, and record the cost with the neighbors
             aStar.ComputePath(loc1, loc2, this, (successful, path, cost) => {
               if (successful) {
-                b1.AddNeighbor(b2, cost);
-                b2.AddNeighbor(b1, cost);
+                b1.AddNeighbor(b2, cost, path);
+                b2.AddNeighbor(b1, cost, path);
               }
-              Debug.Log($"\tpath task {b1.Average}->{b2.Average} successful = {successful}, cost = {cost}");
             });
           })
         );

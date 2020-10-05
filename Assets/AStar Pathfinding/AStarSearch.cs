@@ -97,7 +97,7 @@ public class AStarSearch
     } catch {
       // we did not find a path, return start position
       path.Add(start);
-      onComplete(false, path, 0);
+      onComplete(false, path, float.MaxValue);
     }
   }
 }
