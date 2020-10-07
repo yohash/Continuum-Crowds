@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
-using System.Linq;
 
 public class TileGenerator : MonoBehaviour
 {
@@ -19,6 +17,9 @@ public class TileGenerator : MonoBehaviour
   public int TileSize = 25;
 
   public List<MapTile> Tiles;
+
+  // navigable node mesh
+  public TileMesh Mesh;
 
   // terrain fields
   private float[,] h;
@@ -92,7 +93,7 @@ public class TileGenerator : MonoBehaviour
     if (viewNeighborBorders && Tiles.Count > tileIndex && tileIndex >= 0) {
       int i = 0;
       var tile = Tiles[tileIndex];
-      //foreach (var tile in Tiles) {
+
       foreach (var border in tile.Borders) {
         if (i + 1 > borderColors.Count) {
           borderColors.Add(new Color(Random.value, Random.value, Random.value));
@@ -103,7 +104,6 @@ public class TileGenerator : MonoBehaviour
           Drawings.DrawPath(kvp.Value, tile.Height(kvp.Key.Average), Color.blue);
         }
       }
-      //}
     }
   }
 
@@ -124,7 +124,7 @@ public class TileGenerator : MonoBehaviour
   // ***************************************************************************
   //  TILE GENERATION
   // ***************************************************************************
-  public void GenerateTiles()
+  public async void GenerateTiles()
   {
     if (h.GetLength(0) != g.GetLength(0) || g.GetLength(0) != dh.GetLength(0) ||
         h.GetLength(1) != g.GetLength(1) || g.GetLength(1) != dh.GetLength(1)) {
@@ -187,9 +187,14 @@ public class TileGenerator : MonoBehaviour
     // connect borders to neighbors
     Debug.Log($"Connecting all borders...");
     foreach (var tile in Tiles) {
+      // TODO: Build a list of these assembly tasks and await them all
       // connect all borders internal to the tile
-      tile.AssembleInternalBorderMesh();
+      await tile.AssembleInternalBorderMesh();
     }
+
+    Debug.Log("Assembling Tile Mesh...");
+    Mesh = new TileMesh(Tiles);
+    Debug.Log(Mesh.ToString());
 
     Debug.Log("Completed generating Map Tiles");
   }

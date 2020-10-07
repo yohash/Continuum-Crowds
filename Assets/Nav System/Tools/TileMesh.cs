@@ -14,30 +14,27 @@ public class TileMesh
         mesh.Add(Node.CreateFromBorder(border));
       }
     }
-    // connect all nodes of the mesh to each other
-    foreach (var tile in tiles) {
-      foreach (var border in tile.Borders) {
-        var node = mesh.FirstOrDefault(n => n.Center.Equals(border.Average));
-        foreach (var neighbor in border.Neighbors()) {
-          var connection = mesh.FirstOrDefault(n => n.Center.Equals(neighbor.Average));
-          if (!node.Equals(null) && !connection.Equals(null) && !node.Equals(connection)) {
-            node.AddNeighbor(connection, border.Cost(neighbor));
-          }
-        }
-      }
-    }
   }
 
-  
+  public override string ToString()
+  {
+    return string.Join("\n", mesh);
+  }
 
-  private struct Node : IPathable<Node>
+  private struct Node : IPathable<Location>
   {
     // static "constructor"
     public static Node CreateFromBorder(Border b)
     {
+      var dict = new Dictionary<Location, float>();
+      foreach (var neighb in b.Neighbors()) {
+        dict[neighb.Average] = b.Cost(neighb);
+      }
+
       return new Node() {
         Center = b.Average,
-        Width = b.GetLocations().Count()
+        Width = b.GetLocations().Count(),
+        costByNode = dict
       };
     }
 
@@ -45,28 +42,32 @@ public class TileMesh
     public Location Center { get; private set; }
     public int Width { get; private set; }
 
-    private Dictionary<Node, float> costByNode;
-    public void AddNeighbor(Node neighbor, float cost)
-    {
-      costByNode[neighbor] = cost;
-    }
+    private Dictionary<Location, float> costByNode;
 
     // IPathable
-    public float Cost(Node neighbor)
+    public float Cost(Location neighbor)
     {
-      return costByNode.ContainsKey(neighbor) ? costByNode[neighbor] : float.MaxValue;
+      return costByNode.ContainsKey(neighbor) ?
+        costByNode[neighbor] :
+        float.MaxValue;
     }
 
-    public float Heuristic(Node endGoal)
+    public float Heuristic(Location endGoal)
     {
-      return (float)(Center - endGoal.Center).magnitude();
+      return (float)(Center - endGoal).magnitude();
     }
 
-    public IEnumerable<Node> Neighbors()
+    public IEnumerable<Location> Neighbors()
     {
       foreach (var node in costByNode.Keys) {
         yield return node;
       }
+    }
+
+    public override string ToString()
+    {
+      return $"{Center} - x{Width}:\t" +
+        $"{(costByNode == null ? "no neighbors\n" : string.Join(", ", costByNode.Keys))}";
     }
   }
 }

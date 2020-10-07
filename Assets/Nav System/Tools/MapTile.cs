@@ -145,7 +145,7 @@ public class MapTile
   /// STEP 4 - connect all remaing borders internally, completing 
   /// the border mesh
   /// </summary>
-  public async void AssembleInternalBorderMesh()
+  public async Task AssembleInternalBorderMesh()
   {
     var pathTasks = new List<Task>();
     foreach (var b1 in Borders) {
@@ -169,7 +169,7 @@ public class MapTile
       }
     }
     // wait for the pathfinding to complete
-    //await Task.WhenAll(pathTasks);
+    await Task.WhenAll(pathTasks);
   }
 
   // ***************************************************************************
