@@ -105,7 +105,7 @@ public class MapTile
           // collect the borders that are adjacent to the border being tested
           var neighbor = opposingBorders.Where(b => b.Contains(location + dir));
           foreach (var confirmed in neighbor) {
-            border.AddNeighbor(confirmed, 1, new List<Location>() { border.Average, confirmed.Average });
+            border.AddNeighbor(confirmed, 1, new List<Location>() { border.Center, confirmed.Center });
           }
         }
       }
@@ -153,8 +153,8 @@ public class MapTile
         pathTasks.Add(
           Task.Run(() => {
             // get border's central location and search from it
-            var loc1 = b1.Average;
-            var loc2 = b2.Average;
+            var loc1 = b1.Center;
+            var loc2 = b2.Center;
             var aStar = new AStarSearch();
 
             // perform the search, and record the cost with the neighbors

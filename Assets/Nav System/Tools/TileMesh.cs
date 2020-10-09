@@ -28,11 +28,11 @@ public class TileMesh
     {
       var dict = new Dictionary<Location, float>();
       foreach (var neighb in b.Neighbors()) {
-        dict[neighb.Average] = b.Cost(neighb);
+        dict[neighb.Center] = b.Cost(neighb);
       }
 
       return new Node() {
-        Center = b.Average,
+        Center = b.Center,
         Width = b.GetLocations().Count(),
         costByNode = dict
       };

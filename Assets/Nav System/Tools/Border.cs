@@ -85,7 +85,7 @@ public class Border : IPathable<Border>
 
   public float Heuristic(Border endGoal)
   {
-    return (float)(Average - endGoal.Average).magnitude();
+    return (float)(Center - endGoal.Center).magnitude();
   }
 
   public float Cost(Border neighbor)
@@ -94,7 +94,7 @@ public class Border : IPathable<Border>
   }
 
   private Location _average = Location.Zero;
-  public Location Average {
+  public Location Center {
     get {
       if (_average.Equals(Location.Zero)) {
         _average = locations.Count == 0 ?

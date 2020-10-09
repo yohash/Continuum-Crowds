@@ -101,7 +101,7 @@ public class TileGenerator : MonoBehaviour
         var c = borderColors[i++];
         drawBorder(border, c);
         foreach (var kvp in border.PathByNeighbor) {
-          Drawings.DrawPath(kvp.Value, tile.Height(kvp.Key.Average), Color.blue);
+          Drawings.DrawPath(kvp.Value, tile.Height(kvp.Key.Center), Color.blue);
         }
       }
     }
