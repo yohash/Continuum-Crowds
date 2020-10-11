@@ -31,13 +31,14 @@ public class NavSystem
     var startTile = GetTileForLocation(start);
     var endTile = GetTileForLocation(end);
 
-    var seedTasks = new List<Task>() {
-      mesh.FindMeshPortalsConnectedToLocation(start, startTile),
-      mesh.FindMeshPortalsConnectedToLocation(end, endTile)
-    };
+    var startNodes = mesh.FindMeshPortalsConnectedToLocation(start, startTile);
+    var endNodes = mesh.FindMeshPortalsConnectedToLocation(end, endTile);
 
+    // store and await the node tasks
+    var seedTasks = new List<Task>() { startNodes, endNodes };
     await Task.WhenAll(seedTasks);
 
+    // perform navigation through the mesh
 
   }
 
