@@ -24,6 +24,18 @@ public static class LocationExtensions
   {
     return new Vector3(l.x, y, l.y);
   }
+  public static Location Average(this List<Location> locations)
+  {
+    if (locations.Count == 0) {
+      return Location.Zero;
+    }
+
+    var l = Location.Zero;
+    foreach (var item in locations) {
+      l += item;
+    }
+    return l /= locations.Count;
+  }
 }
 
 public partial struct Location

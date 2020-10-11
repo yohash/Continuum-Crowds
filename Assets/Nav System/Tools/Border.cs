@@ -9,10 +9,7 @@ public class Border : IPathable<Border>
 
   // TODO: Remove this when debug lines are no longer needed
   public Dictionary<Border, List<Location>> PathByNeighbor
-    = new Dictionary<Border, List<Location>>();
-
-  public Guid ID { get { return _id; } private set { _id = value; } }
-  [SerializeField] private Guid _id;
+      = new Dictionary<Border, List<Location>>();
 
   private Dictionary<Border, float> costByNeighbor;
 
@@ -29,8 +26,11 @@ public class Border : IPathable<Border>
 
     locations = new List<Location>();
     costByNeighbor = new Dictionary<Border, float>();
+  }
 
-    ID = Guid.NewGuid();
+  public override string ToString()
+  {
+    return "Border: " + Center;
   }
 
   /// <summary>
@@ -69,6 +69,8 @@ public class Border : IPathable<Border>
   public void AddLocation(Location location)
   {
     if (!locations.Contains(location)) { locations.Add(location); }
+    // re-compute the center
+    Center = locations.Average();
   }
   public bool Contains(Location v)
   {
@@ -93,25 +95,5 @@ public class Border : IPathable<Border>
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 
-  private Location _average = Location.Zero;
-  public Location Center {
-    get {
-      if (_average.Equals(Location.Zero)) {
-        _average = locations.Count == 0 ?
-          Location.Zero :
-          getAvg();
-      }
-      return _average;
-    }
-  }
-
-  private Location getAvg()
-  {
-    Location l = Location.Zero;
-    foreach (var item in locations) {
-      l += item;
-    }
-    l /= locations.Count;
-    return l;
-  }
+  public Location Center { get; private set; }
 }

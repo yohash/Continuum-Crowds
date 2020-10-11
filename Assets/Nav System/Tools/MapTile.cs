@@ -36,6 +36,11 @@ public class MapTile
     assembleBorders();
   }
 
+  public override string ToString()
+  {
+    return "Tile: " + corner;
+  }
+
   // ***************************************************************************
   //  Tile Acecssors
   // ***************************************************************************
