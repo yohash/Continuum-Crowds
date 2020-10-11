@@ -26,7 +26,7 @@ public class TileMesh
     }
   }
 
-  public async Task<Dictionary<Portal, float>> FindMeshPortalsConnectedToLocation(Location location, MapTile tile)
+  public async Task<Dictionary<Portal, float>> FindConnectedPortals(Location location, MapTile tile)
   {
     var portals = mesh.Values.Where(portal => portal.tile1 == tile || portal.tile2 == tile);
     // return var
@@ -83,7 +83,8 @@ public class Portal : IPathable<Portal>
 
     // assign tiles
     // get any neighbor whose cost is 1
-    var neighbor = b.Neighbors().Where(neighb => b.Cost(neighb) == 1)
+    var neighbor = b.Neighbors()
+        .Where(neighb => b.Cost(neighb) == 1)
         .FirstOrDefault();
     if (neighbor == null) {
       UnityEngine.Debug.LogError("Portal has no neighboring border");
@@ -98,7 +99,7 @@ public class Portal : IPathable<Portal>
   public void AddConnection(Portal node, float cost)
   {
     if (node == this) { return; }
-    costByNode.Add(node, cost);
+    costByNode[node] = cost;
   }
 
   // *******************************************************************
