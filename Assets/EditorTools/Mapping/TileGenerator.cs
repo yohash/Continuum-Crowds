@@ -120,7 +120,6 @@ public class TileGenerator : MonoBehaviour
     }
   }
 
-
   // ***************************************************************************
   //  TILE GENERATION
   // ***************************************************************************
@@ -188,13 +187,10 @@ public class TileGenerator : MonoBehaviour
     Debug.Log($"Connecting all borders...");
     foreach (var tile in Tiles) {
       // TODO: Build a list of these assembly tasks and await them all
+      //        to allow concurrect processing
       // connect all borders internal to the tile
       await tile.AssembleInternalBorderMesh();
     }
-
-    Debug.Log("Assembling Tile Mesh...");
-    Mesh = new TileMesh(Tiles);
-    Debug.Log(Mesh.ToString());
 
     Debug.Log("Completed generating Map Tiles");
   }

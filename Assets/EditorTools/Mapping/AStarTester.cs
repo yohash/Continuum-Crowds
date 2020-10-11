@@ -65,25 +65,25 @@ public class AStarTester : MonoBehaviour
       case A_STAR_TESTER_STATE.SELECT_END:
         if (Input.GetMouseButtonDown(0)) {
           // raycast to find tap point
-          //RaycastHit hit;
-          //var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+          RaycastHit hit;
+          var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-          //// ensure raycast hits terrain
-          //if (Physics.Raycast(ray, out hit)) {
-          //  var loc = new Location(hit.point.x, hit.point.z);
+          // ensure raycast hits terrain
+          if (Physics.Raycast(ray, out hit)) {
+            var loc = new Location(hit.point.x, hit.point.z);
 
-          //  // store tapped location
-          //  if (State == A_STAR_TESTER_STATE.SELECT_START) {
-          //    startTile = navSystem.GetTileForLocation(loc);
-          //    startLocation = startTile.GetLocation(loc);
-          //  }
-          //  if (State == A_STAR_TESTER_STATE.SELECT_END) {
-          //    endTile = navSystem.GetTileForLocation(loc);
-          //    endLocation = endTile.GetLocation(loc);
-          //  }
+            // store tapped location
+            if (State == A_STAR_TESTER_STATE.SELECT_START) {
+              startTile = navSystem.GetTileForLocation(loc);
+              startLocation = loc;
+            }
+            if (State == A_STAR_TESTER_STATE.SELECT_END) {
+              endTile = navSystem.GetTileForLocation(loc);
+              endLocation = loc;
+            }
 
             State = A_STAR_TESTER_STATE.NONE;
-          //}
+          }
         }
         break;
       case A_STAR_TESTER_STATE.SHOWING_PATH:
@@ -132,79 +132,68 @@ public class AStarTester : MonoBehaviour
 
   public async void FindPath()
   {
-    //if (startLocation != null && endLocation != null) {
-    //  timer.Reset();
-    //  timer.Start();
-    //  // simplified pathfinding, point to point
-    //  if (startTile == endTile) {
-    //    await Task.Run(() => {
-    //      var search = new AStarSearch<Location>();
-    //      search.ComputePath(startLocation, endLocation, storeLocationPath);
-    //    });
-    //  }
-    //  // complex pathfinding, find border connections between tiles
-    //  else {
-    //    var pathTasks = new List<Task>();
-    //    // create a "fake border" to start from, connecting all other 
-    //    // borders in the region that shares this start location
-    //    var startBorder = new Border(startTile, DIRECTION.NORTH);
-    //    startBorder.AddLocation(startLocation);
-    //    foreach (var region in startTile.Regions) {
-    //      if (region.ContainsLocation(startLocation)) {
-    //        foreach (var border in region.Borders()) {
-    //          // compute the path cost to each neighbor border
-    //          var newTask = Task.Run(() => {
-    //            // get first locations in each border
-    //            // TODO: get the closest 
-    //            var loc = border.GetLocations().First();
-    //            // Create a new AStarSearch of type location
-    //            var aStar = new AStarSearch<Location>();
-    //            // perform the search, and record the cost with the neighbors
-    //            aStar.ComputePath(startLocation, loc, (path, cost) => {
-    //              startBorder.AddNeighbor(border, cost);
-    //              border.AddNeighbor(startBorder, cost);
-    //            });
-    //          });
-    //          // track the pathfinding tasks
-    //          pathTasks.Add(newTask);
-    //        }
-    //      }
-    //    }
-    //    // borders in the region that shares this start location
-    //    var endBorder = new Border(endTile, DIRECTION.NORTH);
-    //    endBorder.AddLocation(endLocation);
-    //    foreach (var region in endTile.Regions) {
-    //      if (region.ContainsLocation(endLocation)) {
-    //        foreach (var border in region.Borders()) {
-    //          // compute the path cost to each neighbor border
-    //          var newTask = Task.Run(() => {
-    //            // get first locations in each border
-    //            // TODO: get the closest 
-    //            var loc = border.GetLocations().First();
-    //            // Create a new AStarSearch of type location
-    //            var aStar = new AStarSearch<Location>();
-    //            // perform the search, and record the cost with the neighbors
-    //            aStar.ComputePath(endLocation, loc, (path, cost) => {
-    //              endBorder.AddNeighbor(border, cost);
-    //              border.AddNeighbor(endBorder, cost);
-    //            });
-    //          });
-    //          // track the pathfinding tasks
-    //          pathTasks.Add(newTask);
-    //        }
-    //      }
-    //    }
+    if (!Location.Equals(startLocation, endLocation)) {
+      timer.Reset();
+      timer.Start();
+      // simplified pathfinding, point to point
+      if (startTile == endTile) {
+        await Task.Run(() => {
+          var search = new AStarSearch();
+          search.ComputePath(startLocation, endLocation, startTile, storeLocationPath);
+        });
+      }
+      // complex pathfinding, find border connections between tiles
+      else {
+        var pathTasks = new List<Task>();        
+        foreach (var border in startTile.Borders) {
+          // compute the path cost to each neighbor border
+          var newTask = Task.Run(() => { 
+            var loc = border.Center;
+            var aStar = new AStarSearch();
+            // perform the search, and record the cost with the neighbors
+            aStar.ComputePath(startLocation, loc, (path, cost) => {
+              startBorder.AddNeighbor(border, cost);
+              border.AddNeighbor(startBorder, cost);
+            });
+          });
+          // track the pathfinding tasks
+          pathTasks.Add(newTask);
+        }
+        // borders in the region that shares this start location
+        var endBorder = new Border(endTile, DIRECTION.NORTH);
+        endBorder.AddLocation(endLocation);
+        foreach (var region in endTile.Regions) {
+          if (region.ContainsLocation(endLocation)) {
+            foreach (var border in region.Borders()) {
+              // compute the path cost to each neighbor border
+              var newTask = Task.Run(() => {
+                // get first locations in each border
+                // TODO: get the closest 
+                var loc = border.GetLocations().First();
+                // Create a new AStarSearch of type location
+                var aStar = new AStarSearch<Location>();
+                // perform the search, and record the cost with the neighbors
+                aStar.ComputePath(endLocation, loc, (path, cost) => {
+                  endBorder.AddNeighbor(border, cost);
+                  border.AddNeighbor(endBorder, cost);
+                });
+              });
+              // track the pathfinding tasks
+              pathTasks.Add(newTask);
+            }
+          }
+        }
 
-    //    // now, we wait for the tasks to complete
-    //    await Task.WhenAll(pathTasks);
+        // now, we wait for the tasks to complete
+        await Task.WhenAll(pathTasks);
 
-    //    // finally, build an astar search through all the borders
-    //    await Task.Run(() => {
-    //      var aStar = new AStarSearch<Border>();
-    //      aStar.ComputePath(startBorder, endBorder, storeBorderPath);
-    //    });
-    //  }
-    //}
+        // finally, build an astar search through all the borders
+        await Task.Run(() => {
+          var aStar = new AStarSearch<Border>();
+          aStar.ComputePath(startBorder, endBorder, storeBorderPath);
+        });
+      }
+    }
   }
 
   private void storeBorderPath(List<Border> path, float cost)
@@ -219,10 +208,10 @@ public class AStarTester : MonoBehaviour
     this.cost = cost;
   }
 
-  private void storeLocationPath(List<Location> path, float cost)
+  private void storeLocationPath(bool successful, List<Location> path, float cost)
   {
     timer.Stop();
-    UnityEngine.Debug.Log("Computed path in: " + timer.Elapsed);
+    UnityEngine.Debug.Log($"Computed path {startTile}, elapsed: {timer.Elapsed}");
     State = A_STAR_TESTER_STATE.SHOWING_PATH;
     this.path = path;
     this.cost = cost;

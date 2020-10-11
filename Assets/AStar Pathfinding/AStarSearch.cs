@@ -11,7 +11,7 @@ using Priority_Queue;
 /// </summary>
 public class AStarSearch
 {
-  private List<Location> path;
+  private List<Location> path; 
 
   private SimplePriorityQueue<Location> frontier;
 

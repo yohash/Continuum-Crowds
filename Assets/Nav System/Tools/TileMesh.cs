@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Linq;
 
 public class TileMesh
@@ -25,9 +26,37 @@ public class TileMesh
     }
   }
 
+  public async Task<Dictionary<Portal, float>> FindMeshPortalsConnectedToLocation(Location location, MapTile tile)
+  {
+    var portals = mesh.Values.Where(portal => portal.tile1 == tile || portal.tile2 == tile);
+    // return var
+    var seeds = new Dictionary<Portal, float>();
+
+    // track path tasks for awaiting
+    var pathTasks = new List<Task>();
+    // determine which portals are connected
+    foreach (var portal in portals) {
+      // compute the path cost to each neighbor border
+      var newTask = Task.Run(() => {
+        var aStar = new AStarSearch();
+        // perform the search, and record the cost with the neighbors
+        aStar.ComputePath(location, portal.Center, tile, (success, path, cost) => {
+          // path finding was a success, store this portal
+          if (success) { seeds[portal] = cost; }
+        });
+      });
+      // track the pathfinding tasks
+      pathTasks.Add(newTask);
+    }
+
+    await Task.WhenAll(pathTasks);
+    // return all seeds
+    return seeds;
+  }
+
   public override string ToString()
   {
-    return "Mesh: " + string.Join("\n", mesh);
+    return $"{GetType()}: {string.Join("\n", mesh)}";
   }
 }
 
