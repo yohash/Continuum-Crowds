@@ -44,10 +44,11 @@ public class Portal : IPathable<Portal>
   // IPathable cost dictionary
   private Dictionary<Portal, float> costByNode = new Dictionary<Portal, float>();
 
+  // *******************************************************************
+  //    Portal
+  // *******************************************************************
   public Portal(Border b)
   {
-    var portalLocations = new List<Location>();
-
     // get the maptile of this border
     tile1 = b.Tile;
 
@@ -71,7 +72,9 @@ public class Portal : IPathable<Portal>
     costByNode.Add(node, cost);
   }
 
-  // IPathable
+  // *******************************************************************
+  //    IPathable
+  // *******************************************************************
   public float Cost(Portal neighbor)
   {
     return costByNode.ContainsKey(neighbor) ?

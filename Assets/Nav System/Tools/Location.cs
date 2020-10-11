@@ -48,20 +48,4 @@ public partial struct Location : IEquatable<Location>
     hash = (31 * hash) + y;
     return hash;
   }
-
-  //public static bool operator ==(Location l1, Location l2)
-  //{
-  //  if (((object)l1) == null || ((object)l2) == null) {
-  //    return object.Equals(l1, l2);
-  //  }
-  //  return l1.Equals(l2);
-  //}
-
-  //public static bool operator !=(Location l1, Location l2)
-  //{
-  //  if (((object)l1) == null || ((object)l2) == null) {
-  //    return !object.Equals(l1, l2);
-  //  }
-  //  return !l1.Equals(l2);
-  //}
 }
