@@ -126,12 +126,14 @@ public class AStarSearch<T> where T : IPathable<T>
     costSoFar = new Dictionary<T, float>();
   }
 
+  /// <summary>
+  /// This default constructor relies on the start node implementing IPathable to 
+  /// have a collection of neighbors and costs pre-loaded
+  /// </summary>
+  /// <param name="start"></param>
+  /// <param name="end"></param>
+  /// <param name="onComplete"></param>
   public void ComputePath(T start, T end, Action<List<T>, float> onComplete)
-  {
-    ComputePath(start, end, new Dictionary<T, float>(), onComplete);
-  }
-
-  public void ComputePath(T start, T end, Dictionary<T, float> seeds, Action<List<T>, float> onComplete)
   {
     // init the queues and dictionary
     frontier.Clear();
@@ -139,9 +141,7 @@ public class AStarSearch<T> where T : IPathable<T>
     costSoFar.Clear();
 
     // initialize our tracking components and queue
-    foreach (var seed in seeds) {
-      frontier.Enqueue(seed.Key, seed.Value);
-    }
+    frontier.Enqueue(start, 0);
     cameFrom[start] = start;
     costSoFar[start] = 0;
 
