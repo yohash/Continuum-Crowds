@@ -11,7 +11,7 @@ using Priority_Queue;
 /// </summary>
 public class AStarSearch
 {
-  private List<Location> path; 
+  private List<Location> path;
 
   private SimplePriorityQueue<Location> frontier;
 
@@ -128,13 +128,20 @@ public class AStarSearch<T> where T : IPathable<T>
 
   public void ComputePath(T start, T end, Action<List<T>, float> onComplete)
   {
+    ComputePath(start, end, new Dictionary<T, float>(), onComplete);
+  }
+
+  public void ComputePath(T start, T end, Dictionary<T, float> seeds, Action<List<T>, float> onComplete)
+  {
     // init the queues and dictionary
     frontier.Clear();
     cameFrom.Clear();
     costSoFar.Clear();
 
     // initialize our tracking components and queue
-    frontier.Enqueue(start, 0);
+    foreach (var seed in seeds) {
+      frontier.Enqueue(seed.Key, seed.Value);
+    }
     cameFrom[start] = start;
     costSoFar[start] = 0;
 
