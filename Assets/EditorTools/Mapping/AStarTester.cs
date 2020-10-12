@@ -136,63 +136,63 @@ public class AStarTester : MonoBehaviour
       timer.Reset();
       timer.Start();
       // simplified pathfinding, point to point
-      if (startTile == endTile) {
-        await Task.Run(() => {
-          var search = new AStarSearch();
-          search.ComputePath(startLocation, endLocation, startTile, storeLocationPath);
-        });
-      }
-      // complex pathfinding, find border connections between tiles
-      else {
-        var pathTasks = new List<Task>();        
-        foreach (var border in startTile.Borders) {
-          // compute the path cost to each neighbor border
-          var newTask = Task.Run(() => { 
-            var loc = border.Center;
-            var aStar = new AStarSearch();
-            // perform the search, and record the cost with the neighbors
-            aStar.ComputePath(startLocation, loc, (path, cost) => {
-              startBorder.AddNeighbor(border, cost);
-              border.AddNeighbor(startBorder, cost);
-            });
-          });
-          // track the pathfinding tasks
-          pathTasks.Add(newTask);
-        }
-        // borders in the region that shares this start location
-        var endBorder = new Border(endTile, DIRECTION.NORTH);
-        endBorder.AddLocation(endLocation);
-        foreach (var region in endTile.Regions) {
-          if (region.ContainsLocation(endLocation)) {
-            foreach (var border in region.Borders()) {
-              // compute the path cost to each neighbor border
-              var newTask = Task.Run(() => {
-                // get first locations in each border
-                // TODO: get the closest 
-                var loc = border.GetLocations().First();
-                // Create a new AStarSearch of type location
-                var aStar = new AStarSearch<Location>();
-                // perform the search, and record the cost with the neighbors
-                aStar.ComputePath(endLocation, loc, (path, cost) => {
-                  endBorder.AddNeighbor(border, cost);
-                  border.AddNeighbor(endBorder, cost);
-                });
-              });
-              // track the pathfinding tasks
-              pathTasks.Add(newTask);
-            }
-          }
-        }
+      //  if (startTile == endTile) {
+      //    await Task.Run(() => {
+      //      var search = new AStarSearch();
+      //      search.ComputePath(startLocation, endLocation, startTile, storeLocationPath);
+      //    });
+      //  }
+      //  // complex pathfinding, find border connections between tiles
+      //  else {
+      //    var pathTasks = new List<Task>();        
+      //    foreach (var border in startTile.Borders) {
+      //      // compute the path cost to each neighbor border
+      //      var newTask = Task.Run(() => { 
+      //        var loc = border.Center;
+      //        var aStar = new AStarSearch();
+      //        // perform the search, and record the cost with the neighbors
+      //        aStar.ComputePath(startLocation, loc, (path, cost) => {
+      //          startBorder.AddNeighbor(border, cost);
+      //          border.AddNeighbor(startBorder, cost);
+      //        });
+      //      });
+      //      // track the pathfinding tasks
+      //      pathTasks.Add(newTask);
+      //    }
+      //    // borders in the region that shares this start location
+      //    var endBorder = new Border(endTile, DIRECTION.NORTH);
+      //    endBorder.AddLocation(endLocation);
+      //    foreach (var region in endTile.Regions) {
+      //      if (region.ContainsLocation(endLocation)) {
+      //        foreach (var border in region.Borders()) {
+      //          // compute the path cost to each neighbor border
+      //          var newTask = Task.Run(() => {
+      //            // get first locations in each border
+      //            // TODO: get the closest 
+      //            var loc = border.GetLocations().First();
+      //            // Create a new AStarSearch of type location
+      //            var aStar = new AStarSearch<Location>();
+      //            // perform the search, and record the cost with the neighbors
+      //            aStar.ComputePath(endLocation, loc, (path, cost) => {
+      //              endBorder.AddNeighbor(border, cost);
+      //              border.AddNeighbor(endBorder, cost);
+      //            });
+      //          });
+      //          // track the pathfinding tasks
+      //          pathTasks.Add(newTask);
+      //        }
+      //      }
+      //    }
 
-        // now, we wait for the tasks to complete
-        await Task.WhenAll(pathTasks);
+      //    // now, we wait for the tasks to complete
+      //    await Task.WhenAll(pathTasks);
 
-        // finally, build an astar search through all the borders
-        await Task.Run(() => {
-          var aStar = new AStarSearch<Border>();
-          aStar.ComputePath(startBorder, endBorder, storeBorderPath);
-        });
-      }
+      //    // finally, build an astar search through all the borders
+      //    await Task.Run(() => {
+      //      var aStar = new AStarSearch<Border>();
+      //      aStar.ComputePath(startBorder, endBorder, storeBorderPath);
+      //    });
+      //  }
     }
   }
 

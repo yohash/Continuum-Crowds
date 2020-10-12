@@ -20,7 +20,9 @@ public class TileMesh
     foreach (var tile in tiles) {
       foreach (var border in tile.Borders) {
         foreach (var neighbor in border.Neighbors()) {
-          mesh[border.Center].AddConnection(mesh[neighbor.Center], border.Cost(neighbor));
+          var portal = mesh[border.Center];
+          var connection = mesh[neighbor.AsLocation()];
+          portal.AddConnection(connection, border.Cost(neighbor));
         }
       }
     }
@@ -60,7 +62,7 @@ public class TileMesh
   }
 }
 
-public class Portal : IPathable<Portal>
+public class Portal : IPathable
 {
   // Portal properties
   public Location Center { get; private set; }
@@ -71,7 +73,7 @@ public class Portal : IPathable<Portal>
   public MapTile tile2 { get; private set; }
 
   // IPathable cost dictionary
-  private Dictionary<Portal, float> costByNode = new Dictionary<Portal, float>();
+  private Dictionary<IPathable, float> costByNode = new Dictionary<IPathable, float>();
 
   // *******************************************************************
   //    Portal
@@ -84,7 +86,8 @@ public class Portal : IPathable<Portal>
     // assign tiles
     // get any neighbor whose cost is 1
     var neighbor = b.Neighbors()
-        .Where(neighb => b.Cost(neighb) == 1)
+        .Where(n => b.Cost(n) == 1)
+        .Cast<Border>()
         .FirstOrDefault();
     if (neighbor == null) {
       UnityEngine.Debug.LogError("Portal has no neighboring border");
@@ -102,30 +105,35 @@ public class Portal : IPathable<Portal>
     costByNode[node] = cost;
   }
 
+  public override string ToString()
+  {
+    return $"{GetType()}: {Center} - x{Width}";
+  }
+
   // *******************************************************************
   //    IPathable
   // *******************************************************************
-  public float Cost(Portal neighbor)
+  public float Cost(IPathable neighbor)
   {
     return costByNode.ContainsKey(neighbor) ?
       costByNode[neighbor] :
       float.MaxValue;
   }
 
-  public float Heuristic(Portal endGoal)
+  public float Heuristic(Location endGoal)
   {
-    return (float)(Center - endGoal.Center).magnitude();
+    return (float)(Center - endGoal).magnitude();
   }
 
-  public IEnumerable<Portal> Neighbors()
+  public IEnumerable<IPathable> Neighbors()
   {
     foreach (var node in costByNode.Keys) {
       yield return node;
     }
   }
 
-  public override string ToString()
+  public Location AsLocation()
   {
-    return $"{GetType()}: {Center} - x{Width}";
+    return Center;
   }
 }

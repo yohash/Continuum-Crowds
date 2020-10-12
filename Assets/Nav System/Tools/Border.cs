@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
-[System.Serializable]
-public class Border : IPathable<Border>
+public class Border : IPathable
 {
   public DIRECTION Direction { get; private set; }
 
@@ -11,7 +8,10 @@ public class Border : IPathable<Border>
   public Dictionary<Border, List<Location>> PathByNeighbor
       = new Dictionary<Border, List<Location>>();
 
-  private Dictionary<Border, float> costByNeighbor;
+  private Dictionary<IPathable, float> costByNeighbor
+      = new Dictionary<IPathable, float>();
+
+  public Location Center { get; private set; }
 
   /// <summary>
   /// Basic constructor takes a containg-tile and the border's
@@ -25,7 +25,6 @@ public class Border : IPathable<Border>
     Direction = d;
 
     locations = new List<Location>();
-    costByNeighbor = new Dictionary<Border, float>();
   }
 
   public override string ToString()
@@ -80,20 +79,23 @@ public class Border : IPathable<Border>
   // *******************************************************************
   //    IPathable
   // *******************************************************************
-  public IEnumerable<Border> Neighbors()
+  public IEnumerable<IPathable> Neighbors()
   {
     foreach (var border in costByNeighbor.Keys) { yield return border; }
   }
 
-  public float Heuristic(Border endGoal)
+  public float Heuristic(Location endGoal)
   {
-    return (float)(Center - endGoal.Center).magnitude();
+    return (float)(Center - endGoal).magnitude();
   }
 
-  public float Cost(Border neighbor)
+  public float Cost(IPathable neighbor)
   {
     return costByNeighbor.TryGetValue(neighbor, out var v) ? v : float.MaxValue;
   }
 
-  public Location Center { get; private set; }
+  public Location AsLocation()
+  {
+    return Center;
+  }
 }

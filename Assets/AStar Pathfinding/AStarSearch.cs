@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Priority_Queue;
 
 /// <summary>
-/// Generic form of AStarSaarch will search Locations in a 
+/// Generic form of AStarSearch will search Locations in a 
 /// Tile.
 /// 
 /// Requires a location inside a tile, and a MapTile class
@@ -11,23 +11,7 @@ using Priority_Queue;
 /// </summary>
 public class AStarSearch
 {
-  private List<Location> path;
-
-  private SimplePriorityQueue<Location> frontier;
-
-  private Dictionary<Location, Location> cameFrom;
-  private Dictionary<Location, float> costSoFar;
-
-  public AStarSearch()
-  {
-    // init the queues and dictionary
-    frontier = new SimplePriorityQueue<Location>();
-
-    path = new List<Location>();
-
-    cameFrom = new Dictionary<Location, Location>();
-    costSoFar = new Dictionary<Location, float>();
-  }
+  public AStarSearch() { }
 
   public void ComputePath(
       Location start,
@@ -36,9 +20,9 @@ public class AStarSearch
       Action<bool, List<Location>, float> onComplete)
   {
     // init the queues and dictionary
-    frontier.Clear();
-    cameFrom.Clear();
-    costSoFar.Clear();
+    var frontier = new SimplePriorityQueue<Location>();
+    var cameFrom = new Dictionary<Location, Location>();
+    var costSoFar = new Dictionary<Location, float>();
 
     // initialize our tracking components and queue
     frontier.Enqueue(start, 0);
@@ -81,7 +65,7 @@ public class AStarSearch
     }
 
     // create the path array and start it with the end point
-    path.Clear();
+    var path = new List<Location>();
     try {
       // assemble the path backwards
       currentNode = end;
@@ -100,52 +84,29 @@ public class AStarSearch
       onComplete(false, path, float.MaxValue);
     }
   }
-}
-
-/// <summary>
-/// Typed AStarSearch for any type that implements IPathable
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public class AStarSearch<T> where T : IPathable<T>
-{
-  private List<T> path;
-
-  private SimplePriorityQueue<T> frontier;
-
-  private Dictionary<T, T> cameFrom;
-  private Dictionary<T, float> costSoFar;
-
-  public AStarSearch()
-  {
-    // init the queues and dictionary
-    frontier = new SimplePriorityQueue<T>();
-
-    path = new List<T>();
-
-    cameFrom = new Dictionary<T, T>();
-    costSoFar = new Dictionary<T, float>();
-  }
 
   /// <summary>
-  /// This default constructor relies on the start node implementing IPathable to 
-  /// have a collection of neighbors and costs pre-loaded
+  /// Typed AStarSearch for any type that implements IPathable
   /// </summary>
   /// <param name="start"></param>
   /// <param name="end"></param>
   /// <param name="onComplete"></param>
-  public void ComputePath(T start, T end, Action<List<T>, float> onComplete)
+  public void ComputePath(
+      IPathable start, 
+      IPathable end, 
+      Action<List<IPathable>, float> onComplete)
   {
     // init the queues and dictionary
-    frontier.Clear();
-    cameFrom.Clear();
-    costSoFar.Clear();
+    var frontier = new SimplePriorityQueue<IPathable>();
+    var cameFrom = new Dictionary<IPathable, IPathable>();
+    var costSoFar = new Dictionary<IPathable, float>();
 
     // initialize our tracking components and queue
     frontier.Enqueue(start, 0);
     cameFrom[start] = start;
     costSoFar[start] = 0;
 
-    T currentNode;
+    IPathable currentNode;
 
     // start A*
     while (frontier.Count > 0) {
@@ -160,7 +121,7 @@ public class AStarSearch<T> where T : IPathable<T>
         if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) {
           // track the cost so far for this node
           costSoFar[neighbor] = newCost;
-          float priority = newCost + neighbor.Heuristic(end);
+          float priority = newCost + neighbor.Heuristic(end.AsLocation());
           // make sure frontier doesn't include this prospect
           if (!frontier.Contains(neighbor)) {
             frontier.Enqueue(neighbor, priority);
@@ -172,7 +133,7 @@ public class AStarSearch<T> where T : IPathable<T>
     }
 
     // create the path array and start it with the end point
-    path.Clear();
+    var path = new List<IPathable>();
     // assemble the path backwards
     currentNode = end;
     while (!currentNode.Equals(start)) {

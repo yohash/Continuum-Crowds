@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-public interface IPathable<T>
+public interface IPathable
 {
-  IEnumerable<T> Neighbors();
-  float Heuristic(T endGoal);
-  float Cost(T neighbor);
+  IEnumerable<IPathable> Neighbors();
+  float Heuristic(Location endGoal);
+  float Cost(IPathable neighbor);
+  Location AsLocation();
 }
