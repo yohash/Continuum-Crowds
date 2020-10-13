@@ -26,20 +26,46 @@ public class NavSystem
   /// </summary>
   /// <param name="start"></param>
   /// <param name="end"></param>
-  public async Task GetPathThroughMesh(Location start, Location end)
+  public async Task GetPathThroughMesh(
+      Location start,
+      Location end,
+      Action<List<IPathable>, float> onComplete)
   {
     var startTile = GetTileForLocation(start);
     var endTile = GetTileForLocation(end);
 
-    var startPortals = mesh.FindConnectedPortals(start, startTile);
-    var endPortals = mesh.FindConnectedPortals(end, endTile);
+    var startTask = mesh.FindConnectedPortals(start, startTile);
+    var endTask = mesh.FindConnectedPortals(end, endTile);
+
+    // create dictionaries for task returns
+    Dictionary<Portal, float> startPortals = new Dictionary<Portal, float>();
+    Dictionary<Portal, float> endPortals = new Dictionary<Portal, float>();
 
     // store and await the node tasks
-    var seedTasks = new List<Task>() { startPortals, endPortals };
-    await Task.WhenAll(seedTasks);
+    var seedTasks = new List<Task<Dictionary<Portal, float>>>() { startTask, endTask };
+    while (seedTasks.Count > 0) {
+      var t = await Task.WhenAny(seedTasks);
+      if (t == startTask) { startPortals = t.Result; }
+      if (t == endTask) { endPortals = t.Result; }
+      seedTasks.Remove(t);
+    }
 
-    // perform navigation through the mesh
+    // create "dummy" portals to represent start and end locations
+    var startPortal = new Portal(start, startTile);
+    var endPortal = new Portal(end, endTile);
 
+    // add connections for IPathable
+    foreach (var portal in startPortals) {
+      startPortal.AddConnection(portal.Key, portal.Value);
+    }
+    foreach (var portal in endPortals) {
+      portal.Key.AddConnection(endPortal, portal.Value);
+    }
+
+    // start pathfinding 
+    var aStar = new AStarSearch();
+    // don't awayt this final astar search, we don't need to hold computation
+    aStar.ComputePath(startPortal, endPortal, onComplete);
   }
 
   /// <summary>

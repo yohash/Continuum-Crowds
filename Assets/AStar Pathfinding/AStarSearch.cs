@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using Priority_Queue;
 
-/// <summary>
-/// Generic form of AStarSearch will search Locations in a 
-/// Tile.
-/// 
-/// Requires a location inside a tile, and a MapTile class
-/// that will contains all searchable points
-/// </summary>
 public class AStarSearch
 {
   public AStarSearch() { }
 
+  /// <summary>
+  /// Generic form of AStarSearch will search Locations in a 
+  /// Tile.
+  /// 
+  /// Requires a location inside a tile, and a MapTile class
+  /// that will contains all searchable points
+  /// </summary>
   public void ComputePath(
       Location start,
       Location end,
@@ -86,7 +86,7 @@ public class AStarSearch
   }
 
   /// <summary>
-  /// Typed AStarSearch for any type that implements IPathable
+  /// AStarSearch for any type that implements IPathable
   /// </summary>
   /// <param name="start"></param>
   /// <param name="end"></param>

@@ -99,7 +99,16 @@ public class Portal : IPathable
     Width = b.GetLocations().Count();
   }
 
-  public void AddConnection(Portal node, float cost)
+  public Portal(Location l, MapTile m)
+  {
+    tile1 = m;
+    tile2 = m;
+
+    Center = l;
+    Width = 1;
+  }
+
+  public void AddConnection(IPathable node, float cost)
   {
     if (node == this) { return; }
     costByNode[node] = cost;
@@ -108,6 +117,17 @@ public class Portal : IPathable
   public override string ToString()
   {
     return $"{GetType()}: {Center} - x{Width}";
+  }
+
+  private void purgeConnections()
+  {
+    var destroy = new List<IPathable>();
+    foreach (var pathable in costByNode.Keys) {
+      if (pathable == null) { destroy.Add(pathable); }
+    }
+    foreach (var pathable in destroy) {
+      costByNode.Remove(pathable);
+    }
   }
 
   // *******************************************************************
@@ -127,6 +147,7 @@ public class Portal : IPathable
 
   public IEnumerable<IPathable> Neighbors()
   {
+    purgeConnections();
     foreach (var node in costByNode.Keys) {
       yield return node;
     }
