@@ -29,7 +29,7 @@ public class NavSystem
   public async Task GetPathThroughMesh(
       Location start,
       Location end,
-      Action<List<IPathable>, float> onComplete)
+      Action<bool, List<IPathable>, float> onComplete)
   {
     var startTile = GetTileForLocation(start);
     var endTile = GetTileForLocation(end);
@@ -38,8 +38,8 @@ public class NavSystem
     var endTask = mesh.FindConnectedPortals(end, endTile);
 
     // create dictionaries for task returns
-    Dictionary<Portal, float> startPortals = new Dictionary<Portal, float>();
-    Dictionary<Portal, float> endPortals = new Dictionary<Portal, float>();
+    var startPortals = new Dictionary<Portal, float>();
+    var endPortals = new Dictionary<Portal, float>();
 
     // store and await the node tasks
     var seedTasks = new List<Task<Dictionary<Portal, float>>>() { startTask, endTask };
@@ -62,7 +62,7 @@ public class NavSystem
       portal.Key.AddConnection(endPortal, portal.Value);
     }
 
-    // start pathfinding 
+    // start pathfinding
     var aStar = new AStarSearch();
     // don't awayt this final astar search, we don't need to hold computation
     aStar.ComputePath(startPortal, endPortal, onComplete);

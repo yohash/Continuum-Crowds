@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using UnityEngine;
 
 public static class LocationExtensions
@@ -45,6 +46,10 @@ public partial struct Location
   private static Location right = new Location(-1, 0);
   private static Location up = new Location(0, 1);
   private static Location down = new Location(0, -1);
+  private static Location upleft = new Location(1, 1);
+  private static Location upright = new Location(-1, 1);
+  private static Location downleft = new Location(-1, -1);
+  private static Location downright = new Location(-1, -1);
   // *******************************************************************
   //    Extensions
   // *******************************************************************
@@ -53,12 +58,24 @@ public partial struct Location
   public static Location Right { get { return right; } }
   public static Location Up { get { return up; } }
   public static Location Down { get { return down; } }
-  public static IEnumerable<Location> Directions()
+  public static IEnumerable<Location> Cardinal()
   {
     yield return left;
     yield return up;
     yield return right;
     yield return down;
+  }
+
+  public static IEnumerable<Location> Ordinal()
+  {
+    yield return left;
+    yield return upleft;
+    yield return up;
+    yield return upright;
+    yield return right;
+    yield return downright;
+    yield return down;
+    yield return downleft;
   }
 
   public static Location operator +(Location l1, Location l2)

@@ -4,12 +4,14 @@ using Priority_Queue;
 
 public class AStarSearch
 {
+  private static float sqrt2 = 1.414213562373095f;
+
   public AStarSearch() { }
 
   /// <summary>
-  /// Generic form of AStarSearch will search Locations in a 
+  /// Generic form of AStarSearch will search Locations in a
   /// Tile.
-  /// 
+  ///
   /// Requires a location inside a tile, and a MapTile class
   /// that will contains all searchable points
   /// </summary>
@@ -42,13 +44,14 @@ public class AStarSearch
         return (float)(end - node).magnitude();
       }
 
-      foreach (var direction in Location.Directions()) {
+      foreach (var direction in Location.Ordinal()) {
         // compute neighbors in each direction
         var neighbor = currentNode + direction;
         // skip this node if it's not pathable
         if (!tile.IsPathable(neighbor)) { continue; }
         // add the cost of traversal from currentNode -> neighbor
-        float newCost = costSoFar[currentNode] + 1; // currentNode.Cost(neighbor);
+        float newCost = costSoFar[currentNode] +
+          ((currentNode - neighbor).sqrMagnitude() > 1 ? sqrt2 : 1);
 
         if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) {
           // track the cost so far for this node
@@ -92,9 +95,9 @@ public class AStarSearch
   /// <param name="end"></param>
   /// <param name="onComplete"></param>
   public void ComputePath(
-      IPathable start, 
-      IPathable end, 
-      Action<List<IPathable>, float> onComplete)
+      IPathable start,
+      IPathable end,
+      Action<bool, List<IPathable>, float> onComplete)
   {
     // init the queues and dictionary
     var frontier = new SimplePriorityQueue<IPathable>();
@@ -134,16 +137,22 @@ public class AStarSearch
 
     // create the path array and start it with the end point
     var path = new List<IPathable>();
-    // assemble the path backwards
-    currentNode = end;
-    while (!currentNode.Equals(start)) {
-      path.Add(currentNode);
-      currentNode = cameFrom[currentNode];
+    try {
+      // assemble the path backwards
+      currentNode = end;
+      while (!currentNode.Equals(start)) {
+        path.Add(currentNode);
+        currentNode = cameFrom[currentNode];
+      }
+      path.Add(start);
+      // reverse the path so it reads forwards
+      path.Reverse();
+      // call the completion callback
+      onComplete(true, path, costSoFar[end]);
+    } catch {
+      // we did not find a path, return start position
+      path.Add(start);
+      onComplete(false, path, float.MaxValue);
     }
-    path.Add(start);
-    // reverse the path so it reads forwards
-    path.Reverse();
-    // call the completion callback
-    onComplete(path, costSoFar[end]);
   }
 }

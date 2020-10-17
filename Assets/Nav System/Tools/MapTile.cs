@@ -61,9 +61,9 @@ public class MapTile
   }
   public bool IsPathable(Location l)
   {
-    // TODO: Replace this with a ref to a public global var that 
+    // TODO: Replace this with a ref to a public global var that
     //        defines the max pathable slope
-    return Discomfort(l.x, l.y) < 1; ;
+    return Discomfort(l.x, l.y) < 1;
   }
   public float Height(int x, int y)
   {
@@ -147,7 +147,7 @@ public class MapTile
   }
 
   /// <summary>
-  /// STEP 4 - connect all remaing borders internally, completing 
+  /// STEP 4 - connect all remaing borders internally, completing
   /// the border mesh
   /// </summary>
   public async Task AssembleInternalBorderMesh()

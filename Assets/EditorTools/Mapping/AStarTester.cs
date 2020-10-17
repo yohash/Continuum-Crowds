@@ -149,22 +149,21 @@ public class AStarTester : MonoBehaviour
     }
   }
 
-  private void storePathablePath(List<IPathable> path, float cost)
+  private void storePathablePath(bool successful, List<IPathable> path, float cost)
   {
     timer.Stop();
-    UnityEngine.Debug.Log("Computed border path in: " + timer.Elapsed);
+    string s = successful ? "success" : "fail";
+    UnityEngine.Debug.Log($"Computed path ({s} - {cost}), elapsed: {timer.Elapsed}");
     State = A_STAR_TESTER_STATE.SHOWING_PATH;
-    this.path.Clear();
-    foreach (var pathable in path) {
-      this.path.Add(pathable.AsLocation());
-    }
+    this.path = path.Select(pathable => pathable.AsLocation()).ToList();
     this.cost = cost;
   }
 
   private void storeLocationPath(bool successful, List<Location> path, float cost)
   {
     timer.Stop();
-    UnityEngine.Debug.Log($"Computed path {startTile}, elapsed: {timer.Elapsed}");
+    string s = successful ? "success" : "fail";
+    UnityEngine.Debug.Log($"Computed path ({s} - {cost}), elapsed: {timer.Elapsed}");
     State = A_STAR_TESTER_STATE.SHOWING_PATH;
     this.path = path;
     this.cost = cost;
@@ -188,8 +187,8 @@ public class AStarTester : MonoBehaviour
     }
 
     for (int i = 0; i < path.Count - 1; i++) {
-      float y1 = startTile.Height(path[i]);
-      float y2 = startTile.Height(path[i + 1]);
+      float y1 = navSystem.GetTileForLocation(path[i]).Height(path[i]);
+      float y2 = navSystem.GetTileForLocation(path[i + 1]).Height(path[i + 1]);
       UnityEngine.Debug.DrawLine(path[i].ToVector3(y1), path[i + 1].ToVector3(y2), Color.yellow);
     }
   }
