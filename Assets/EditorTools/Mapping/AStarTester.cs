@@ -189,7 +189,7 @@ public class AStarTester : MonoBehaviour
     for (int i = 0; i < path.Count - 1; i++) {
       float y1 = navSystem.GetTileForLocation(path[i]).Height(path[i]);
       float y2 = navSystem.GetTileForLocation(path[i + 1]).Height(path[i + 1]);
-      UnityEngine.Debug.DrawLine(path[i].ToVector3(y1), path[i + 1].ToVector3(y2), Color.yellow);
+      UnityEngine.Debug.DrawLine(path[i].ToVector3(y1), path[i + 1].ToVector3(y2), Color.blue);
     }
   }
 }

@@ -5,9 +5,6 @@ using System.Collections.Generic;
 
 using Priority_Queue;
 
-using System.Threading;
-using System.Threading.Tasks;
-
 /// ******************************************************************************************
 // 							THE EIKONAL SOLVER
 /// ******************************************************************************************
@@ -136,32 +133,8 @@ public class CCEikonalSolver
   //}
 
   // *************************************************************************
-  //    THREAD OPERATIONS
-  // *************************************************************************
-  //public void InitiateEikonalSolver(CC_Map_Package fields, List<Location> goalLocs)
-  //{
-  //  var task = Task.Run(() => {
-  //    _computeContinuumCrowdsFields(fields, goalLocs);
-  //  });
-  //}
-
-  public IEnumerator WaitFor()
-  {
-    while (!tUpdate()) {
-      yield return null;
-    }
-  }
-  // *************************************************************************
   //    THE EIKONAL SOLVER
   // *************************************************************************
-  private bool tUpdate()
-  {
-    if (isDone) {
-      return true;
-    }
-    return false;
-  }
-
   /// <summary>
   /// The Eikonal Solver using the Fast Marching approach
   /// </summary>
