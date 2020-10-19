@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Priority_Queue;
 
 /// ******************************************************************************************
-// 							THE EIKONAL SOLVER
+/// 							THE EIKONAL SOLVER
 /// ******************************************************************************************
 // 3 labels for each node (Location): far, considered, accepted
 //	labels are tracked by:  far - has huge value (Mathf.Infinite)

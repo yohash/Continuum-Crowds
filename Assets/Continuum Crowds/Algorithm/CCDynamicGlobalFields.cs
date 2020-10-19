@@ -14,55 +14,21 @@ public class CCDynamicGlobalFields
 
   // the meat of the CC Dynamic Global Fields computer
   private Dictionary<Location, CC_Tile> _tiles;
-  [SerializeField] private List<CC_Unit> _units;
+  private List<CC_Unit> _units;
 
   // map dimensions
   private int _mapX, _mapY;
 
-  bool isDone = false;
-
   // cached 2x2 float[] for linear1stOrderSplat (GC redux)
   private float[,] mat = new float[2, 2];
 
-  // *************************************************************************
-  //    THREAD OPERATIONS
-  // *************************************************************************
-  public void Threaded_UpdateTiles()
-  {
-    isDone = false;
-
-    var task = Task.Run(() => {
-      // _updateAll_CCTiles ();
-    });
-    task.Wait();
-
-    isDone = true;
-  }
-
-  public IEnumerator WaitFor()
-  {
-    while (!tUpdate()) {
-      yield return null;
-    }
-  }
-
-  private bool tUpdate()
-  {
-    if (isDone) {
-      return true;
-    }
-    return false;
-  }
-
-  // ******************************************************************************************
+  // ****************************************************************
   // 				PUBLIC ACCESSORS and CONSTRUCTORS
-  // ******************************************************************************************
+  // ****************************************************************
   public CCDynamicGlobalFields()
   {
-    _tiles = new Dictionary<Location, CC_Tile>(); // (new LocationComparator());
+    _tiles = new Dictionary<Location, CC_Tile>();
     _units = new List<CC_Unit>();
-
-    //theMapData = new Map_Data_Package();
   }
 
   public void UpdateCCUnits()
@@ -72,25 +38,14 @@ public class CCDynamicGlobalFields
     }
   }
 
-  public void SetTileSize(int s)
-  {
-    tileSize = s;
-  }
-
   public bool InitiateTiles()
   {
-    // take map dimensions
-    // if tileSize and map dimensions dont fit perfectly, drop a flag
-    // otherwise, create all the tiles
-
     // make sure the map dimensions are divisible by tileSize
     if ((((float)_mapX) % ((float)tileSize) != 0) ||
       (((float)_mapY) % ((float)tileSize) != 0)) {
       // this should NEVER HAPPEN, so send an error if it does
       return false;
     }
-
-    Location loc;
 
     int numTilesX = _mapX / tileSize;
     int numTilesY = _mapY / tileSize;
@@ -99,12 +54,13 @@ public class CCDynamicGlobalFields
     for (int x = 0; x < numTilesX; x++) {
       for (int y = 0; y < numTilesY; y++) {
         // create a new tile based on this location
-        loc = new Location(x, y);
+        var loc = new Location(x, y);
         CC_Tile cct = new CC_Tile(tileSize, loc);
         // save the tile
         _tiles.Add(loc, cct);
       }
     }
+
     // initialize some tile values
     foreach (CC_Tile cct in _tiles.Values) {
       // initialize the cost and speed field
@@ -119,7 +75,7 @@ public class CCDynamicGlobalFields
 
   public List<CC_Tile> GetActiveTiles()
   {
-    List<CC_Tile> activeTiles = new List<CC_Tile>();
+    var activeTiles = new List<CC_Tile>();
     foreach (CC_Tile cct in _tiles.Values) {
       if (cct.UPDATE_TILE) {
         activeTiles.Add(cct);
@@ -286,7 +242,7 @@ public class CCDynamicGlobalFields
   }
 
   // **********************************************************************
-  // 		PREDICTIVE DISCOMFORT is being phased out
+  // 		PREDICTIVE DISCOMFORT - replace wth predictive velocity fields
   // **********************************************************************
   //	private void applyPredictiveDiscomfort (float numSec, CC_Unit cc_u)
   //	{
@@ -336,7 +292,7 @@ public class CCDynamicGlobalFields
   {
     for (int n = 0; n < tileSize; n++) {
       for (int m = 0; m < tileSize; m++) {
-        Vector2 v = cct.vAve[n, m];
+        var v = cct.vAve[n, m];
         float r = cct.rho[n, m];
 
         if (r != 0) {
@@ -368,7 +324,10 @@ public class CCDynamicGlobalFields
     int yGlobalInto = cct.myLoc.y * tileSize + yLocalInto;
 
     // otherwise, run the speed field calculation
-    float ff = 0, ft = 0, fv = 0;
+    float ff = 0;
+    float ft = 0;
+    float fv = 0;
+
     float r;
     // test to see if the point we're looking INTO is in another tile, and if so, pull it
     if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1)) {
@@ -400,7 +359,6 @@ public class CCDynamicGlobalFields
     return Math.Max(CCvals.f_speedMin, ff);
   }
 
-
   private float computeTopographicalSpeed(int x, int y, Vector2 dh, Vector2 direction)
   {
     // first, calculate the gradient in the direction we are looking. 
@@ -412,7 +370,9 @@ public class CCDynamicGlobalFields
     //						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
     float dhInDirection = (direction.x * dh.x + direction.y * dh.y);
     // calculate the speed field from the equation
-    return (CCvals.f_speedMax + (dhInDirection - CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin) * (CCvals.f_speedMin - CCvals.f_speedMax));
+    return (CCvals.f_speedMax
+      + (dhInDirection - CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin)
+      * (CCvals.f_speedMin - CCvals.f_speedMax));
   }
 
   private float computeFlowSpeed(int xI, int yI, Vector2 direction)
@@ -420,9 +380,9 @@ public class CCDynamicGlobalFields
     // the flow speed is simply the average velocity field of the region 
     // INTO WHICH we are looking,
     // dotted with the direction vector
-    Vector2 vAvePt = readDataFromPoint_vAve(xI, yI);
-    float theDotPrd = (vAvePt.x * direction.x + vAvePt.y * direction.y);
-    return Math.Max(CCvals.f_speedMin, theDotPrd);
+    var vAvePt = readDataFromPoint_vAve(xI, yI);
+    float dot = (vAvePt.x * direction.x + vAvePt.y * direction.y);
+    return Math.Max(CCvals.f_speedMin, dot);
   }
 
   private void computeCostField(CC_Tile cct)
@@ -454,17 +414,24 @@ public class CCDynamicGlobalFields
     // initialize g as the map discomfort data value
     float g = 0; // = theMapData.getDiscomfortMap(xGlobalInto, yGlobalInto);
     float r;
+
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
-    if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1)) {
+    if ((xLocalInto < 0)
+        || (xLocalInto > tileSize - 1)
+        || (yLocalInto < 0)
+        || (yLocalInto > tileSize - 1)
+    ) {
       g += readDataFromPoint_g(xGlobalInto, yGlobalInto);
       r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
     } else {
       g += cct.g[xLocalInto, yLocalInto];
       r = cct.rho[xLocalInto, yLocalInto];
     }
-    // clamp g to make sure it's not > 1
-    g = Mathf.Clamp(g, 0f, 1f);
 
+    // clamp g to make sure it's not > 1
+    g = Mathf.Clamp01(g);
+
+    // compute the cost weighted by our coefficients
     float cost = (CCvals.C_alpha * cct.f[tileX, tileY][d]
                 + CCvals.C_beta
                 + CCvals.C_gamma * g
@@ -473,7 +440,6 @@ public class CCDynamicGlobalFields
 
     return cost;
   }
-
 
   // ******************************************************************************
   //			TOOLS AND UTILITIES
@@ -486,7 +452,7 @@ public class CCDynamicGlobalFields
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
     // check to make sure the point is not in a place dis-allowed by terrain (slope)
-    //if (theMapData.getDiscomfortMap(x, y) == 1)
+    //if (theMapData.getDiscomfortMap(x, y) >= 1)
     //{
     //  return false;
     //}
@@ -508,122 +474,102 @@ public class CCDynamicGlobalFields
   // *** read ops ***
   private float readDataFromPoint_rho(int xGlobal, int yGlobal)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //float f = localTile.readData_rho (xTile, yTile);
-    //return f;
     return _tiles[l].readData_rho(xTile, yTile);
   }
+
   private float readDataFromPoint_g(int xGlobal, int yGlobal)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //float f = localTile.readData_g (xTile, yTile);
-    //return f;
     return _tiles[l].readData_g(xTile, yTile);
   }
+
   private Vector2 readDataFromPoint_vAve(int xGlobal, int yGlobal)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //Vector2 f = localTile.readData_vAve (xTile, yTile);
-    //return f;
     return _tiles[l].readData_vAve(xTile, yTile);
   }
+
   private Vector4 readDataFromPoint_f(int xGlobal, int yGlobal)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //Vector4 f = localTile.readData_f (xTile, yTile);
-    //return f;
     return _tiles[l].readData_f(xTile, yTile);
   }
+
   private Vector4 readDataFromPoint_C(int xGlobal, int yGlobal)
   {
     Location l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //Vector4 f = localTile.readData_C (xTile, yTile);
-    //return f;
     return _tiles[l].readData_C(xTile, yTile);
   }
 
   // *** write ops ***
   private void writeDataToPoint_rho(int xGlobal, int yGlobal, float val)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //localTile.writeData_rho (xTile, yTile, val);
-    //_tiles[localTile.myLoc] = localTile;
     _tiles[l].writeData_rho(xTile, yTile, val);
   }
+
   private void writeDataToPoint_g(int xGlobal, int yGlobal, float val)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //localTile.writeData_g (xTile, yTile, val);
-    //_tiles[localTile.myLoc] = localTile;
     _tiles[l].writeData_g(xTile, yTile, val);
   }
+
   private void writeDataToPoint_vAve(int xGlobal, int yGlobal, Vector2 val)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
     _tiles[l].writeData_vAve(xTile, yTile, val);
   }
+
   private void writeDataToPoint_f(int xGlobal, int yGlobal, Vector4 val)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //localTile.writeData_f (xTile, yTile, val);
-    //_tiles[localTile.myLoc] = localTile;
     _tiles[l].writeData_f(xTile, yTile, val);
   }
+
   private void writeDataToPoint_C(int xGlobal, int yGlobal, Vector4 val)
   {
-    Location l = new Location(
+    var l = new Location(
       Math.Floor((double)xGlobal / tileSize),
       Math.Floor((double)yGlobal / tileSize));
-    //CC_Tile localTile = getLocalTile (l);
     int xTile = xGlobal - l.x * tileSize;
     int yTile = yGlobal - l.y * tileSize;
-    //localTile.writeData_C (xTile, yTile, val);
-    //_tiles[localTile.myLoc] = localTile;
     _tiles[l].writeData_C(xTile, yTile, val);
   }
 }

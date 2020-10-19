@@ -52,7 +52,10 @@ public class CC_Tile
     _fbackup = new Vector4[dim, dim];
     _Cbackup = new Vector4[dim, dim];
 
-    float f0 = CCvals.f_speedMax + (-CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin) * (CCvals.f_speedMin - CCvals.f_speedMax);
+    float f0 = CCvals.f_speedMax 
+      + (-CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin) 
+      * (CCvals.f_speedMin - CCvals.f_speedMax);
+
     // initialize speed and cost fields
     Vector4 f_init = f0 * Vector4.one;
     Vector4 C_init = Vector4.one * (f0 * CCvals.C_alpha + CCvals.C_beta) / f0;
@@ -103,9 +106,6 @@ public class CC_Tile
 
   // **************************************************************
   //  		WRITE data
-  // (I tried making a generic function that would read/write to the
-  // proper matrix based on the input Type, but it was hard, and I
-  // wasnt seeing success. Thus, this 'brute force' approach)
   // **************************************************************
   public void writeData_rho(int xTile, int yTile, float f)
   {
