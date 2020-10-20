@@ -45,8 +45,20 @@ public class NavSystem
     var seedTasks = new List<Task<Dictionary<Portal, float>>>() { startTask, endTask };
     while (seedTasks.Count > 0) {
       var t = await Task.WhenAny(seedTasks);
-      if (t == startTask) { startPortals = t.Result; }
-      if (t == endTask) { endPortals = t.Result; }
+      if (t == startTask) {
+        foreach (var portal in t.Result) {
+          UnityEngine.Debug.Log($"\tstart portals: {portal.Key}, {portal.Value}");
+          startPortals.Add(portal.Key, portal.Value);
+        }
+      }
+      if (t == endTask) {
+        foreach (var portal in t.Result) {
+          UnityEngine.Debug.Log($"\tstart portals: {portal.Key}, {portal.Value}");
+          endPortals.Add(portal.Key, portal.Value);
+        }
+      }
+      //if (t == startTask) { startPortals = t.Result; }
+      //if (t == endTask) { endPortals = t.Result; }
       seedTasks.Remove(t);
     }
 
@@ -54,10 +66,17 @@ public class NavSystem
     var startPortal = new Portal(start, startTile);
     var endPortal = new Portal(end, endTile);
 
+    UnityEngine.Debug.Log($"searching through portals, start found {startPortals.Count}, end found {endPortals.Count}");
     // add connections for IPathable
+    //foreach (var portal in startPortals) {
+    //  UnityEngine.Debug.Log($"\tstart portals: {portal.Key}, {portal.Value}");
+    //}
     foreach (var portal in startPortals) {
       startPortal.AddConnection(portal.Key, portal.Value);
     }
+    //foreach (var portal in endPortals) {
+    //  UnityEngine.Debug.Log($"\tend portals: {portal.Key}, {portal.Value}");
+    //}
     foreach (var portal in endPortals) {
       portal.Key.AddConnection(endPortal, portal.Value);
     }
