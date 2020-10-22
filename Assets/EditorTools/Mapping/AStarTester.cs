@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine.EventSystems;
+using System.ComponentModel;
 
 public class AStarTester : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class AStarTester : MonoBehaviour
     SHOWING_PATH
   }
   private A_STAR_TESTER_STATE State = A_STAR_TESTER_STATE.NONE;
+
+  public static AStarTester Instance;
 
   [Header("Assign UI")]
   public TextMeshProUGUI StateText;
@@ -47,6 +50,7 @@ public class AStarTester : MonoBehaviour
   // ***************************************************************************
   private void Awake()
   {
+    Instance = this;
     navSystem = new NavSystem(TileGenerator.Instant.Tiles);
 
     startTile = null;
@@ -89,7 +93,7 @@ public class AStarTester : MonoBehaviour
         // ensure raycast hits terrain
         if (Physics.Raycast(ray, out hit)) {
           var loc = new Location(hit.point.x, hit.point.z);
-          // store start location
+          // store end location
           endTile = navSystem.GetTileForLocation(loc);
           endLocation = loc;
         }
@@ -102,6 +106,17 @@ public class AStarTester : MonoBehaviour
   // ***************************************************************************
   //  AStar Tester
   // ***************************************************************************
+  public void DeclareStartPoint(Location loc)
+  {
+    startTile = navSystem.GetTileForLocation(loc);
+    startLocation = loc;
+  }
+  public void DeclareEndPoint(Location loc)
+  {
+    endTile = navSystem.GetTileForLocation(loc);
+    endLocation = loc;
+  }
+
   public void PathStartPoint()
   {
     if (State == A_STAR_TESTER_STATE.SELECT_START) {
