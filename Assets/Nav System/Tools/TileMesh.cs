@@ -38,8 +38,7 @@ public class TileMesh
     var pathTasks = new List<Task>();
     // determine which portals are connected
     int tot = portals.Count();
-    int track = 1;
-    UnityEngine.Debug.Log($"\t{location}: ({tot}) paths sought");
+    UnityEngine.Debug.Log($"\t{location}: {tot} paths sought");
     foreach (var portal in portals) {
       // compute the path cost to each neighbor border
       var newTask = Task.Run(() => {
@@ -49,9 +48,8 @@ public class TileMesh
           // path finding was a success, store this portal
           if (success) {
             seeds[portal] = cost;
-            UnityEngine.Debug.Log($"\t\t{location}: ({track++}/{tot}) successful path to {portal.Center}");
-          } else {
-            UnityEngine.Debug.Log($"\t\t{location}: ({track++}/{tot}) FAILED path to {portal.Center}");
+            UnityEngine.Debug.Log($"\t\t{location}: ({seeds.Count}/{tot}) successful" +
+              $" path to {portal.Center}, is NULL? {portal == null}");
           }
         });
       });
@@ -60,7 +58,8 @@ public class TileMesh
     }
 
     await Task.WhenAll(pathTasks);
-    UnityEngine.Debug.Log($"\t{location}: ({seeds.Count}/{tot}) successful paths");
+    UnityEngine.Debug.Log($"\t{location}: ({seeds.Count}/{tot}) successful paths," +
+      $" any null? {seeds.Where(k => k.Key == null).Count()}");
     // return all seeds
     return seeds;
   }

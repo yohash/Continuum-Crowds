@@ -16,7 +16,7 @@ public class Clicker : MonoBehaviour
 
     var tilegen = TileGenerator.Instant;
     tilegen.LoadCsvFiles();
-    tilegen.GenerateTiles();
+    await tilegen.GenerateTilesAsync();
     handle.BackButton.onClick.Invoke();
 
     handle.AStarButton.onClick.Invoke();
@@ -24,6 +24,6 @@ public class Clicker : MonoBehaviour
     astar.DeclareStartPoint(new Location(13, 13));
     astar.DeclareEndPoint(new Location(35, 14));
 
-    //astar.FindPath();
+    astar.FindPath();
   }
 }
