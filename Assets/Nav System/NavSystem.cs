@@ -34,37 +34,18 @@ public class NavSystem
     var startTile = GetTileForLocation(start);
     var endTile = GetTileForLocation(end);
 
-    var startTask = mesh.FindConnectedPortals(start, startTile);
-    var endTask = mesh.FindConnectedPortals(end, endTile);
-
     // create dictionaries for task returns
     var startPortals = new Dictionary<Portal, float>();
     var endPortals = new Dictionary<Portal, float>();
 
+    // populate the portal dictionaries
+    var startTask = mesh.FindConnectedPortals(start, startTile, startPortals);
+    var endTask = mesh.FindConnectedPortals(end, endTile, endPortals);
+
     // store and await the node tasks
-    var seedTasks = new List<Task<Dictionary<Portal, float>>>() { startTask, endTask };
-    while (seedTasks.Count > 0) {
-      var t = await Task.WhenAny(seedTasks);
-      if (t == startTask) {
-        foreach (var portal in t.Result) {
-          UnityEngine.Debug.Log($"\t\tstart portals: {portal.Key}, NULL? {portal.Key == null}");
-        }
-        foreach (var portal in t.Result) {
-          startPortals.Add(portal.Key, portal.Value);
-        }
-      }
-      if (t == endTask) {
-        foreach (var portal in t.Result) {
-          UnityEngine.Debug.Log($"\t\tend portals: {portal.Key}, NULL? {portal.Key == null}");
-        }
-        foreach (var portal in t.Result) {
-          endPortals.Add(portal.Key, portal.Value);
-        }
-      }
-      //if (t == startTask) { startPortals = t.Result; }
-      //if (t == endTask) { endPortals = t.Result; }
-      seedTasks.Remove(t);
-    }
+    var seedTasks = new List<Task>() { startTask, endTask };
+    // await the tasks
+    await Task.WhenAll(seedTasks);
 
     // create "dummy" portals to represent start and end locations
     var startPortal = new Portal(start, startTile);
@@ -73,9 +54,14 @@ public class NavSystem
     UnityEngine.Debug.Log($"searching through portals, start found {startPortals.Count}, end found {endPortals.Count}");
     // add connections for IPathable
     foreach (var portal in startPortals) {
+      UnityEngine.Debug.Log($"\t\tstart portals: {portal.Key}, " +
+        $"NULL? {portal.Key == null}");
       startPortal.AddConnection(portal.Key, portal.Value);
     }
+
     foreach (var portal in endPortals) {
+      UnityEngine.Debug.Log($"\t\tstart portals: {portal.Key}, " +
+        $"NULL? {portal.Key == null}");
       portal.Key.AddConnection(endPortal, portal.Value);
     }
 

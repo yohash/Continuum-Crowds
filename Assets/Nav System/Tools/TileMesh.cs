@@ -28,11 +28,13 @@ public class TileMesh
     }
   }
 
-  public async Task<Dictionary<Portal, float>> FindConnectedPortals(Location location, MapTile tile)
+  public async Task FindConnectedPortals(
+    Location location,
+    MapTile tile,
+    Dictionary<Portal, float> seeds
+  )
   {
     var portals = mesh.Values.Where(portal => portal.tile1 == tile || portal.tile2 == tile);
-    // return var
-    var seeds = new Dictionary<Portal, float>();
 
     // track path tasks for awaiting
     var pathTasks = new List<Task>();
@@ -60,8 +62,6 @@ public class TileMesh
     await Task.WhenAll(pathTasks);
     UnityEngine.Debug.Log($"\t{location}: ({seeds.Count}/{tot}) successful paths," +
       $" any null? {seeds.Where(k => k.Key == null).Count()}");
-    // return all seeds
-    return seeds;
   }
 
   public override string ToString()
