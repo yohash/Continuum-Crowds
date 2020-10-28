@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Priority_Queue;
+using UnityEngine;
 
 public class AStarSearch
 {
@@ -50,8 +51,9 @@ public class AStarSearch
         // skip this node if it's not pathable
         if (!tile.IsPathable(neighbor)) { continue; }
         // add the cost of traversal from currentNode -> neighbor
+        var sqrMag = (currentNode - neighbor).sqrMagnitude();
         float newCost = costSoFar[currentNode] +
-          ((currentNode - neighbor).sqrMagnitude() > 1 ? sqrt2 : 1);
+          (sqrMag == 1 ? 1 : sqrMag == 2 ? sqrt2 : (float)Math.Sqrt(sqrMag));
 
         if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) {
           // track the cost so far for this node

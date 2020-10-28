@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
+using UnityEngine.EventSystems;
+using System.ComponentModel;
 
 public class AStarTester : MonoBehaviour
 {
@@ -15,6 +17,8 @@ public class AStarTester : MonoBehaviour
     SHOWING_PATH
   }
   private A_STAR_TESTER_STATE State = A_STAR_TESTER_STATE.NONE;
+
+  public static AStarTester Instance;
 
   [Header("Assign UI")]
   public TextMeshProUGUI StateText;
@@ -46,6 +50,7 @@ public class AStarTester : MonoBehaviour
   // ***************************************************************************
   private void Awake()
   {
+    Instance = this;
     navSystem = new NavSystem(TileGenerator.Instant.Tiles);
 
     startTile = null;
@@ -63,32 +68,36 @@ public class AStarTester : MonoBehaviour
         break;
       case A_STAR_TESTER_STATE.SELECT_START:
       case A_STAR_TESTER_STATE.SELECT_END:
-        if (Input.GetMouseButtonDown(0)) {
-          // raycast to find tap point
-          RaycastHit hit;
-          var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-          // ensure raycast hits terrain
-          if (Physics.Raycast(ray, out hit)) {
-            var loc = new Location(hit.point.x, hit.point.z);
-
-            // store tapped location
-            if (State == A_STAR_TESTER_STATE.SELECT_START) {
-              startTile = navSystem.GetTileForLocation(loc);
-              startLocation = loc;
-            }
-            if (State == A_STAR_TESTER_STATE.SELECT_END) {
-              endTile = navSystem.GetTileForLocation(loc);
-              endLocation = loc;
-            }
-
-            State = A_STAR_TESTER_STATE.NONE;
-          }
-        }
         break;
       case A_STAR_TESTER_STATE.SHOWING_PATH:
         drawPath();
         break;
+    }
+
+    if (!EventSystem.current.IsPointerOverGameObject()) {
+      if (Input.GetMouseButtonDown(0)) {
+        // raycast to find tap point
+        RaycastHit hit;
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // ensure raycast hits terrain
+        if (Physics.Raycast(ray, out hit)) {
+          var loc = new Location(hit.point.x, hit.point.z);
+          // store start location
+          startTile = navSystem.GetTileForLocation(loc);
+          startLocation = loc;
+        }
+      } else if (Input.GetMouseButtonDown(1)) {
+        // raycast to find tap point
+        RaycastHit hit;
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // ensure raycast hits terrain
+        if (Physics.Raycast(ray, out hit)) {
+          var loc = new Location(hit.point.x, hit.point.z);
+          // store end location
+          endTile = navSystem.GetTileForLocation(loc);
+          endLocation = loc;
+        }
+      }
     }
 
     setTextDisplay();
@@ -97,6 +106,17 @@ public class AStarTester : MonoBehaviour
   // ***************************************************************************
   //  AStar Tester
   // ***************************************************************************
+  public void DeclareStartPoint(Location loc)
+  {
+    startTile = navSystem.GetTileForLocation(loc);
+    startLocation = loc;
+  }
+  public void DeclareEndPoint(Location loc)
+  {
+    endTile = navSystem.GetTileForLocation(loc);
+    endLocation = loc;
+  }
+
   public void PathStartPoint()
   {
     if (State == A_STAR_TESTER_STATE.SELECT_START) {

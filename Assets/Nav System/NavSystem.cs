@@ -34,21 +34,18 @@ public class NavSystem
     var startTile = GetTileForLocation(start);
     var endTile = GetTileForLocation(end);
 
-    var startTask = mesh.FindConnectedPortals(start, startTile);
-    var endTask = mesh.FindConnectedPortals(end, endTile);
-
     // create dictionaries for task returns
     var startPortals = new Dictionary<Portal, float>();
     var endPortals = new Dictionary<Portal, float>();
 
+    // populate the portal dictionaries
+    var startTask = mesh.FindConnectedPortals(start, startTile, startPortals);
+    var endTask = mesh.FindConnectedPortals(end, endTile, endPortals);
+
     // store and await the node tasks
-    var seedTasks = new List<Task<Dictionary<Portal, float>>>() { startTask, endTask };
-    while (seedTasks.Count > 0) {
-      var t = await Task.WhenAny(seedTasks);
-      if (t == startTask) { startPortals = t.Result; }
-      if (t == endTask) { endPortals = t.Result; }
-      seedTasks.Remove(t);
-    }
+    var seedTasks = new List<Task>() { startTask, endTask };
+    // await the tasks
+    await Task.WhenAll(seedTasks);
 
     // create "dummy" portals to represent start and end locations
     var startPortal = new Portal(start, startTile);

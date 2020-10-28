@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class TileGenerator : MonoBehaviour
@@ -123,7 +124,19 @@ public class TileGenerator : MonoBehaviour
   // ***************************************************************************
   //  TILE GENERATION
   // ***************************************************************************
+  /// <summary>
+  /// Event handler for buttons
+  /// </summary>
   public async void GenerateTiles()
+  {
+    await GenerateTilesAsync();
+  }
+
+  /// <summary>
+  /// Proper async method with task
+  /// </summary>
+  /// <returns></returns>
+  public async Task GenerateTilesAsync()
   {
     if (h.GetLength(0) != g.GetLength(0) || g.GetLength(0) != dh.GetLength(0) ||
         h.GetLength(1) != g.GetLength(1) || g.GetLength(1) != dh.GetLength(1)) {
