@@ -51,17 +51,11 @@ public class NavSystem
     var startPortal = new Portal(start, startTile);
     var endPortal = new Portal(end, endTile);
 
-    UnityEngine.Debug.Log($"searching through portals, start found {startPortals.Count}, end found {endPortals.Count}");
     // add connections for IPathable
     foreach (var portal in startPortals) {
-      UnityEngine.Debug.Log($"\t\tstart portals: {portal.Key}, " +
-        $"NULL? {portal.Key == null}");
       startPortal.AddConnection(portal.Key, portal.Value);
     }
-
     foreach (var portal in endPortals) {
-      UnityEngine.Debug.Log($"\t\tstart portals: {portal.Key}, " +
-        $"NULL? {portal.Key == null}");
       portal.Key.AddConnection(endPortal, portal.Value);
     }
 

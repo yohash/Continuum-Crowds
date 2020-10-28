@@ -40,7 +40,7 @@ public class TileMesh
     var pathTasks = new List<Task>();
     // determine which portals are connected
     int tot = portals.Count();
-    UnityEngine.Debug.Log($"\t{location}: {tot} paths sought");
+
     foreach (var portal in portals) {
       // compute the path cost to each neighbor border
       var newTask = Task.Run(() => {
@@ -48,11 +48,7 @@ public class TileMesh
         // perform the search, and record the cost with the neighbors
         aStar.ComputePath(location, portal.Center, tile, (success, path, cost) => {
           // path finding was a success, store this portal
-          if (success) {
-            seeds[portal] = cost;
-            UnityEngine.Debug.Log($"\t\t{location}: ({seeds.Count}/{tot}) successful" +
-              $" path to {portal.Center}, is NULL? {portal == null}");
-          }
+          if (success) { seeds[portal] = cost; }
         });
       });
       // track the pathfinding tasks
@@ -60,8 +56,6 @@ public class TileMesh
     }
 
     await Task.WhenAll(pathTasks);
-    UnityEngine.Debug.Log($"\t{location}: ({seeds.Count}/{tot}) successful paths," +
-      $" any null? {seeds.Where(k => k.Key == null).Count()}");
   }
 
   public override string ToString()
@@ -70,7 +64,7 @@ public class TileMesh
   }
 }
 
-public class Portal : IPathable
+public struct Portal : IPathable
 {
   // Portal properties
   public Location Center { get; private set; }
@@ -81,7 +75,7 @@ public class Portal : IPathable
   public MapTile tile2 { get; private set; }
 
   // IPathable cost dictionary
-  private Dictionary<IPathable, float> costByNode = new Dictionary<IPathable, float>();
+  private Dictionary<IPathable, float> costByNode;
 
   // *******************************************************************
   //    Portal
@@ -93,18 +87,19 @@ public class Portal : IPathable
 
     // assign tiles
     // get any neighbor whose cost is 1
-    var neighbor = b.Neighbors()
+    tile2 = b.Neighbors()
         .Where(n => b.Cost(n) == 1)
         .Cast<Border>()
-        .FirstOrDefault();
-    if (neighbor == null) {
+        .FirstOrDefault()?.Tile;
+
+    if (tile2 == null) {
       UnityEngine.Debug.LogError("Portal has no neighboring border");
-    } else {
-      tile2 = neighbor.Tile;
     }
 
     Center = b.Center;
     Width = b.GetLocations().Count();
+
+    costByNode = new Dictionary<IPathable, float>();
   }
 
   public Portal(Location l, MapTile m)
@@ -114,11 +109,13 @@ public class Portal : IPathable
 
     Center = l;
     Width = 1;
+
+    costByNode = new Dictionary<IPathable, float>();
   }
 
   public void AddConnection(IPathable node, float cost)
   {
-    if (node == this) { return; }
+    if (node.Equals(this)) { return; }
     costByNode[node] = cost;
   }
 
