@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Continuum Crowds dynamic global fields.
@@ -101,8 +99,8 @@ public class CCDynamicGlobalFields
       // 		PREDICTIVE DISCOMFORT is being phased out due to visually
       //		unappealing behaviour - units would 'dodge/weave' to avoid
       //								their own predictive dicomfort
-      //  
-      //    TODO: Replace with predictive velocity field. 
+      //
+      //    TODO: Replace with predictive velocity field.
       //
       //			// predictive discomfort is only applied to moving units
       //  if (_units[i].GetVelocity () != Vector2.zero)
@@ -361,10 +359,10 @@ public class CCDynamicGlobalFields
 
   private float computeTopographicalSpeed(int x, int y, Vector2 dh, Vector2 direction)
   {
-    // first, calculate the gradient in the direction we are looking. 
+    // first, calculate the gradient in the direction we are looking.
     // By taking the dot with Direction,
     // we extract the direction we're looking and assign it a proper sign
-    // i.e. if we look left (x=-1) we want -dhdx(x,y), because the 
+    // i.e. if we look left (x=-1) we want -dhdx(x,y), because the
     // gradient is assigned with a positive x
     // 		therefore:		also, Vector.left = [-1,0]
     //						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
@@ -377,7 +375,7 @@ public class CCDynamicGlobalFields
 
   private float computeFlowSpeed(int xI, int yI, Vector2 direction)
   {
-    // the flow speed is simply the average velocity field of the region 
+    // the flow speed is simply the average velocity field of the region
     // INTO WHICH we are looking,
     // dotted with the direction vector
     var vAvePt = readDataFromPoint_vAve(xI, yI);

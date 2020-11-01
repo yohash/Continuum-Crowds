@@ -52,8 +52,8 @@ public class CC_Tile
     _fbackup = new Vector4[dim, dim];
     _Cbackup = new Vector4[dim, dim];
 
-    float f0 = CCvals.f_speedMax 
-      + (-CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin) 
+    float f0 = CCvals.f_speedMax
+      + (-CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin)
       * (CCvals.f_speedMin - CCvals.f_speedMax);
 
     // initialize speed and cost fields

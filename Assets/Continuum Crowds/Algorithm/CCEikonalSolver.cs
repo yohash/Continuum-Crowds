@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 using Priority_Queue;
@@ -46,8 +45,7 @@ public class CCEikonalSolver
   private FastPriorityQueue<FastLocation> considered;
   // cache an oft-used variable
   private FastLocation neighbor;
-  // for thread operations
-  private bool isDone = false;
+
   // store the dimensions for easy iteration
   private int N;
   private int M;
@@ -233,7 +231,7 @@ public class CCEikonalSolver
         float phi_mDiff_Sq = (phi_mx - phi_my) * (phi_mx - phi_my);
 
         float valTest;
-        //				valTest = C_mx_Sq + C_my_Sq - 1f/(C_mx_Sq*C_my_Sq);
+        //valTest = C_mx_Sq + C_my_Sq - 1f / (C_mx_Sq * C_my_Sq);
         valTest = C_mx_Sq + C_my_Sq - 1f;
 
         // test the quadratic
@@ -315,15 +313,24 @@ public class CCEikonalSolver
   {
     for (int i = 0; i < (N); i++) {
       for (int k = 0; k < (M); k++) {
-        if ((i != 0) && (i != (N) - 1) && (k != 0) && (k != (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k + 1); }   // generic spot
-        else if ((i == 0) && (k == (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k); }  // upper left corner
-        else if ((i == (N) - 1) && (k == 0)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k, k + 1); }  // bottom left corner
-        else if ((i == 0) && (k == 0)) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k, k + 1); }  // upper left corner
-        else if ((i == (N) - 1) && (k == (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k); }  // bottom right corner
-        else if (i == 0) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k + 1); }  // top edge
-        else if (i == (N) - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k + 1); }  // bot edge
-        else if (k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k, k + 1); }  // left edge
-        else if (k == (M) - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k); }  // right edge
+        // generic spot
+        if ((i != 0) && (i != (N) - 1) && (k != 0) && (k != (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k + 1); }
+        // upper left corner
+        else if ((i == 0) && (k == (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k); }
+        // bottom left corner
+        else if ((i == (N) - 1) && (k == 0)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k, k + 1); }
+        // upper left corner
+        else if ((i == 0) && (k == 0)) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k, k + 1); }
+        // bottom right corner
+        else if ((i == (N) - 1) && (k == (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k); }
+        // top edge
+        else if (i == 0) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k + 1); }
+        // bot edge
+        else if (i == (N) - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k + 1); }
+        // left edge
+        else if (k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k, k + 1); }
+        // right edge
+        else if (k == (M) - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k); }
       }
     }
   }
@@ -355,8 +362,8 @@ public class CCEikonalSolver
   {
     float vx, vy;
 
-    for (int i = 0; i < (N); i++) {
-      for (int k = 0; k < (M); k++) {
+    for (int i = 0; i < N; i++) {
+      for (int k = 0; k < M; k++) {
 
         if (dPhi[i, k].x > 0) {
           vx = -f[i, k][2] * dPhi[i, k].x;
@@ -370,7 +377,7 @@ public class CCEikonalSolver
           vy = -f[i, k][1] * dPhi[i, k].y;
         }
 
-        velocity[i, k] = (new Vector2(vx, vy));
+        velocity[i, k] = new Vector2(vx, vy);
       }
     }
   }
