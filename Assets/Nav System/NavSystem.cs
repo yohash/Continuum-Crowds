@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class NavSystem
 {
@@ -74,12 +75,45 @@ public class NavSystem
 
   }
 
+  public void SolveCCforTileWithCallback(MapTile tile, Func<Vector2, Vector2> callback)
+  {
+    // (1) perform continuum crowd solution on provided tile
+    // (2) store the velocity field (solution) in a list with some identifier
+    //      to clearly show what we've solved and can therefore refeence later
+    // (3) send back a function that will take in a position (vector2) and 
+    //      return the interpolated velocity on the cc solution (vector2)
+  }
+
   public MapTile GetTileForLocation(Location location)
   {
     foreach (var tile in mapTiles) {
       if (tile.ContainsPoint(location)) { return tile; }
     }
     return mapTiles[0];
+  }
+}
+
+public class NavigationSolution
+{
+  /// <summary>
+  /// The ordered list of the Maptiles that we will traverse to reach our goal
+  /// </summary>
+  public LinkedList<MapTile> Tiles;
+
+  /// <summary>
+  /// Call this systam action with a MapTile to request a cc solution for the 
+  /// given tile. 
+  /// Also provide a callback that takes the solution: a system function 
+  /// accepting a position (vector2) in the tile and returning a velocity
+  /// (vector 2) from the cc solution for the provided position.
+  /// </summary>
+  public Action<MapTile, Action<Func<Vector2, Vector2>>> RequestCCSolution;
+
+  /// <summary>
+  /// 
+  /// </summary>
+  public void CCSolutionHandle(Func<Vector2, Vector2> tileSolution) {
+
   }
 }
 
