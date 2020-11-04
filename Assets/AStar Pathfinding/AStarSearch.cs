@@ -139,6 +139,7 @@ public class AStarSearch
 
     // create the path array and start it with the end point
     var path = new List<IPathable>();
+
     try {
       // assemble the path backwards
       currentNode = end;

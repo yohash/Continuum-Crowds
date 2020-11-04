@@ -20,9 +20,18 @@ public class Clicker : MonoBehaviour
 
     handle.AStarButton.onClick.Invoke();
     var astar = AStarTester.Instance;
-    astar.DeclareStartPoint(new Location(13, 13));
-    astar.DeclareEndPoint(new Location(35, 14));
+
+    var start = new Location(13, 13);
+    var end = new Location(35, 44);
+
+    astar.DeclareStartPoint(start);
+    astar.DeclareEndPoint(end);
 
     astar.FindPath();
+
+    var navSolution = await astar.NavSystem.NavigateMap(start, end);
+
+    Debug.Log("Nav Solution complete, num tiles = " + navSolution.Tiles.Count);
+    Debug.Log(string.Join("\t", navSolution.Tiles));
   }
 }

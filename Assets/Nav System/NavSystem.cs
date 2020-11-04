@@ -42,11 +42,8 @@ public class NavSystem
     // populate the portal dictionaries
     var startTask = mesh.FindConnectedPortals(start, startTile, startPortals);
     var endTask = mesh.FindConnectedPortals(end, endTile, endPortals);
-
-    // store and await the node tasks
-    var seedTasks = new List<Task>() { startTask, endTask };
     // await the tasks
-    await Task.WhenAll(seedTasks);
+    await Task.WhenAll(startTask, endTask);
 
     // create "dummy" portals to represent start and end locations
     var startPortal = new Portal(start, startTile);
@@ -70,16 +67,35 @@ public class NavSystem
   /// This method accepts a path of map-tiles, and provides vector
   /// flow navigation data through them
   /// </summary>
-  public void NavigateMesh()
+  public async Task<NavigationSolution> NavigateMap(Location start, Location end)
   {
+    var solution = new NavigationSolution();
 
+    await GetPathThroughMesh(start, end, (successful, path, cost) => {
+      if (successful) {
+        solution.Tiles.AddFirst(GetTileForLocation(start));
+        foreach (IPathable portal in path) {
+          var nextTile = GetTileForLocation(portal.AsLocation());
+          if (nextTile != solution.Tiles.Last.Value) {
+            solution.Tiles.AddLast(nextTile);
+          }
+        }
+      }
+    });
+
+    // assign callback  
+    solution.RequestCCSolution = SolveCCforTileWithCallback;
+    return solution;
   }
 
-  public void SolveCCforTileWithCallback(MapTile tile, Func<Vector2, Vector2> callback)
+  public void SolveCCforTileWithCallback(
+      MapTile tile,
+      Action<Func<Vector2, Vector2>> tileSolutionCallback
+  )
   {
     // (1) perform continuum crowd solution on provided tile
     // (2) store the velocity field (solution) in a list with some identifier
-    //      to clearly show what we've solved and can therefore refeence later
+    //      to clearly show what we've solved and can therefore reference later
     // (3) send back a function that will take in a position (vector2) and 
     //      return the interpolated velocity on the cc solution (vector2)
   }
@@ -109,10 +125,16 @@ public class NavigationSolution
   /// </summary>
   public Action<MapTile, Action<Func<Vector2, Vector2>>> RequestCCSolution;
 
+  public NavigationSolution()
+  {
+    Tiles = new LinkedList<MapTile>();
+  }
+
   /// <summary>
   /// 
   /// </summary>
-  public void CCSolutionHandle(Func<Vector2, Vector2> tileSolution) {
+  public void CCSolutionHandle(Func<Vector2, Vector2> tileSolution)
+  {
 
   }
 }

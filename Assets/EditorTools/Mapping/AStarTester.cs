@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine.EventSystems;
-using System.ComponentModel;
 
 public class AStarTester : MonoBehaviour
 {
@@ -41,7 +40,7 @@ public class AStarTester : MonoBehaviour
   private List<Location> path;
   private float cost;
 
-  private NavSystem navSystem;
+  public NavSystem NavSystem;
 
   private Stopwatch timer;
 
@@ -51,7 +50,7 @@ public class AStarTester : MonoBehaviour
   private void Awake()
   {
     Instance = this;
-    navSystem = new NavSystem(TileGenerator.Instant.Tiles);
+    NavSystem = new NavSystem(TileGenerator.Instant.Tiles);
 
     startTile = null;
     endTile = null;
@@ -83,7 +82,7 @@ public class AStarTester : MonoBehaviour
         if (Physics.Raycast(ray, out hit)) {
           var loc = new Location(hit.point.x, hit.point.z);
           // store start location
-          startTile = navSystem.GetTileForLocation(loc);
+          startTile = NavSystem.GetTileForLocation(loc);
           startLocation = loc;
         }
       } else if (Input.GetMouseButtonDown(1)) {
@@ -94,7 +93,7 @@ public class AStarTester : MonoBehaviour
         if (Physics.Raycast(ray, out hit)) {
           var loc = new Location(hit.point.x, hit.point.z);
           // store end location
-          endTile = navSystem.GetTileForLocation(loc);
+          endTile = NavSystem.GetTileForLocation(loc);
           endLocation = loc;
         }
       }
@@ -108,12 +107,12 @@ public class AStarTester : MonoBehaviour
   // ***************************************************************************
   public void DeclareStartPoint(Location loc)
   {
-    startTile = navSystem.GetTileForLocation(loc);
+    startTile = NavSystem.GetTileForLocation(loc);
     startLocation = loc;
   }
   public void DeclareEndPoint(Location loc)
   {
-    endTile = navSystem.GetTileForLocation(loc);
+    endTile = NavSystem.GetTileForLocation(loc);
     endLocation = loc;
   }
 
@@ -164,7 +163,7 @@ public class AStarTester : MonoBehaviour
       }
       // complex pathfinding, navigate the tile mesh through nav system
       else {
-        await navSystem.GetPathThroughMesh(startLocation, endLocation, storePathablePath);
+        await NavSystem.GetPathThroughMesh(startLocation, endLocation, storePathablePath);
       }
     }
   }
@@ -207,8 +206,8 @@ public class AStarTester : MonoBehaviour
     }
 
     for (int i = 0; i < path.Count - 1; i++) {
-      float y1 = navSystem.GetTileForLocation(path[i]).Height(path[i]);
-      float y2 = navSystem.GetTileForLocation(path[i + 1]).Height(path[i + 1]);
+      float y1 = NavSystem.GetTileForLocation(path[i]).Height(path[i]);
+      float y2 = NavSystem.GetTileForLocation(path[i + 1]).Height(path[i + 1]);
       UnityEngine.Debug.DrawLine(path[i].ToVector3(y1), path[i + 1].ToVector3(y2), Color.blue);
     }
   }
