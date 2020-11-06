@@ -118,8 +118,8 @@ public class MapTile
   }
 
   /// <summary>
-  /// STEP 3 - Delete all borders with no (a) neighboring tile -or-
-  /// (b) neighboring border IN their neighboring tile
+  /// STEP 3 - Delete all borders with (a) no neighboring tile -or-
+  /// (b) no neighboring border IN their neighboring tile
   /// </summary>
   public void PurgeBorders()
   {
@@ -183,81 +183,39 @@ public class MapTile
   private void assembleBorders()
   {
     Borders = new List<Border>();
-
-    // cache
-    Border border;
-    int x, y;
-
     // trigger to help build continuous borders
     bool valid = false;
 
+    // create inline method to simplify the different scan direction below
+    void scan(IEnumerable<int> xLocations, IEnumerable<int> yLocations, DIRECTION direction)
+    {
+      var border = new Border(this, direction);
+      foreach (var x in xLocations) {
+        foreach (var y in yLocations) {
+          if (g[x, y] < 1) {
+            border.AddLocation(new Location(x, y) + corner);
+            valid = true;
+          } else {
+            // sharp break in discomfort, unpassable location, close off this border
+            if (valid) {
+              Borders.Add(border);
+              border = new Border(this, direction);
+            }
+            valid = false;
+          }
+        }
+      }
+      // after the edge was scanned, see if we add this final border up to the corner
+      if (valid) { Borders.Add(border); }
+    }
+
     // scan the bottom (y=0, SOUTH)
-    y = 0;
-    border = new Border(this, DIRECTION.SOUTH);
-    for (x = 0; x < g.GetLength(0); x++) {
-      if (g[x, y] < 1) {
-        border.AddLocation(new Location(x, y) + corner);
-        valid = true;
-      } else {
-        // sharp break in discomfort, unpassable location, close off this border
-        if (valid) {
-          Borders.Add(border);
-          border = new Border(this, DIRECTION.SOUTH);
-        }
-        valid = false;
-      }
-    }
-    if (valid) { Borders.Add(border); }
+    scan(Enumerable.Range(0, g.GetLength(0)), Enumerable.Range(0, 1), DIRECTION.SOUTH);
     // scan the top (y=length, NORTH)
-    border = new Border(this, DIRECTION.NORTH);
-    y = g.GetLength(1) - 1;
-    for (x = 0; x < g.GetLength(0); x++) {
-      if (g[x, y] < 1) {
-        border.AddLocation(new Location(x, y) + corner);
-        valid = true;
-      } else {
-        // sharp break in discomfort, unpassable location, close off this border
-        if (valid) {
-          Borders.Add(border);
-          border = new Border(this, DIRECTION.NORTH);
-        }
-        valid = false;
-      }
-    }
-    if (valid) { Borders.Add(border); }
+    scan(Enumerable.Range(0, g.GetLength(0)), Enumerable.Range(g.GetLength(1) - 1, 1), DIRECTION.NORTH);
     // scan the left (x=0, WEST)
-    border = new Border(this, DIRECTION.WEST);
-    x = 0;
-    for (y = 0; y < g.GetLength(1); y++) {
-      if (g[x, y] < 1) {
-        border.AddLocation(new Location(x, y) + corner);
-        valid = true;
-      } else {
-        // sharp break in discomfort, unpassable location, close off this border
-        if (valid) {
-          Borders.Add(border);
-          border = new Border(this, DIRECTION.WEST);
-        }
-        valid = false;
-      }
-    }
-    if (valid) { Borders.Add(border); }
+    scan(Enumerable.Range(0, 1), Enumerable.Range(0, g.GetLength(1)), DIRECTION.WEST);
     // scan the right (x=length, EAST)
-    border = new Border(this, DIRECTION.EAST);
-    x = g.GetLength(0) - 1;
-    for (y = 0; y < g.GetLength(1); y++) {
-      if (g[x, y] < 1) {
-        border.AddLocation(new Location(x, y) + corner);
-        valid = true;
-      } else {
-        // sharp break in discomfort, unpassable location, close off this border
-        if (valid) {
-          Borders.Add(border);
-          border = new Border(this, DIRECTION.EAST);
-        }
-        valid = false;
-      }
-    }
-    if (valid) { Borders.Add(border); }
+    scan(Enumerable.Range(g.GetLength(0) - 1, 1), Enumerable.Range(0, g.GetLength(1)), DIRECTION.EAST);
   }
 }
