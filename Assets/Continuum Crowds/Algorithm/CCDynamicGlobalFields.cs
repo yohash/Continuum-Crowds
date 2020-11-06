@@ -312,7 +312,6 @@ public class CCDynamicGlobalFields
     }
   }
 
-  // IMPORTANT: in this function call, x and y are LOCAL to the tile
   private float computeSpeedFieldPoint(int tileX, int tileY, CC_Tile cct, Vector2 direction)
   {
     int xLocalInto = tileX + (int)direction.x;
@@ -403,9 +402,7 @@ public class CCDynamicGlobalFields
     int yGlobalInto = cct.myLoc.y * tileSize + yLocalInto;
 
     // if we're looking in an invalid direction, dont store this value
-    if (cct.f[tileX, tileY][d] == 0) {
-      return Mathf.Infinity;
-    } else if (!isPointValid(xGlobalInto, yGlobalInto)) {
+    if (cct.f[tileX, tileY][d] == 0 || !isPointValid(xGlobalInto, yGlobalInto)) {
       return Mathf.Infinity;
     }
 
@@ -414,10 +411,10 @@ public class CCDynamicGlobalFields
     float r;
 
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
-    if ((xLocalInto < 0)
-        || (xLocalInto > tileSize - 1)
-        || (yLocalInto < 0)
-        || (yLocalInto > tileSize - 1)
+    if (xLocalInto < 0 ||
+        xLocalInto > tileSize - 1 ||
+        yLocalInto < 0 ||
+        yLocalInto > tileSize - 1
     ) {
       g += readDataFromPoint_g(xGlobalInto, yGlobalInto);
       r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);

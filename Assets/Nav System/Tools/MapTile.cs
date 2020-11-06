@@ -6,22 +6,38 @@ using UnityEngine;
 
 public class MapTile
 {
-  public Location Corner { get { return corner; } private set { corner = value; } }
+  /// <summary>
+  /// The integer-location of the corner of this tile
+  /// </summary>
+  public Location Corner { get { return corner; } }
   [SerializeField] private Location corner;
 
+  /// <summary>
+  /// The (square) size of this tile
+  /// </summary>
   public int TileSize { get { return tileSize; } }
   [SerializeField] private int tileSize;
 
-  private Dictionary<DIRECTION, MapTile> neighborTiles;
+  /// <summary>
+  /// The borders of this tile
+  /// </summary>
+  public List<Border> Borders { get { return borders; } }
+  [NonSerialized] private List<Border> borders;
 
-  // public tile contents
-  [NonSerialized] public List<Border> Borders;
+  private Dictionary<DIRECTION, MapTile> neighborTiles;
 
   // defining tile data
   private float[,] h;
   private float[,] g;
   private Vector2[,] dh;
 
+  /// <summary>
+  /// Construct this map tile with the height map
+  /// </summary>
+  /// <param name="corner"></param>
+  /// <param name="h"></param>
+  /// <param name="g"></param>
+  /// <param name="dh"></param>
   public MapTile(Location corner, float[,] h, float[,] g, Vector2[,] dh)
   {
     this.h = h;
@@ -182,7 +198,7 @@ public class MapTile
   // ***************************************************************************
   private void assembleBorders()
   {
-    Borders = new List<Border>();
+    borders = new List<Border>();
     // trigger to help build continuous borders
     bool valid = false;
 
