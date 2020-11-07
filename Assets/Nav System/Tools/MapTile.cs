@@ -114,7 +114,7 @@ public class MapTile
   public void ConnectBordersAcrossTiles()
   {
     // iterate over all borders
-    foreach (var border in Borders) {
+    foreach (var border in borders) {
       // get the neighboring tile in the same direction as this border
       if (neighborTiles.TryGetValue(border.Direction, out var tile)) {
         // get this tile's borders that align with the edge of the border in question
@@ -141,7 +141,7 @@ public class MapTile
   {
     var deleteBorders = new List<Border>();
     // iterate over all borders in this region
-    foreach (var border in Borders) {
+    foreach (var border in borders) {
       // get the neighboring tile in the same direction as this border
       if (!neighborTiles.ContainsKey(border.Direction)) {
         // there is no neighboring tile. Delete this border, as it borders nothing
@@ -158,7 +158,7 @@ public class MapTile
     // delete all borders found to be irrelevant
     foreach (var delete in deleteBorders) {
       // reomve the border from this tile
-      Borders.Remove(delete);
+      borders.Remove(delete);
     }
   }
 
@@ -169,8 +169,8 @@ public class MapTile
   public async Task AssembleInternalBorderMesh()
   {
     var pathTasks = new List<Task>();
-    foreach (var b1 in Borders) {
-      foreach (var b2 in Borders.Where(b => !b.Equals(b1))) {
+    foreach (var b1 in borders) {
+      foreach (var b2 in borders.Where(b => !b.Equals(b1))) {
         pathTasks.Add(
           Task.Run(() => {
             // get border's central location and search from it
@@ -214,7 +214,7 @@ public class MapTile
           } else {
             // sharp break in discomfort, unpassable location, close off this border
             if (valid) {
-              Borders.Add(border);
+              borders.Add(border);
               border = new Border(this, direction);
             }
             valid = false;

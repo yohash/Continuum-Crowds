@@ -82,13 +82,13 @@ public class HeightMapGenerator : MonoBehaviour
   /// </summary>
   public void GenerateDiscomfortMap()
   {
-    int xSteps = (int)(MapSize.x / StepSize);
-    int zSteps = (int)(MapSize.y / StepSize);
+    int id = h.GetLength(0);
+    int kd = h.GetLength(1);
 
-    g = new float[xSteps, zSteps];
+    g = new float[id, kd];
 
-    for (int i = 0; i < xSteps; i++) {
-      for (int k = 0; k < zSteps; k++) {
+    for (int i = 0; i < id; i++) {
+      for (int k = 0; k < kd; k++) {
         if (absGradient[i, k] > TEMP_RHO_MAX) {
           g[i, k] = 1f;
         }
