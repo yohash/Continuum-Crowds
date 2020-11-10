@@ -12,6 +12,10 @@ public class CC_Tile
   // tile dimension (all tiles are square)
   private int dim;
 
+  // testing this -- only update tiles with
+  // units moving around in them
+  public bool UPDATE_TILE;
+
   // might need to store this
   public Location myLoc;
 
@@ -65,6 +69,7 @@ public class CC_Tile
         _Cbackup[i, k] = C_init;
       }
     }
+    UPDATE_TILE = false;
   }
 
   /// <summary>
@@ -96,6 +101,7 @@ public class CC_Tile
         C[i, k] = _Cbackup[i, k];
       }
     }
+    UPDATE_TILE = false;
   }
 
   // **************************************************************
@@ -104,10 +110,12 @@ public class CC_Tile
   public void writeData_rho(int xTile, int yTile, float f)
   {
     rho[xTile, yTile] = f;
+    UPDATE_TILE = true;
   }
   public void writeData_g(int xTile, int yTile, float f)
   {
     g[xTile, yTile] = f;
+    UPDATE_TILE = true;
   }
   public void writeData_vAve(int xTile, int yTile, Vector2 f)
   {
