@@ -8,9 +8,11 @@ using Priority_Queue;
 /// 							THE EIKONAL SOLVER
 /// ******************************************************************************************
 // 3 labels for each node (Location): far, considered, accepted
-//	labels are tracked by:  far - has huge value (Mathf.Infinite)
+//	labels are tracked by:  
+//              far - has huge value (Mathf.Infinite)
 //							considered - placed in a priorityQueue
 //							accepted - stored in List<Location>
+//
 /// The Algorithm:
 //  1) set all nodes (xi=Ui=inf) to far, set nodes in goal (xi=Ui=0) to accepted
 //  2) for each accepted node, use eikonal update formula to find new U', and
@@ -18,6 +20,7 @@ using Priority_Queue;
 // 	[proposed change to 2)]
 //	2) instead of marking each node accepted, mark them considered, and begin the loop
 //		They will naturally become accepted, as their value of 0 gives them highest priority.
+//
 ///	The Loop:
 //  -->	3) let xt be the considered node with smallest Ui
 //	|  	4) for each neighbor (xi) of xt that is NOT accepted, calculate U'
@@ -31,17 +34,24 @@ using Priority_Queue;
 public class CCEikonalSolver
 {
   // Continuum Crowd fields (we're solving for these)
-  public float[,] Phi;        // potential field
-  public Vector2[,] dPhi;       // potential field gradient
-  public Vector2[,] velocity;       // final velocity
+  // potential field
+  public float[,] Phi;
+  // potential field gradient
+  public Vector2[,] dPhi;
+  // final velocity
+  public Vector2[,] velocity;
 
-  // Initiating fields (see if I can avoid storing these later)
-  public Vector4[,] f;        // speed field
-  public Vector4[,] C;        // Cost field
-  public float[,] g;          // absolute discomfort
+  // Initiating fields
+  // speed field
+  public Vector4[,] f;
+  // Cost field
+  public Vector4[,] C;
+  // discomfort field
+  public float[,] g;
 
   // local cached vars
-  private bool[,] accepted, goal;
+  private bool[,] accepted;
+  private bool[,] goal;
   private FastPriorityQueue<FastLocation> considered;
   // cache an oft-used variable
   private FastLocation neighbor;
@@ -54,13 +64,15 @@ public class CCEikonalSolver
   private Vector2[] DIR_ENWS = new Vector2[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
 
   // *************************************************************************
-  //    CONSTRUCTOR AND INITIATION
+  //    CONSTRUCTOR
   // *************************************************************************
-  public CCEikonalSolver()
+  public CCEikonalSolver() { }
+
+  public void SetFields_andGoals_andSolve(CC_Tile tile, List<Location> goalLocs)
   {
-    f = new Vector4[1, 1];
-    C = new Vector4[1, 1];
-    g = new float[1, 1];
+    f = tile.f;
+    C = tile.C;
+    g = tile.g;
 
     N = f.GetLength(0);
     M = f.GetLength(1);
@@ -70,6 +82,7 @@ public class CCEikonalSolver
     }
 
     Phi = new float[N, M];
+
     dPhi = new Vector2[N, M];
     velocity = new Vector2[N, M];
 
@@ -79,56 +92,24 @@ public class CCEikonalSolver
     considered = new FastPriorityQueue<FastLocation>(N * M);
 
     neighbor = new FastLocation(0, 0);
+
+    computeContinuumCrowdsFields(goalLocs);
   }
 
-  //public void SetFields_andGoals_andSolve(CC_Map_Package fields, List<Location> goalLocs)
-  //{
-  //  f = fields.f;
-  //  C = fields.C;
-  //  g = fields.g;
+  private void computeContinuumCrowdsFields(List<Location> goalLocs)
+  {
+    // calculate potential field (Eikonal solver)
+    computePotentialField(goalLocs);
+    // calculate the gradient
+    calculatePotentialGradientAndNormalize();
+    // calculate velocity field
+    calculateVelocityField();
+  }
 
-  //  N = f.GetLength(0);
-  //  M = f.GetLength(1);
-
-  //  if (N == 0 || M == 0) {
-  //    Debug.Log("Eikonal Solver initiated with 0-dimension");
-  //  }
-
-  //  Phi = new float[N, M];
-  //  dPhi = new Vector2[N, M];
-  //  velocity = new Vector2[N, M];
-
-  //  accepted = new bool[N, M];
-  //  goal = new bool[N, M];
-
-  //  //		considered = new FastPriorityQueue <fastLocation> (N*M);
-  //  considered.Clear();
-  //  considered.Resize(N * M);
-
-  //  neighbor = new FastLocation(0, 0);
-
-  //  // reset our tracking bool
-  //  isDone = false;
-
-  //  InitiateEikonalSolver(fields, goalLocs);
-  //}
-
-  //private void _computeContinuumCrowdsFields(CC_Map_Package fields, List<Location> goalLocs)
-  //{
-  //  // calculate potential field (Eikonal solver)
-  //  computePotentialField(fields, goalLocs);
-  //  // calculate the gradient
-  //  calculatePotentialGradientAndNormalize();
-  //  // calculate velocity field
-  //  calculateVelocityField();
-
-  //  isDone = true;
-  //}
-
-  //private void computePotentialField(CC_Map_Package fields, List<Location> goalLocs)
-  //{
-  //  EikonalSolver(fields, goalLocs);
-  //}
+  private void computePotentialField(List<Location> goalLocs)
+  {
+    EikonalSolver(goalLocs);
+  }
 
   // *************************************************************************
   //    THE EIKONAL SOLVER
@@ -161,7 +142,7 @@ public class CCEikonalSolver
       }
     }
 
-    // THE EIKONAL UPDATE LOOP
+    /// THE EIKONAL UPDATE LOOP
     // next, we initiate the eikonal update loop, by initiating it with each goal point as 'considered'.
     // this will check each neighbor to see if it's a valid point (EikonalLocationValidityTest==true)
     // and if so, update if necessary
@@ -179,7 +160,9 @@ public class CCEikonalSolver
   private void EikonalUpdateFormula(FastLocation l)
   {
     float phi_proposed = Mathf.Infinity;
-    int xInto, yInto;
+
+    int xInto;
+    int yInto;
 
     // cycle through directions to check all neighbors and perform the eikonal
     // update cycle on them
@@ -193,9 +176,17 @@ public class CCEikonalSolver
         // The point is valid. Now, we pull values from THIS location's
         // 4 neighbors and use them in the calculation
 
-        int xIInto, yIInto;
-        float phi_mx, phi_my, C_mx, C_my;
+        int xIInto;
+        int yIInto;
+
+        float phi_mx;
+        float phi_my;
+
+        float C_mx;
+        float C_my;
+
         Vector4 phi_m;
+
         phi_m = Vector4.one * Mathf.Infinity;
 
         // track cost of moving into each nearby space
@@ -296,7 +287,7 @@ public class CCEikonalSolver
 
   private bool isEikonalLocationInsideLocalGrid(FastLocation l)
   {
-    if ((l.x < 0) || (l.y < 0) || (l.x > (N) - 1) || (l.y > (M) - 1)) {
+    if (l.x < 0 || l.y < 0 || l.x > N - 1 || l.y > M - 1) {
       return false;
     }
     return true;
@@ -311,34 +302,39 @@ public class CCEikonalSolver
 
   private void calculatePotentialGradientAndNormalize()
   {
-    for (int i = 0; i < (N); i++) {
-      for (int k = 0; k < (M); k++) {
+    for (int i = 0; i < N; i++) {
+      for (int k = 0; k < M; k++) {
         // generic spot
-        if ((i != 0) && (i != (N) - 1) && (k != 0) && (k != (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k + 1); }
+        if (i != 0 && i != N - 1 && k != 0 && k != M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k + 1); }
         // upper left corner
-        else if ((i == 0) && (k == (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k); }
+        else if (i == 0 && k == M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k); }
         // bottom left corner
-        else if ((i == (N) - 1) && (k == 0)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k, k + 1); }
+        else if (i == N - 1 && k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k, k + 1); }
         // upper left corner
-        else if ((i == 0) && (k == 0)) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k, k + 1); }
+        else if (i == 0 && k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k, k + 1); }
         // bottom right corner
-        else if ((i == (N) - 1) && (k == (M) - 1)) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k); }
+        else if (i == N - 1 && k == M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k); }
         // top edge
         else if (i == 0) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k + 1); }
         // bot edge
-        else if (i == (N) - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k + 1); }
+        else if (i == N - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k + 1); }
         // left edge
         else if (k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k, k + 1); }
         // right edge
-        else if (k == (M) - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k); }
+        else if (k == M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k); }
       }
     }
   }
 
   private void writeNormalizedPotentialGradientFieldData(int x, int y, int xMin, int xMax, int yMin, int yMax)
   {
-    float phiXmin = Phi[xMin, y], phiXmax = Phi[xMax, y], phiYmin = Phi[x, yMin], phiYmax = Phi[x, yMax];
-    float dPhidx, dPhidy;
+    float phiXmin = Phi[xMin, y];
+    float phiXmax = Phi[xMax, y];
+    float phiYmin = Phi[x, yMin];
+    float phiYmax = Phi[x, yMax];
+
+    float dPhidx;
+    float dPhidy;
 
     dPhidx = (phiXmax - phiXmin) / (xMax - xMin);
     dPhidy = (phiYmax - phiYmin) / (yMax - yMin);
@@ -360,7 +356,8 @@ public class CCEikonalSolver
 
   private void calculateVelocityField()
   {
-    float vx, vy;
+    float vx;
+    float vy;
 
     for (int i = 0; i < N; i++) {
       for (int k = 0; k < M; k++) {
@@ -406,14 +403,16 @@ public class CCEikonalSolver
   {
     return isPointValid(l.x, l.y);
   }
+
   private bool isPointValid(Vector2 v)
   {
     return isPointValid((int)v.x, (int)v.y);
   }
+
   private bool isPointValid(int x, int y)
   {
     // check to make sure the point is not outside the grid
-    if ((x < 0) || (y < 0) || (x > N - 1) || (y > M - 1)) {
+    if (x < 0 || y < 0 || x > N - 1 || y > M - 1) {
       return false;
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
