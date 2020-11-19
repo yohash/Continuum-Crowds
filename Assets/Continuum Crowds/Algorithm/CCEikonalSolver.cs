@@ -68,7 +68,7 @@ public class CCEikonalSolver
   // *************************************************************************
   public CCEikonalSolver() { }
 
-  public void SolveContinuumCrowdsForTile(CC_Tile tile, List<Location> goalLocs)
+  public void SolveContinuumCrowdsForTile(CC_Tile tile, List<Location> goal)
   {
     f = tile.f;
     C = tile.C;
@@ -87,28 +87,28 @@ public class CCEikonalSolver
     velocity = new Vector2[N, M];
 
     accepted = new bool[N, M];
-    goal = new bool[N, M];
+    this.goal = new bool[N, M];
 
     considered = new FastPriorityQueue<FastLocation>(N * M);
 
     neighbor = new FastLocation(0, 0);
 
-    computeContinuumCrowdsFields(goalLocs);
+    computeContinuumCrowdsFields(goal);
   }
 
-  private void computeContinuumCrowdsFields(List<Location> goalLocs)
+  private void computeContinuumCrowdsFields(List<Location> goal)
   {
     // calculate potential field (Eikonal solver)
-    computePotentialField(goalLocs);
+    computePotentialField(goal);
     // calculate the gradient
     calculatePotentialGradientAndNormalize();
     // calculate velocity field
     calculateVelocityField();
   }
 
-  private void computePotentialField(List<Location> goalLocs)
+  private void computePotentialField(List<Location> goal)
   {
-    EikonalSolver(goalLocs);
+    EikonalSolver(goal);
   }
 
   // *************************************************************************
@@ -118,8 +118,8 @@ public class CCEikonalSolver
   /// The Eikonal Solver using the Fast Marching approach
   /// </summary>
   /// <param name="fields"></param>
-  /// <param name="goalLocs"></param>
-  private void EikonalSolver(List<Location> goalLocs)
+  /// <param name="goal"></param>
+  private void EikonalSolver(List<Location> goal)
   {
     // start by assigning all values of potential a huge number to in-effect label them 'far'
     for (int n = 0; n < N; n++) {
@@ -133,7 +133,7 @@ public class CCEikonalSolver
     // way, they are quickly added to accepted, while simultaneously propagating their lists and beginning the
     // algorithm loop
     FastLocation loc;
-    foreach (Location l in goalLocs) {
+    foreach (Location l in goal) {
       if (isPointValid(l.x, l.y)) {
         Phi[l.x, l.y] = 0f;
         loc = new FastLocation(l.x, l.y);

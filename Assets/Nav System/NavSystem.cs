@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,8 @@ public class NavSystem
   private CCDynamicGlobalFields ccFields;
   private List<CCEikonalSolver> ccSolutions;
 
+  public int TileSize;
+
   public NavSystem(List<MapTile> tiles)
   {
     mapTiles = new List<MapTile>();
@@ -25,6 +28,8 @@ public class NavSystem
 
     ccFields = new CCDynamicGlobalFields(tiles);
     ccSolutions = new List<CCEikonalSolver>();
+
+    TileSize = tiles[0].TileSize;
   }
 
   /// <summary>
@@ -95,10 +100,14 @@ public class NavSystem
 
   public void SolveCCforTileWithCallback(
       MapTile tile,
+      List<Location> goals,
       Action<Func<Vector2, Vector2>> tileSolutionCallback
   )
   {
     // (1) perform continuum crowd solution on provided tile
+    var solution = new CCEikonalSolver();
+    solution.SolveContinuumCrowdsForTile(ccFields.GetCCTile(tile.Corner), goals);
+
     // (2) store the velocity field (solution) in a list with some identifier
     //      to clearly show what we've solved and can therefore reference later
     // (3) send back a function that will take in a position (vector2) and
@@ -128,7 +137,7 @@ public class NavigationSolution
   /// accepting a position (vector2) in the tile and returning a velocity
   /// (vector 2) from the cc solution for the provided position.
   /// </summary>
-  public Action<MapTile, Action<Func<Vector2, Vector2>>> RequestCCSolution;
+  public Action<MapTile, List<Location>, Action<Func<Vector2, Vector2>>> RequestCCSolution;
 
   public NavigationSolution()
   {

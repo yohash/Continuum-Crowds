@@ -129,6 +129,49 @@ public class CCDynamicGlobalFields
       _units.Remove(ccu);
   }
 
+  public CC_Tile GetCCTile(Location corner)
+  {
+    return _tiles[corner];
+  }
+  //public CC_Map_Package BuildCCMapPackage(Rect r)
+  //{
+  //  float[,] gt;
+  //  Vector4[,] ft, Ct;
+
+  //  int xs = (int)Math.Floor((double)r.x);
+  //  int ys = (int)Math.Floor((double)r.y);
+
+  //  int xf = (int)Math.Ceiling((double)(r.x + r.width));
+  //  int yf = (int)Math.Ceiling((double)(r.y + r.height));
+
+  //  if (xs < 0)
+  //    xs = 0;
+  //  if (xf > _mapX)
+  //    xf = _mapX;
+  //  if (ys < 0)
+  //    ys = 0;
+  //  if (yf > _mapY)
+  //    yf = _mapY;
+
+  //  int xdim = xf - xs;
+  //  int ydim = yf - ys;
+
+  //  gt = new float[xdim, ydim];
+  //  ft = new Vector4[xdim, ydim];
+  //  Ct = new Vector4[xdim, ydim];
+
+  //  for (int xI = 0; xI < xdim; xI++)
+  //  {
+  //    for (int yI = 0; yI < ydim; yI++)
+  //    {
+  //      gt[xI, yI] = /*theMapData.getDiscomfortMap(xs + xI, ys + yI) +*/ readDataFromPoint_g(xs + xI, ys + yI);
+  //      ft[xI, yI] = readDataFromPoint_f(xs + xI, ys + yI);
+  //      Ct[xI, yI] = readDataFromPoint_C(xs + xI, ys + yI);
+  //    }
+  //  }
+  //  CC_Map_Package map = new CC_Map_Package(gt, ft, Ct);
+  //  return map;
+  //}
   // ******************************************************************************************
   // ******************************************************************************************
   // ******************************************************************************************

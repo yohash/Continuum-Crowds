@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
+using System;
 using UnityEngine;
+using System.Linq;
 
 public class Clicker : MonoBehaviour
 {
@@ -33,5 +35,21 @@ public class Clicker : MonoBehaviour
 
     Debug.Log("Nav Solution complete, num tiles = " + navSolution.Tiles.Count);
     Debug.Log(string.Join("\t", navSolution.Tiles));
+
+    Func<Vector2, Vector2> tileSolution;
+
+    // get locations between tile 1 and 2
+    var locs = navSolution.Tiles.First.Value.Borders.Where(
+      b => b.Direction == DIRECTION.NORTH).First().GetLocations().ToList();
+
+    navSolution.RequestCCSolution(
+        navSolution.Tiles.First(),
+        locs,
+        (callback) => {
+          tileSolution = callback;
+        }
+    );
+
+
   }
 }
