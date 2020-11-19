@@ -23,10 +23,12 @@ public class CCDynamicGlobalFields
   // ****************************************************************
   // 				PUBLIC ACCESSORS and CONSTRUCTORS
   // ****************************************************************
-  public CCDynamicGlobalFields()
+  public CCDynamicGlobalFields(List<MapTile> tiles)
   {
     _tiles = new Dictionary<Location, CC_Tile>();
     _units = new List<CC_Unit>();
+
+    initiateTiles(tiles);
   }
 
   public void UpdateCCUnits()
@@ -36,28 +38,16 @@ public class CCDynamicGlobalFields
     }
   }
 
-  public bool InitiateTiles()
+  private bool initiateTiles(List<MapTile> tiles)
   {
-    // make sure the map dimensions are divisible by tileSize
-    if ((((float)_mapX) % ((float)tileSize) != 0) ||
-      (((float)_mapY) % ((float)tileSize) != 0)) {
-      // this should NEVER HAPPEN, so send an error if it does
-      return false;
-    }
-
-    int numTilesX = _mapX / tileSize;
-    int numTilesY = _mapY / tileSize;
-
     // instantiate all our tiles
-    for (int x = 0; x < numTilesX; x++) {
-      for (int y = 0; y < numTilesY; y++) {
-        // create a new tile based on this location
-        var loc = new Location(x, y);
-        CC_Tile cct = new CC_Tile(tileSize, loc);
-        // save the tile
-        _tiles.Add(loc, cct);
-      }
+    for (int i = 0; i < tiles.Count; i++) {
+      // create a new tile based on this location
+      var cct = new CC_Tile(tileSize, tiles[i].Corner);
+      // save the tile
+      _tiles.Add(cct.Corner, cct);
     }
+
 
     // initialize some tile values
     foreach (CC_Tile cct in _tiles.Values) {
@@ -317,8 +307,8 @@ public class CCDynamicGlobalFields
     int xLocalInto = tileX + (int)direction.x;
     int yLocalInto = tileY + (int)direction.y;
 
-    int xGlobalInto = cct.myLoc.x * tileSize + xLocalInto;
-    int yGlobalInto = cct.myLoc.y * tileSize + yLocalInto;
+    int xGlobalInto = cct.Corner.x * tileSize + xLocalInto;
+    int yGlobalInto = cct.Corner.y * tileSize + yLocalInto;
 
     // otherwise, run the speed field calculation
     float ff = 0;
@@ -398,8 +388,8 @@ public class CCDynamicGlobalFields
     int xLocalInto = tileX + (int)direction.x;
     int yLocalInto = tileY + (int)direction.y;
 
-    int xGlobalInto = cct.myLoc.x * tileSize + xLocalInto;
-    int yGlobalInto = cct.myLoc.y * tileSize + yLocalInto;
+    int xGlobalInto = cct.Corner.x * tileSize + xLocalInto;
+    int yGlobalInto = cct.Corner.y * tileSize + yLocalInto;
 
     // if we're looking in an invalid direction, dont store this value
     if (cct.f[tileX, tileY][d] == 0 || !isPointValid(xGlobalInto, yGlobalInto)) {

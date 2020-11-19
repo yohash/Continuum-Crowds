@@ -8,6 +8,8 @@ public class NavSystem
   private List<MapTile> mapTiles;
   private TileMesh mesh;
 
+  private CCDynamicGlobalFields ccFields;
+
   private int tileSize;
 
   public NavSystem(List<MapTile> tiles)
@@ -83,7 +85,7 @@ public class NavSystem
       }
     });
 
-    // assign callback  
+    // assign callback
     solution.RequestCCSolution = SolveCCforTileWithCallback;
     return solution;
   }
@@ -96,7 +98,7 @@ public class NavSystem
     // (1) perform continuum crowd solution on provided tile
     // (2) store the velocity field (solution) in a list with some identifier
     //      to clearly show what we've solved and can therefore reference later
-    // (3) send back a function that will take in a position (vector2) and 
+    // (3) send back a function that will take in a position (vector2) and
     //      return the interpolated velocity on the cc solution (vector2)
   }
 
@@ -117,9 +119,9 @@ public class NavigationSolution
   public LinkedList<MapTile> Tiles;
 
   /// <summary>
-  /// Call this systam action with a MapTile to request a cc solution for the 
-  /// given tile. 
-  /// Also provide a callback that takes the solution: a system function 
+  /// Call this systam action with a MapTile to request a cc solution for the
+  /// given tile.
+  /// Also provide a callback that takes the solution: a system function
   /// accepting a position (vector2) in the tile and returning a velocity
   /// (vector 2) from the cc solution for the provided position.
   /// </summary>
@@ -131,7 +133,7 @@ public class NavigationSolution
   }
 
   /// <summary>
-  /// 
+  ///
   /// </summary>
   public void CCSolutionHandle(Func<Vector2, Vector2> tileSolution)
   {

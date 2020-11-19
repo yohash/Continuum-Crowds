@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 /// <summary>
 /// The CC_Tile struct is specficially built to hold
@@ -17,7 +16,7 @@ public class CC_Tile
   public bool UPDATE_TILE;
 
   // might need to store this
-  public Location myLoc;
+  public Location Corner;
 
   // the Continuum Crowds Dynamic Global fields
   // density field
@@ -36,12 +35,12 @@ public class CC_Tile
   /// <summary>
   /// Basic Constructor takes a integer dimension, and a Location
   /// </summary>
-  /// <param name="d"></param>
-  /// <param name="l"></param>
-  public CC_Tile(int d, Location l)
+  /// <param name="dimension"></param>
+  /// <param name="corner"></param>
+  public CC_Tile(int dimension, Location corner)
   {
-    dim = d;
-    myLoc = l;
+    dim = dimension;
+    Corner = corner;
 
     rho = new float[dim, dim];
     g = new float[dim, dim];

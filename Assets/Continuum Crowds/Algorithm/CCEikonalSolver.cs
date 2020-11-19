@@ -8,7 +8,7 @@ using Priority_Queue;
 /// 							THE EIKONAL SOLVER
 /// ******************************************************************************************
 // 3 labels for each node (Location): far, considered, accepted
-//	labels are tracked by:  
+//	labels are tracked by:
 //              far - has huge value (Mathf.Infinite)
 //							considered - placed in a priorityQueue
 //							accepted - stored in List<Location>
