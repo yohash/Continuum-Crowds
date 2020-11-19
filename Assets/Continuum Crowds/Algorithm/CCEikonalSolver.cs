@@ -68,7 +68,7 @@ public class CCEikonalSolver
   // *************************************************************************
   public CCEikonalSolver() { }
 
-  public void SetFields_andGoals_andSolve(CC_Tile tile, List<Location> goalLocs)
+  public void SolveContinuumCrowdsForTile(CC_Tile tile, List<Location> goalLocs)
   {
     f = tile.f;
     C = tile.C;
@@ -304,24 +304,34 @@ public class CCEikonalSolver
   {
     for (int i = 0; i < N; i++) {
       for (int k = 0; k < M; k++) {
-        // generic spot
-        if (i != 0 && i != N - 1 && k != 0 && k != M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k + 1); }
-        // upper left corner
-        else if (i == 0 && k == M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k); }
-        // bottom left corner
-        else if (i == N - 1 && k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k, k + 1); }
-        // upper left corner
-        else if (i == 0 && k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k, k + 1); }
-        // bottom right corner
-        else if (i == N - 1 && k == M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k); }
-        // top edge
-        else if (i == 0) { writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k + 1); }
-        // bot edge
-        else if (i == N - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k + 1); }
-        // left edge
-        else if (k == 0) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k, k + 1); }
-        // right edge
-        else if (k == M - 1) { writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k); }
+        if (i != 0 && i != N - 1 && k != 0 && k != M - 1) {
+          // generic spot
+          writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k + 1);
+        } else if (i == 0 && k == M - 1) {
+          // upper left corner
+          writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k);
+        } else if (i == N - 1 && k == 0) {
+          // bottom left corner
+          writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k, k + 1);
+        } else if (i == 0 && k == 0) {
+          // upper left corner
+          writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k, k + 1);
+        } else if (i == N - 1 && k == M - 1) {
+          // bottom right corner
+          writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k);
+        } else if (i == 0) {
+          // top edge
+          writeNormalizedPotentialGradientFieldData(i, k, i, i + 1, k - 1, k + 1);
+        } else if (i == N - 1) {
+          // bot edge
+          writeNormalizedPotentialGradientFieldData(i, k, i - 1, i, k - 1, k + 1);
+        } else if (k == 0) {
+          // left edge
+          writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k, k + 1);
+        } else if (k == M - 1) {
+          // right edge
+          writeNormalizedPotentialGradientFieldData(i, k, i - 1, i + 1, k - 1, k);
+        }
       }
     }
   }

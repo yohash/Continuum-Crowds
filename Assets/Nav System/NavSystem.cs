@@ -5,12 +5,13 @@ using UnityEngine;
 
 public class NavSystem
 {
+  // tile nav components
   private List<MapTile> mapTiles;
   private TileMesh mesh;
 
+  // continuum crowds components
   private CCDynamicGlobalFields ccFields;
-
-  private int tileSize;
+  private List<CCEikonalSolver> ccSolutions;
 
   public NavSystem(List<MapTile> tiles)
   {
@@ -21,7 +22,9 @@ public class NavSystem
     }
 
     mesh = new TileMesh(tiles);
-    tileSize = mapTiles[0].TileSize;
+
+    ccFields = new CCDynamicGlobalFields(tiles);
+    ccSolutions = new List<CCEikonalSolver>();
   }
 
   /// <summary>
