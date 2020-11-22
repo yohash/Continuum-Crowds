@@ -94,11 +94,11 @@ public class NavSystem
     });
 
     // assign callback
-    solution.RequestCCSolution = SolveCCforTileWithCallback;
+    solution.RequestCCSolution = solveCCforTileWithCallback;
     return solution;
   }
 
-  public void SolveCCforTileWithCallback(
+  private void solveCCforTileWithCallback(
       MapTile tile,
       List<Location> goals,
       Action<Func<Vector2, Vector2>> tileSolutionCallback
@@ -142,14 +142,6 @@ public class NavigationSolution
   public NavigationSolution()
   {
     Tiles = new LinkedList<MapTile>();
-  }
-
-  /// <summary>
-  ///
-  /// </summary>
-  public void CCSolutionHandle(Func<Vector2, Vector2> tileSolution)
-  {
-
   }
 }
 
