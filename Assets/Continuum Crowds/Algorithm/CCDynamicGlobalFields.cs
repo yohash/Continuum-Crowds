@@ -8,7 +8,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class CCDynamicGlobalFields
 {
-  public int tileSize = 20;
+  public int tileSize;
 
   // the meat of the CC Dynamic Global Fields computer
   private Dictionary<Location, CC_Tile> _tiles;
@@ -40,6 +40,9 @@ public class CCDynamicGlobalFields
 
   private bool initiateTiles(List<MapTile> tiles)
   {
+    if (tiles.Count == 0 ) { throw new NavSystemException("CCDynamicGlobalFields: No Tiles"); }
+
+    tileSize = tiles[0].TileSize;
     // instantiate all our tiles
     for (int i = 0; i < tiles.Count; i++) {
       // create a new tile based on this location
@@ -424,7 +427,7 @@ public class CCDynamicGlobalFields
                 + CCvals.C_gamma * g
                 + CCvals.C_delta * r)
                     / cct.f[tileX, tileY][d];
-
+    Debug.Log("Coputed a cost: " + cost);
     return cost;
   }
 

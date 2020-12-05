@@ -11,7 +11,7 @@ public class NavSystem
   private TileMesh mesh;
 
   // continuum crowds components
-  private CCDynamicGlobalFields ccFields;
+  public CCDynamicGlobalFields ccFields;
   private List<CCEikonalSolver> ccSolutions;
 
   public int TileSize;
@@ -106,7 +106,12 @@ public class NavSystem
   {
     // (1) perform continuum crowd solution on provided tile
     var solution = new CCEikonalSolver();
-    solution.SolveContinuumCrowdsForTile(ccFields.GetCCTile(tile.Corner), goals);
+    var ccTile = ccFields.GetCCTile(tile.Corner);
+    Debug.Log("NavSystem calling CC TILE: " + tile.Corner);
+    Debug.Log("\tC\n" + ccTile.C.ToString<Vector4>());
+    solution.SolveContinuumCrowdsForTile(ccTile, goals);
+
+    tileSolutionCallback(vel => solution.velocity.Interpolate(vel));
 
     // (2) store the velocity field (solution) in a list with some identifier
     //      to clearly show what we've solved and can therefore reference later

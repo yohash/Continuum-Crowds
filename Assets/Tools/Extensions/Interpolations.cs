@@ -63,19 +63,19 @@ public static class Interpolations
   /// <param name="y">The y point to interpolate</param>
   /// <param name="array">The array from which the interpolated value is 
   /// calculated</param>
-	public static Vector2 Interpolate(this Vector2[,] array, float x, float y)
+	public static Vector2 Interpolate(this Vector2[,] array, Vector2 v)
   {
     float xcomp, ycomp;
 
     int xl = array.GetLength(0);
     int yl = array.GetLength(1);
 
-    int topLeftX = (int)Mathf.Floor(x);
-    int topLeftY = (int)Mathf.Floor(y);
+    int topLeftX = (int)Mathf.Floor(v.x);
+    int topLeftY = (int)Mathf.Floor(v.y);
 
-    float xAmountRight = x - topLeftX;
+    float xAmountRight = v.x - topLeftX;
     float xAmountLeft = 1.0f - xAmountRight;
-    float yAmountBottom = y - topLeftY;
+    float yAmountBottom = v.y - topLeftY;
     float yAmountTop = 1.0f - yAmountBottom;
 
     var valuesX = Vector4.zero;
