@@ -150,7 +150,6 @@ public class CCEikonalSolver
         considered.Enqueue(loc, 0f);
       }
     }
-    Debug.Log("Phi (1)\n" + Phi.ToString<float>());
 
     /// THE EIKONAL UPDATE LOOP
     // next, we initiate the eikonal update loop, by initiating it with each goal point as 'considered'.
@@ -161,9 +160,6 @@ public class CCEikonalSolver
       EikonalUpdateFormula(current);
       markAccepted(current);
     }
-    Debug.Log("Phi (2)\n" + Phi.ToString<float>());
-    Debug.Log("accepted\n" + accepted.ToString<bool>());
-
   }
 
   /// <summary>
@@ -172,8 +168,6 @@ public class CCEikonalSolver
   /// <param name="l"></param>
   private void EikonalUpdateFormula(FastLocation l)
   {
-    Debug.Log($"EIkonalUpateFormula");
-    Debug.Log($"\tupdating for location ({l.x},{l.y})");
     float phi_proposed = Mathf.Infinity;
 
     int xInto;
@@ -190,7 +184,6 @@ public class CCEikonalSolver
       if (isEikonalLocationValidAsNeighbor(neighbor)) {
         // The point is valid. Now, we pull values from THIS location's
         // 4 neighbors and use them in the calculation
-        Debug.Log($"\t updating for neighbor: ({neighbor.x},{neighbor.y})");
 
         int xIInto;
         int yIInto;
@@ -236,7 +229,6 @@ public class CCEikonalSolver
         float C_mx_Sq = C_mx * C_mx;
         float C_my_Sq = C_my * C_my;
         float phi_mDiff_Sq = (phi_mx - phi_my) * (phi_mx - phi_my);
-        Debug.Log($"\t\t\tCmx: {C_mx}, Cmy: {C_my}");
 
         float valTest;
         //valTest = C_mx_Sq + C_my_Sq - 1f / (C_mx_Sq * C_my_Sq);
@@ -249,18 +241,15 @@ public class CCEikonalSolver
           float cost_min;
           if (phi_min == phi_mx) { cost_min = C_mx; } else { cost_min = C_my; }
           phi_proposed = cost_min + phi_min;
-          Debug.Log($"\t\t\tsimplified - {cost_min} + {phi_min}");
         } else {
           // solve the quadratic
           float radical = (float)Math.Sqrt((double)(C_mx_Sq * C_my_Sq * (C_mx_Sq + C_my_Sq - phi_mDiff_Sq)));
 
           float soln1 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my + radical) / (C_mx_Sq + C_my_Sq);
           float soln2 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my - radical) / (C_mx_Sq + C_my_Sq);
-          Debug.Log($"\t\t\tfull radical - sol1: {soln1}, sol2: {soln2}, denom: {(C_mx_Sq + C_my_Sq)}");
           phi_proposed = Math.Max(soln1, soln2);
         }
 
-        Debug.Log("\t\tphi proposed: " + phi_proposed);
         // we now have a phi_proposed
 
         // we are re-writing the phi-array real time, so we simply compare to the current slot

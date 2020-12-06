@@ -69,9 +69,6 @@ public class CC_Tile
       }
     }
 
-    Debug.Log("Tile created, loc: " + corner.ToString());
-    Debug.Log("C\n" + C.ToString<Vector4>());
-
     UPDATE_TILE = false;
   }
 

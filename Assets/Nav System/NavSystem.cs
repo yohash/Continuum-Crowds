@@ -107,8 +107,7 @@ public class NavSystem
     // (1) perform continuum crowd solution on provided tile
     var solution = new CCEikonalSolver();
     var ccTile = ccFields.GetCCTile(tile.Corner);
-    Debug.Log("NavSystem calling CC TILE: " + tile.Corner);
-    Debug.Log("\tC\n" + ccTile.C.ToString<Vector4>());
+
     solution.SolveContinuumCrowdsForTile(ccTile, goals);
 
     tileSolutionCallback(vel => solution.velocity.Interpolate(vel));

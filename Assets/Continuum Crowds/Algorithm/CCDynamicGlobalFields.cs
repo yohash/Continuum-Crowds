@@ -14,8 +14,8 @@ public class CCDynamicGlobalFields
   private Dictionary<Location, CC_Tile> _tiles;
   private List<CC_Unit> _units;
 
-  // map dimensions
-  private int _mapX, _mapY;
+  //// map dimensions
+  //private int _mapX, _mapY;
 
   // cached 2x2 float[] for linear1stOrderSplat (GC redux)
   private float[,] mat = new float[2, 2];
@@ -40,7 +40,7 @@ public class CCDynamicGlobalFields
 
   private bool initiateTiles(List<MapTile> tiles)
   {
-    if (tiles.Count == 0 ) { throw new NavSystemException("CCDynamicGlobalFields: No Tiles"); }
+    if (tiles.Count == 0) { throw new NavSystemException("CCDynamicGlobalFields: No Tiles"); }
 
     tileSize = tiles[0].TileSize;
     // instantiate all our tiles
@@ -136,6 +136,7 @@ public class CCDynamicGlobalFields
   {
     return _tiles[corner];
   }
+
   //public CC_Map_Package BuildCCMapPackage(Rect r)
   //{
   //  float[,] gt;
@@ -175,8 +176,7 @@ public class CCDynamicGlobalFields
   //  CC_Map_Package map = new CC_Map_Package(gt, ft, Ct);
   //  return map;
   //}
-  // ******************************************************************************************
-  // ******************************************************************************************
+
   // ******************************************************************************************
   // 							FIELD SOLVING FUNCTIONS
   // ******************************************************************************************
@@ -324,7 +324,7 @@ public class CCDynamicGlobalFields
 
     float r;
     // test to see if the point we're looking INTO is in another tile, and if so, pull it
-    if ((xLocalInto < 0) || (xLocalInto > tileSize - 1) || (yLocalInto < 0) || (yLocalInto > tileSize - 1)) {
+    if (xLocalInto < 0 || xLocalInto > tileSize - 1 || yLocalInto < 0 || yLocalInto > tileSize - 1) {
       // if we're looking off the map, dont store this value
       if (!isPointValid(xGlobalInto, yGlobalInto)) {
         return CCvals.f_speedMin;
@@ -362,7 +362,7 @@ public class CCDynamicGlobalFields
     // gradient is assigned with a positive x
     // 		therefore:		also, Vector.left = [-1,0]
     //						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
-    float dhInDirection = (direction.x * dh.x + direction.y * dh.y);
+    float dhInDirection = direction.x * dh.x + direction.y * dh.y;
     // calculate the speed field from the equation
     return (CCvals.f_speedMax
       + (dhInDirection - CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin)
@@ -375,7 +375,7 @@ public class CCDynamicGlobalFields
     // INTO WHICH we are looking,
     // dotted with the direction vector
     var vAvePt = readDataFromPoint_vAve(xI, yI);
-    float dot = (vAvePt.x * direction.x + vAvePt.y * direction.y);
+    float dot = vAvePt.x * direction.x + vAvePt.y * direction.y;
     return Math.Max(CCvals.f_speedMin, dot);
   }
 
@@ -399,7 +399,7 @@ public class CCDynamicGlobalFields
     int yGlobalInto = cct.Corner.y * tileSize + yLocalInto;
 
     // if we're looking in an invalid direction, dont store this value
-    if (cct.f[tileX, tileY][d] == 0 || !isPointValid(xGlobalInto, yGlobalInto)) {
+    if (cct.f[tileX, tileY][d] == 0 || !isPointValid(xLocalInto, yLocalInto)) {
       return Mathf.Infinity;
     }
 
@@ -427,7 +427,7 @@ public class CCDynamicGlobalFields
                 + CCvals.C_gamma * g
                 + CCvals.C_delta * r)
                     / cct.f[tileX, tileY][d];
-    Debug.Log("Coputed a cost: " + cost);
+
     return cost;
   }
 
@@ -436,8 +436,8 @@ public class CCDynamicGlobalFields
   //******************************************************************************
   public bool isPointValid(int x, int y)
   {
-    // check to make sure the point is not outside the grid
-    if ((x < 0) || (y < 0) || (x > _mapX - 1) || (y > _mapY - 1)) {
+    // check to make sure the point is not outside the tile
+    if (x < 0 || y < 0 || x > tileSize - 1 || y > tileSize - 1) {
       return false;
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
@@ -452,15 +452,6 @@ public class CCDynamicGlobalFields
   // ******************************************************************************************
   // 				functions used for reading and writing to tiles
   // ******************************************************************************************
-  private CC_Tile getLocalTile(Location l)
-  {
-    if (_tiles.ContainsKey(l)) {
-      return _tiles[l];
-    } else {
-      return (new CC_Tile(0, l));
-    }
-  }
-
   // *** read ops ***
   private float readDataFromPoint_rho(int xGlobal, int yGlobal)
   {
