@@ -47,6 +47,9 @@ public class Clicker : MonoBehaviour
 
     var corner = navSolution.Tiles.First.Value.Corner;
     Debug.Log("Tile CC solution initiatied, goal locs: " + string.Join(", ", locs));
+    foreach (Location loc in locs) {
+      Drawings.DrawSquare(loc.ToVector3().WithY(navSolution.Tiles.First.Value.Height(loc)), Color.black, 25 );
+    }
     Debug.Log("ccdynamicfields C: \n" + astar.NavSystem.ccFields.GetCCTile(corner).C.ToString<Vector4>());
 
     navSolution.RequestCCSolution(
