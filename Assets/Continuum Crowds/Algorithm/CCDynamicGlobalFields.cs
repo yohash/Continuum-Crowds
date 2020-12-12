@@ -434,10 +434,10 @@ public class CCDynamicGlobalFields
   // ******************************************************************************
   //			TOOLS AND UTILITIES
   //******************************************************************************
-  public bool isPointValid(int x, int y)
+  public bool isPointValid(int globalX, int globalY)
   {
     // check to make sure the point is not outside the tile
-    if (x < 0 || y < 0 || x > tileSize - 1 || y > tileSize - 1) {
+    if (globalX < 0 || globalY < 0 || globalX > tileSize - 1 || globalY > tileSize - 1) {
       return false;
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
