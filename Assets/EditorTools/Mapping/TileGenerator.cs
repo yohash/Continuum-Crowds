@@ -87,7 +87,7 @@ public class TileGenerator : MonoBehaviour
           );
         }
         var c = borderColors[i++];
-        drawBorder(border, c);
+        DrawBorder(border, c);
       }
     }
 
@@ -100,7 +100,7 @@ public class TileGenerator : MonoBehaviour
           borderColors.Add(new Color(Random.value, Random.value, Random.value));
         }
         var c = borderColors[i++];
-        drawBorder(border, c);
+        DrawBorder(border, c);
         foreach (var kvp in border.PathByNeighbor) {
           Drawings.DrawPath(kvp.Value, tile.Height(kvp.Key.Center), Color.blue);
         }
@@ -108,7 +108,7 @@ public class TileGenerator : MonoBehaviour
     }
   }
 
-  private void drawBorder(Border border, Color c)
+  public static void DrawBorder(Border border, Color c)
   {
     float dy = 0.1f;
     foreach (var location in border.GetLocations()) {

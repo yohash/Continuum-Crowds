@@ -12,7 +12,7 @@ public class HeightMapGenerator : MonoBehaviour
   public Vector2 Center;
 
   public string Filename = "Test";
-
+    
   public float StepSize = 1;
 
   [Header("Texture Map")]
