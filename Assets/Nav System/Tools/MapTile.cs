@@ -81,6 +81,12 @@ public class MapTile
     //        defines the max pathable slope
     return Discomfort(l.x, l.y) < 1;
   }
+  public float Height(float x, float y)
+  {
+    return ContainsPoint(x, y) ?
+      h.Interpolate((int)Math.Round(x) - corner.x, (int)Math.Round(y) - corner.y) :
+      float.MinValue;
+  }
   public float Height(int x, int y)
   {
     return ContainsPoint(x, y) ? h[x - corner.x, y - corner.y] : float.MinValue;

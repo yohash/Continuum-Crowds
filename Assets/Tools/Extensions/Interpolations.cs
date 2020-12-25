@@ -8,7 +8,7 @@ public static class Interpolations
   /// </summary>
   /// <param name="x">The x point to interpolate</param>
   /// <param name="y">The y point to interpolate</param>
-  /// <param name="array">The array from which the interpolated value is 
+  /// <param name="array">The array from which the interpolated value is
   /// calculated</param>
 	public static float Interpolate(this float[,] array, float x, float y)
   {
@@ -61,7 +61,7 @@ public static class Interpolations
   /// </summary>
   /// <param name="x">The x point to interpolate</param>
   /// <param name="y">The y point to interpolate</param>
-  /// <param name="array">The array from which the interpolated value is 
+  /// <param name="array">The array from which the interpolated value is
   /// calculated</param>
 	public static Vector2 Interpolate(this Vector2[,] array, Vector2 v)
   {
@@ -138,8 +138,8 @@ public static class Interpolations
 
 
   /// <summary>
-  /// "Splat" a value onto a 2x2 matrix at a point (x,y) where 
-  /// (0,0) < (x,y) < (1,1). Fractionally breaks the single value 
+  /// "Splat" a value onto a 2x2 matrix at a point (x,y) where
+  /// (0,0) < (x,y) < (1,1). Fractionally breaks the single value
   /// onto each of the 4 grid points based on the (x,y) location
   /// </summary>
   /// <param name="x"></param>
@@ -176,24 +176,28 @@ public static class Interpolations
     return mat;
   }
 
+  public static float[,] BilinearInterpolation(this float[,] grid, Vector2 offset)
+  {
+    return grid.BilinearInterpolation(offset.x, offset.y);
+  }
   /// <summary>
   /// Uses bilinear interpolation to shift a grid of points by [offset]
   /// </summary>
   /// <param name="grid"></param>
   /// <param name="offset"></param>
-  public static float[,] BilinearInterpolation(this float[,] grid, Vector2 offset)
+  public static float[,] BilinearInterpolation(this float[,] grid, float xOffset, float yOffset)
   {
     int xDimension = grid.GetLength(0);
     int yDimension = grid.GetLength(1);
 
-    // create the return grid, with a +1 buffer 
+    // create the return grid, with a +1 buffer
     float[,] interpolatedGrid = new float[xDimension + 1, yDimension + 1];
 
     // precompute some quantities
     // (these quantities are inverse to the actual equations because we are translating
     // from a transformed coordinate plane Back Into the original)
-    float dx2 = modulus(offset.x, 1f);
-    float dy2 = modulus(offset.y, 1f);
+    float dx2 = modulus(xOffset, 1f);
+    float dy2 = modulus(yOffset, 1f);
     float dx1 = 1f - dx2;
     float dy1 = 1f - dy2;
 

@@ -94,11 +94,11 @@ public class NavSystem
     });
 
     // assign callback
-    solution.RequestCCSolution = solveCCforTileWithCallback;
+    solution.RequestCCSolution = SolveCCforTileWithCallback;
     return solution;
   }
 
-  private void solveCCforTileWithCallback(
+  public void SolveCCforTileWithCallback(
       MapTile tile,
       List<Location> goals,
       Action<Func<Vector2, Vector2>> tileSolutionCallback
@@ -108,7 +108,7 @@ public class NavSystem
     var solution = new CCEikonalSolver();
     var ccTile = ccFields.GetCCTile(tile.Corner);
 
-    solution.SolveContinuumCrowdsForTile(ccTile, goals);
+    solution.SolveContinuumCrowdsForTile(ccTile, goals.Select(g => g - tile.Corner).ToList());
 
     tileSolutionCallback(vel => solution.velocity.Interpolate(vel));
 
