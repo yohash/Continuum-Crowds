@@ -46,7 +46,7 @@ public class CCDynamicGlobalFields
     // instantiate all our tiles
     for (int i = 0; i < tiles.Count; i++) {
       // create a new tile based on this location
-      var cct = new CC_Tile(tileSize, tiles[i].Corner);
+      var cct = new CC_Tile(tiles[i]);
       // save the tile
       _tiles.Add(cct.Corner, cct);
     }
@@ -358,15 +358,15 @@ public class CCDynamicGlobalFields
     // first, calculate the gradient in the direction we are looking.
     // By taking the dot with Direction,
     // we extract the direction we're looking and assign it a proper sign
-    // i.e. if we look left (x=-1) we want -dhdx(x,y), because the
+    // i.e. if we look left (x = -1) we want -dhdx(x,y), because the
     // gradient is assigned with a positive x
     // 		therefore:		also, Vector.left = [-1,0]
     //						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
     float dhInDirection = direction.x * dh.x + direction.y * dh.y;
     // calculate the speed field from the equation
-    return (CCvals.f_speedMax
-      + (dhInDirection - CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin)
-      * (CCvals.f_speedMin - CCvals.f_speedMax));
+    return CCvals.f_speedMax
+        + (dhInDirection - CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin)
+        * (CCvals.f_speedMin - CCvals.f_speedMax);
   }
 
   private float computeFlowSpeed(int xI, int yI, Vector2 direction)

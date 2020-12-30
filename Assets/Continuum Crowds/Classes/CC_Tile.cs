@@ -37,13 +37,13 @@ public class CC_Tile
   /// </summary>
   /// <param name="dimension"></param>
   /// <param name="corner"></param>
-  public CC_Tile(int dimension, Location corner)
+  public CC_Tile(MapTile tile)
   {
-    dim = dimension;
-    Corner = corner;
+    dim = tile.TileSize;
+    Corner = tile.Corner;
 
     rho = new float[dim, dim];
-    g = new float[dim, dim];
+    g = tile.g;
     vAve = new Vector2[dim, dim];
     f = new Vector4[dim, dim];
     C = new Vector4[dim, dim];
