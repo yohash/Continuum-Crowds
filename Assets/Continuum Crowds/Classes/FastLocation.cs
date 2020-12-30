@@ -43,4 +43,9 @@ public class FastLocation : FastPriorityQueueNode
     hash = hash * 23 + y.GetHashCode();
     return hash;
   }
+
+  public override string ToString()
+  {
+    return $"({x}, {y})";
+  }
 }

@@ -8,6 +8,7 @@ public class ToolsHandle : MonoBehaviour
   public Button HeightMapButton;
   public Button TileGenButton;
   public Button AStarButton;
+  public Button ContinuumCrowdsButton;
 
   public Button BackButton;
 

@@ -152,7 +152,7 @@ public class CCEikonalSolver
     }
 
     /// THE EIKONAL UPDATE LOOP
-    // next, we initiate the eikonal update loop, by initiating it with each goal point as 'considered'.
+    // next, we start the eikonal update loop, by initiating it with each goal point as 'considered'.
     // this will check each neighbor to see if it's a valid point (EikonalLocationValidityTest==true)
     // and if so, update if necessary
     while (considered.Count > 0) {
@@ -170,59 +170,38 @@ public class CCEikonalSolver
   {
     float phi_proposed = Mathf.Infinity;
 
-    int xInto;
-    int yInto;
-
     // cycle through directions to check all neighbors and perform the eikonal
     // update cycle on them
     for (int d = 0; d < DIR_ENWS.Length; d++) {
-      xInto = l.x + (int)DIR_ENWS[d].x;
-      yInto = l.y + (int)DIR_ENWS[d].y;
+      int xInto = l.x + (int)DIR_ENWS[d].x;
+      int yInto = l.y + (int)DIR_ENWS[d].y;
 
       neighbor = new FastLocation(xInto, yInto);
 
       if (isEikonalLocationValidAsNeighbor(neighbor)) {
         // The point is valid. Now, we pull values from THIS location's
         // 4 neighbors and use them in the calculation
-
-        int xIInto;
-        int yIInto;
-
-        float phi_mx;
-        float phi_my;
-
-        float C_mx;
-        float C_my;
-
         Vector4 phi_m;
 
         phi_m = Vector4.one * Mathf.Infinity;
 
         // track cost of moving into each nearby space
         for (int dd = 0; dd < DIR_ENWS.Length; dd++) {
-          xIInto = neighbor.x + (int)DIR_ENWS[dd].x;
-          yIInto = neighbor.y + (int)DIR_ENWS[dd].y;
+          int xIInto = neighbor.x + (int)DIR_ENWS[dd].x;
+          int yIInto = neighbor.y + (int)DIR_ENWS[dd].y;
 
           if (isEikonalLocationValidToMoveInto(new FastLocation(xIInto, yIInto))) {
             phi_m[dd] = Phi[xIInto, yIInto] + C[neighbor.x, neighbor.y][dd];
           }
         }
         // select out cheapest
-        phi_mx = Math.Min(phi_m[0], phi_m[2]);
-        phi_my = Math.Min(phi_m[1], phi_m[3]);
+        float phi_mx = Math.Min(phi_m[0], phi_m[2]);
+        float phi_my = Math.Min(phi_m[1], phi_m[3]);
 
         // now assign C_mx based on which direction was chosen
-        if (phi_mx == phi_m[0]) {
-          C_mx = C[neighbor.x, neighbor.y][0];
-        } else {
-          C_mx = C[neighbor.x, neighbor.y][2];
-        }
-        // now assign C_mx based on which direction was chosen
-        if (phi_my == phi_m[1]) {
-          C_my = C[neighbor.x, neighbor.y][1];
-        } else {
-          C_my = C[neighbor.x, neighbor.y][3];
-        }
+        float C_mx = phi_mx == phi_m[0] ? C[neighbor.x, neighbor.y][0] : C[neighbor.x, neighbor.y][2];
+        // now assign C_my based on which direction was chosen
+        float C_my = phi_my == phi_m[1] ? C[neighbor.x, neighbor.y][1] : C[neighbor.x, neighbor.y][3];
 
         // solve for our proposed Phi[neighbor] value using the quadratic solution to the
         // approximation of the eikonal equation
@@ -230,24 +209,22 @@ public class CCEikonalSolver
         float C_my_Sq = C_my * C_my;
         float phi_mDiff_Sq = (phi_mx - phi_my) * (phi_mx - phi_my);
 
-        float valTest;
-        //valTest = C_mx_Sq + C_my_Sq - 1f / (C_mx_Sq * C_my_Sq);
-        valTest = C_mx_Sq + C_my_Sq - 1f;
+        float valTest = C_mx_Sq + C_my_Sq - 1f / (C_mx_Sq * C_my_Sq);
+        //float valTest = C_mx_Sq + C_my_Sq - 1f;
 
         // test the quadratic
         if (phi_mDiff_Sq > valTest) {
           // use the simplified solution for phi_proposed
           float phi_min = Math.Min(phi_mx, phi_my);
-          float cost_min;
-          if (phi_min == phi_mx) { cost_min = C_mx; } else { cost_min = C_my; }
+          float cost_min = phi_min == phi_mx ? C_mx : C_my;
           phi_proposed = cost_min + phi_min;
         } else {
           // solve the quadratic
-          float radical = (float)Math.Sqrt((double)(C_mx_Sq * C_my_Sq * (C_mx_Sq + C_my_Sq - phi_mDiff_Sq)));
+          var radical = Math.Sqrt(C_mx_Sq * C_my_Sq * (C_mx_Sq + C_my_Sq - phi_mDiff_Sq));
 
-          float soln1 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my + radical) / (C_mx_Sq + C_my_Sq);
-          float soln2 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my - radical) / (C_mx_Sq + C_my_Sq);
-          phi_proposed = Math.Max(soln1, soln2);
+          var soln1 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my + radical) / (C_mx_Sq + C_my_Sq);
+          var soln2 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my - radical) / (C_mx_Sq + C_my_Sq);
+          phi_proposed = (float)Math.Max(soln1, soln2);
         }
 
         // we now have a phi_proposed
@@ -273,10 +250,13 @@ public class CCEikonalSolver
   {
     // A valid neighbor point is:
     //		1) not outisde the local grid
-    //		3) NOT in the goal						(everything below this is checked elsewhere)
+    //		3) NOT in the goal						
+    //            (everything below this is checked elsewhere)
     //		2) NOT accepted
-    //		4) NOT on a global discomfort grid		(this occurs in isPointValid() )
-    //		5) NOT outside the global grid			(this occurs in isPointValid() )
+    //		4) NOT on a global discomfort grid		
+    //            (this occurs in isPointValid() )
+    //		5) NOT outside the global grid			
+    //            (this occurs in isPointValid() )
     if (!isEikonalLocationInsideLocalGrid(l)) { return false; }
     if (isLocationInGoal(l)) { return false; }
     return (isEikonalLocationAcceptedandValid(l));
@@ -288,8 +268,10 @@ public class CCEikonalSolver
     // that is not valid to move into. a valid point is:
     //		1) not outisde the local grid
     //		2) NOT accepted
-    //		3) NOT on a global discomfort grid		(this occurs in isPointValid() )
-    //		4) NOT outside the global grid			(this occurs in isPointValid() )
+    //		3) NOT on a global discomfort grid		
+    //              (this occurs in isPointValid() )
+    //		4) NOT outside the global grid			
+    //              (this occurs in isPointValid() )
     if (!isEikonalLocationInsideLocalGrid(l)) { return false; }
     return (isEikonalLocationAcceptedandValid(l));
   }

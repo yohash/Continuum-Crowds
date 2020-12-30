@@ -27,9 +27,9 @@ public class MapTile
   private Dictionary<DIRECTION, MapTile> neighborTiles;
 
   // defining tile data
-  private float[,] h;
-  private float[,] g;
-  private Vector2[,] dh;
+  public float[,] h { get; private set; }
+  public float[,] g { get; private set; }
+  public Vector2[,] dh { get; private set; }
 
   /// <summary>
   /// Construct this map tile with the height map
