@@ -121,12 +121,12 @@ public class CCTester : MonoBehaviour
   {
     for (int i = 0; i < currentTile.TileSize; i++) {
       for (int k = 0; k < currentTile.TileSize; k++) {
-        float tileX = i + 0.5f;
-        float tileY = k + 0.5f;
+        float tileX = i;
+        float tileY = k;
         var loc = new Vector2(tileX, tileY);
         var vel = tileSolution(loc).normalized;
-        float worldX = tileX + currentTile.Corner.x;
-        float worldY = tileY + currentTile.Corner.y;
+        float worldX = tileX + .5f + currentTile.Corner.x;
+        float worldY = tileY + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);
         var start = new Vector3(worldX - vel.x / 2, height, worldY - vel.y / 2);
         var end = new Vector3(worldX + vel.x / 2, height, worldY + vel.y / 2);
