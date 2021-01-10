@@ -224,7 +224,22 @@ public class CCEikonalSolver
 
           var soln1 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my + radical) / (C_mx_Sq + C_my_Sq);
           var soln2 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my - radical) / (C_mx_Sq + C_my_Sq);
+
+          // max - prefers diagonals
           phi_proposed = (float)Math.Max(soln1, soln2);
+          // min - prefers cardinals
+          phi_proposed = (float)Math.Min(soln1, soln2);
+          // mean - better mix but still prefer diagonals
+          phi_proposed = (float)(soln1 + soln2) / 2;
+          // geometric mean - seems identical to mean
+          phi_proposed = (float)Math.Sqrt(soln1 * soln2);
+          // weighted mean - 2*max value
+          var max = (float)Math.Max(soln1, soln2);
+          var min = (float)Math.Min(soln1, soln2);
+          phi_proposed = (float)(max + max + min) / 3;
+          phi_proposed = (float)(max + max + max + min) / 4;
+          phi_proposed = (float)(max + max + max + max + min) / 5;
+          phi_proposed = (float)(max + max + max + max + max + min) / 6;
         }
 
         // we now have a phi_proposed
@@ -250,12 +265,12 @@ public class CCEikonalSolver
   {
     // A valid neighbor point is:
     //		1) not outisde the local grid
-    //		3) NOT in the goal						
+    //		3) NOT in the goal
     //            (everything below this is checked elsewhere)
     //		2) NOT accepted
-    //		4) NOT on a global discomfort grid		
+    //		4) NOT on a global discomfort grid
     //            (this occurs in isPointValid() )
-    //		5) NOT outside the global grid			
+    //		5) NOT outside the global grid
     //            (this occurs in isPointValid() )
     if (!isEikonalLocationInsideLocalGrid(l)) { return false; }
     if (isLocationInGoal(l)) { return false; }
@@ -268,9 +283,9 @@ public class CCEikonalSolver
     // that is not valid to move into. a valid point is:
     //		1) not outisde the local grid
     //		2) NOT accepted
-    //		3) NOT on a global discomfort grid		
+    //		3) NOT on a global discomfort grid
     //              (this occurs in isPointValid() )
-    //		4) NOT outside the global grid			
+    //		4) NOT outside the global grid
     //              (this occurs in isPointValid() )
     if (!isEikonalLocationInsideLocalGrid(l)) { return false; }
     return (isEikonalLocationAcceptedandValid(l));

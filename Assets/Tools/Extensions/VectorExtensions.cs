@@ -36,6 +36,10 @@ public static class VectorExtensions
   {
     return new Vector3(v.x, v.y, z);
   }
+  public static Vector2 XYZtoXY(this Vector3 v)
+  {
+    return new Vector2(v.x, v.z);
+  }
 
   public static Vector2Int Average(this List<Vector2Int> v)
   {
