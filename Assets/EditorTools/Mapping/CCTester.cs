@@ -156,7 +156,7 @@ public class CCTester : MonoBehaviour
 
   private void computeNewTestPathFromSolution(Vector3 start)
   {
-    testPath = new List<Vector3>();
+    //testPath = new List<Vector3>();
     start -= currentTile.Corner.ToVector3();
 
     var dir = new Vector2(start.x, start.z);
@@ -179,7 +179,8 @@ public class CCTester : MonoBehaviour
   private void drawTestPath()
   {
     for (int i = 1; i < testPath.Count; i++) {
-      UnityEngine.Debug.DrawLine(testPath[i], testPath[i - 1], Color.green);
+      if (Vector3.Distance(testPath[i], testPath[i - 1]) > 1f) { continue; }
+      UnityEngine.Debug.DrawLine(testPath[i], testPath[i - 1], new Color(1, 0.919884f, 0.5235849f));
     }
   }
 }

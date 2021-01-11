@@ -236,10 +236,9 @@ public class CCEikonalSolver
           // weighted mean - 2*max value
           var max = (float)Math.Max(soln1, soln2);
           var min = (float)Math.Min(soln1, soln2);
-          phi_proposed = (float)(max + max + min) / 3;
-          phi_proposed = (float)(max + max + max + min) / 4;
-          phi_proposed = (float)(max + max + max + max + min) / 5;
-          phi_proposed = (float)(max + max + max + max + max + min) / 6;
+          float wMax = 2.5f;
+          float wMin = 1f;
+          phi_proposed = (float)(max * wMax + min * wMin) / (wMax + wMin);
         }
 
         // we now have a phi_proposed
