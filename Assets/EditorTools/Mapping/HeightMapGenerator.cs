@@ -48,8 +48,10 @@ public class HeightMapGenerator : MonoBehaviour
 
     h = new float[xSteps, zSteps];
 
-    float xOffset = StepSize / 2f + (Center.x - MapSize.x / 2f);
-    float zOffset = StepSize / 2f + (Center.y - MapSize.y / 2f);
+    //float xOffset = StepSize / 2f + (Center.x - MapSize.x / 2f);
+    //float zOffset = StepSize / 2f + (Center.y - MapSize.y / 2f);
+    float xOffset = Center.x - MapSize.x / 2f;
+    float zOffset = Center.y - MapSize.y / 2f;
 
     for (int i = 0; i < xSteps; i++) {
       for (int k = 0; k < zSteps; k++) {
@@ -155,6 +157,7 @@ public class HeightMapGenerator : MonoBehaviour
     if (Physics.Raycast(ray, out hit, (TerrainHeightMax - TerrainHeightMin) * 1.5f)) {
       return new Vector3[2] { hit.point, hit.normal };
     }
-    return new Vector3[2] { Vector3.zero, Vector3.zero };
+    // return an impossibly low value
+    return new Vector3[2] { Vector3.one * float.MinValue, Vector3.one * float.MinValue };
   }
 }

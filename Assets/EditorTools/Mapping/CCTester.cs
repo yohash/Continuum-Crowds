@@ -33,6 +33,8 @@ public class CCTester : MonoBehaviour
 
   private Stopwatch stopwatch;
 
+  private List<Vector3> testPath;
+
   // ***************************************************************************
   //  Monobehaviours
   // ***************************************************************************
@@ -55,6 +57,21 @@ public class CCTester : MonoBehaviour
 
     if (tileSolutionAvailable) {
       displaySolution();
+
+      // see if we should compute a new test path
+      if (Input.GetMouseButtonDown(0)) {
+        // raycast to find tap point
+        RaycastHit hit;
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // ensure raycast hits terrain
+        if (Physics.Raycast(ray, out hit)) {
+          computeNewTestPathFromSolution(hit.point);
+        }
+      }
+      // see if we should draw the test path
+      if (testPath.Count > 0) {
+        drawTestPath();
+      }
     }
   }
 
@@ -110,6 +127,7 @@ public class CCTester : MonoBehaviour
   private void resetSolution()
   {
     tileSolutionAvailable = false;
+    testPath = new List<Vector3>();
 
     tileSolution = (v) => {
       UnityEngine.Debug.LogWarning("NOT ASSIGNED");
@@ -121,18 +139,47 @@ public class CCTester : MonoBehaviour
   {
     for (int i = 0; i < currentTile.TileSize; i++) {
       for (int k = 0; k < currentTile.TileSize; k++) {
-        float tileX = i + 0.5f;
-        float tileY = k + 0.5f;
+        float tileX = i;
+        float tileY = k;
         var loc = new Vector2(tileX, tileY);
         var vel = tileSolution(loc).normalized;
-        float worldX = tileX + currentTile.Corner.x;
-        float worldY = tileY + currentTile.Corner.y;
+        float worldX = tileX + .5f + currentTile.Corner.x;
+        float worldY = tileY + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);
         var start = new Vector3(worldX - vel.x / 2, height, worldY - vel.y / 2);
         var end = new Vector3(worldX + vel.x / 2, height, worldY + vel.y / 2);
 
         UnityEngine.Debug.DrawLine(start, end, Color.blue);
       }
+    }
+  }
+
+  private void computeNewTestPathFromSolution(Vector3 start)
+  {
+    testPath = new List<Vector3>();
+    start -= currentTile.Corner.ToVector3();
+
+    var dir = new Vector2(start.x, start.z);
+    var next = dir.ToXYZ(0);
+
+    while (dir != Vector2.zero) {
+      // store next
+      testPath.Add(next + currentTile.Corner.ToVector3());
+      // get dir at location NEXT
+      dir = tileSolution(next.XYZtoXY());
+      // normalize dir if not zero
+      if (dir != Vector2.zero) {
+        dir.Normalize();
+        // advance next by dir * time.deltaTime
+        next += Time.deltaTime * dir.ToXYZ(0);
+      }
+    }
+  }
+
+  private void drawTestPath()
+  {
+    for (int i = 1; i < testPath.Count; i++) {
+      UnityEngine.Debug.DrawLine(testPath[i], testPath[i - 1], new Color(1, 0.919884f, 0.5235849f));
     }
   }
 }
