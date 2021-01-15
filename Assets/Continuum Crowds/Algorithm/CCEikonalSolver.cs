@@ -226,14 +226,18 @@ public class CCEikonalSolver
           var soln2 = (C_my_Sq * phi_mx + C_mx_Sq * phi_my - radical) / (C_mx_Sq + C_my_Sq);
 
           // max - prefers diagonals
-          phi_proposed = (float)Math.Max(soln1, soln2);
+          //phi_proposed = (float)Math.Max(soln1, soln2);
+
           // min - prefers cardinals
-          phi_proposed = (float)Math.Min(soln1, soln2);
+          //phi_proposed = (float)Math.Min(soln1, soln2);
+
           // mean - better mix but still prefer diagonals
-          phi_proposed = (float)(soln1 + soln2) / 2;
+          //phi_proposed = (float)(soln1 + soln2) / 2;
+
           // geometric mean - seems identical to mean
-          phi_proposed = (float)Math.Sqrt(soln1 * soln2);
-          // weighted mean - 2*max value
+          //phi_proposed = (float)Math.Sqrt(soln1 * soln2);
+
+          // weighted mean - appears to offer the best compromise
           var max = (float)Math.Max(soln1, soln2);
           var min = (float)Math.Min(soln1, soln2);
           float wMax = 2.5f;
