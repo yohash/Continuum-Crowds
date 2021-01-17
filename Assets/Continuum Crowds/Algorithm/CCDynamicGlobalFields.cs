@@ -337,7 +337,7 @@ public class CCDynamicGlobalFields
     // test the density INTO WHICH we move:
     if (r < CCvals.f_rhoMin) {
       // rho < rho_min calc
-      //ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
+      ft = computeTopographicalSpeed(tileX, tileY, readDataFromPoint_dh(xGlobalInto, yGlobalInto), direction);
       ff = ft;
     } else if (r > CCvals.f_rhoMax) {
       // rho > rho_max calc
@@ -346,7 +346,7 @@ public class CCDynamicGlobalFields
     } else {
       // rho in-between calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
-      //ft = computeTopographicalSpeed(tileX, tileY, theMapData.getHeightGradientMap(xGlobalInto, yGlobalInto), direction);
+      ft = computeTopographicalSpeed(tileX, tileY, readDataFromPoint_dh(xGlobalInto, yGlobalInto), direction);
       ff = ft + (r - CCvals.f_rhoMin) / (CCvals.f_rhoMax - CCvals.f_rhoMin) * (fv - ft);
     }
     // ff = Mathf.Clamp (ff, CCvals.f_speedMin, CCvals.f_speedMax);
@@ -456,6 +456,26 @@ public class CCDynamicGlobalFields
   //  works with) into local points, and then find the relevant tile
   // ******************************************************************************************
   // *** read ops ***
+  private float readDataFromPoint_h(int xGlobal, int yGlobal)
+  {
+    var l = new Location(
+      Math.Floor((double)xGlobal / tileSize),
+      Math.Floor((double)yGlobal / tileSize));
+    int xTile = xGlobal - l.x * tileSize;
+    int yTile = yGlobal - l.y * tileSize;
+    return _tiles[l].readData_h(xTile, yTile);
+  }
+
+  private Vector2 readDataFromPoint_dh(int xGlobal, int yGlobal)
+  {
+    var l = new Location(
+      Math.Floor((double)xGlobal / tileSize),
+      Math.Floor((double)yGlobal / tileSize));
+    int xTile = xGlobal - l.x * tileSize;
+    int yTile = yGlobal - l.y * tileSize;
+    return _tiles[l].readData_dh(xTile, yTile);
+  }
+
   private float readDataFromPoint_rho(int xGlobal, int yGlobal)
   {
     var l = new Location(
