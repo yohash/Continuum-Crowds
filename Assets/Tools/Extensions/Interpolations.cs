@@ -4,7 +4,7 @@ using System;
 public static class Interpolations
 {
   /// <summary>
-  /// Interpolate the float value at (x,y) inside the float[,] grid
+  /// Interpolate the float value at non-discrete (x,y) inside the float[,] grid
   /// </summary>
   /// <param name="x">The x point to interpolate</param>
   /// <param name="y">The y point to interpolate</param>
@@ -63,23 +63,24 @@ public static class Interpolations
   /// <param name="y">The y point to interpolate</param>
   /// <param name="array">The array from which the interpolated value is
   /// calculated</param>
-	public static Vector2 Interpolate(this Vector2[,] array, Vector2 v)
+  public static Vector2 Interpolate(this Vector2[,] array, float x, float y)
   {
     float xcomp, ycomp;
 
     int xl = array.GetLength(0);
     int yl = array.GetLength(1);
 
-    int topLeftX = (int)Mathf.Floor(v.x);
-    int topLeftY = (int)Mathf.Floor(v.y);
+    int topLeftX = (int)Mathf.Floor(x);
+    int topLeftY = (int)Mathf.Floor(y);
 
-    float xAmountRight = v.x - topLeftX;
+    float xAmountRight = x - topLeftX;
     float xAmountLeft = 1.0f - xAmountRight;
-    float yAmountBottom = v.y - topLeftY;
+    float yAmountBottom = y - topLeftY;
     float yAmountTop = 1.0f - yAmountBottom;
 
     var valuesX = Vector4.zero;
 
+    // x component of the vector 2
     if (isPointInsideArray(topLeftX, topLeftY, xl, yl)) {
       valuesX[0] = array[topLeftX, topLeftY].x;
     }
@@ -106,6 +107,7 @@ public static class Interpolations
 
     xcomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
 
+    // y component of the vector 2
     Vector4 valuesY = Vector4.zero;
     if (isPointInsideArray(topLeftX, topLeftY, xl, yl)) {
       valuesY[0] = array[topLeftX, topLeftY].y;
@@ -134,6 +136,143 @@ public static class Interpolations
     ycomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
 
     return (new Vector2(xcomp, ycomp));
+  }
+
+  /// <summary>
+  /// Interpolate the Vector2 value at (x,y) inside the Vector2[,] grid
+  /// </summary>
+  /// <param name="x">The x point to interpolate</param>
+  /// <param name="y">The y point to interpolate</param>
+  /// <param name="array">The array from which the interpolated value is
+  /// calculated</param>
+  public static Vector4 Interpolate(this Vector4[,] array, float x, float y)
+  {
+    float wcomp, xcomp, ycomp, zcomp;
+
+    int xl = array.GetLength(0);
+    int yl = array.GetLength(1);
+
+    int topLeftX = (int)Mathf.Floor(x);
+    int topLeftY = (int)Mathf.Floor(y);
+
+    float xAmountRight = x - topLeftX;
+    float xAmountLeft = 1.0f - xAmountRight;
+    float yAmountBottom = y - topLeftY;
+    float yAmountTop = 1.0f - yAmountBottom;
+
+    // x component of the vector 4
+    var values = Vector4.zero;
+    if (isPointInsideArray(topLeftX, topLeftY, xl, yl)) {
+      values[0] = array[topLeftX, topLeftY].x;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY, xl, yl)) {
+      values[1] = array[topLeftX + 1, topLeftY].x;
+    }
+    if (isPointInsideArray(topLeftX, topLeftY + 1, xl, yl)) {
+      values[2] = array[topLeftX, topLeftY + 1].x;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY + 1, xl, yl)) {
+      values[3] = array[topLeftX + 1, topLeftY + 1].x;
+    }
+    for (int n = 0; n < 4; n++) {
+      if (float.IsNaN(values[n])) {
+        values[n] = 0f;
+      }
+      if (float.IsInfinity(values[n])) {
+        values[n] = 0f;
+      }
+    }
+
+    float averagedXTop = values[0] * xAmountLeft + values[1] * xAmountRight;
+    float averagedXBottom = values[2] * xAmountLeft + values[3] * xAmountRight;
+
+    xcomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
+
+    // y component of the vector 4
+    values = Vector4.zero;
+    if (isPointInsideArray(topLeftX, topLeftY, xl, yl)) {
+      values[0] = array[topLeftX, topLeftY].y;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY, xl, yl)) {
+      values[1] = array[topLeftX + 1, topLeftY].y;
+    }
+    if (isPointInsideArray(topLeftX, topLeftY + 1, xl, yl)) {
+      values[2] = array[topLeftX, topLeftY + 1].y;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY + 1, xl, yl)) {
+      values[3] = array[topLeftX + 1, topLeftY + 1].y;
+    }
+    for (int n = 0; n < 4; n++) {
+      if (float.IsNaN(values[n])) {
+        values[n] = 0f;
+      }
+      if (float.IsInfinity(values[n])) {
+        values[n] = 0f;
+      }
+    }
+
+    averagedXTop = values[0] * xAmountLeft + values[1] * xAmountRight;
+    averagedXBottom = values[2] * xAmountLeft + values[3] * xAmountRight;
+
+    ycomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
+
+    // z component of the vector 4
+    values = Vector4.zero;
+    if (isPointInsideArray(topLeftX, topLeftY, xl, yl)) {
+      values[0] = array[topLeftX, topLeftY].y;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY, xl, yl)) {
+      values[1] = array[topLeftX + 1, topLeftY].y;
+    }
+    if (isPointInsideArray(topLeftX, topLeftY + 1, xl, yl)) {
+      values[2] = array[topLeftX, topLeftY + 1].y;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY + 1, xl, yl)) {
+      values[3] = array[topLeftX + 1, topLeftY + 1].y;
+    }
+    for (int n = 0; n < 4; n++) {
+      if (float.IsNaN(values[n])) {
+        values[n] = 0f;
+      }
+      if (float.IsInfinity(values[n])) {
+        values[n] = 0f;
+      }
+    }
+
+    averagedXTop = values[0] * xAmountLeft + values[1] * xAmountRight;
+    averagedXBottom = values[2] * xAmountLeft + values[3] * xAmountRight;
+
+    zcomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
+
+    // w component of the vector 4
+    values = Vector4.zero;
+    if (isPointInsideArray(topLeftX, topLeftY, xl, yl)) {
+      values[0] = array[topLeftX, topLeftY].x;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY, xl, yl)) {
+      values[1] = array[topLeftX + 1, topLeftY].x;
+    }
+    if (isPointInsideArray(topLeftX, topLeftY + 1, xl, yl)) {
+      values[2] = array[topLeftX, topLeftY + 1].x;
+    }
+    if (isPointInsideArray(topLeftX + 1, topLeftY + 1, xl, yl)) {
+      values[3] = array[topLeftX + 1, topLeftY + 1].x;
+    }
+    for (int n = 0; n < 4; n++) {
+      if (float.IsNaN(values[n])) {
+        values[n] = 0f;
+      }
+      if (float.IsInfinity(values[n])) {
+        values[n] = 0f;
+      }
+    }
+
+    averagedXTop = values[0] * xAmountLeft + values[1] * xAmountRight;
+    averagedXBottom = values[2] * xAmountLeft + values[3] * xAmountRight;
+
+    wcomp = averagedXTop * yAmountTop + averagedXBottom * yAmountBottom;
+
+    return new Vector4(xcomp, ycomp, zcomp, wcomp);
   }
 
 
@@ -285,14 +424,11 @@ public static class Interpolations
   //******************************************************************************
   private static bool isPointInsideArray(int x, int y, int xl, int yl)
   {
-    if (x < 0 || x > xl - 1 || y < 0 || y > yl - 1) {
-      return false;
-    }
-    return true;
+    return x < 0 && x > xl - 1 && y < 0 && y > yl - 1;
   }
 
   private static float modulus(float x, float m)
   {
-    return ((x % m + m) % m);
+    return (x % m + m) % m;
   }
 }

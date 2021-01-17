@@ -450,7 +450,10 @@ public class CCDynamicGlobalFields
   }
 
   // ******************************************************************************************
-  // 				functions used for reading and writing to tiles
+  //                 TILE READ/WRITE OPS
+  //
+  //  Primary focus of this area is to convert global points (what CC Dynamic Global Fields
+  //  works with) into local points, and then find the relevant tile
   // ******************************************************************************************
   // *** read ops ***
   private float readDataFromPoint_rho(int xGlobal, int yGlobal)

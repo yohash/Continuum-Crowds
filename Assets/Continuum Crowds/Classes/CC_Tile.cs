@@ -23,6 +23,10 @@ public class CC_Tile
   public float[,] rho;
   // average velocity field
   public Vector2[,] vAve;
+  // height map
+  public float[,] h;
+  // height map gradient
+  public Vector2[,] dh;
   // discomfort
   public float[,] g;
   // speed field, data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
@@ -47,6 +51,8 @@ public class CC_Tile
     vAve = new Vector2[dim, dim];
     f = new Vector4[dim, dim];
     C = new Vector4[dim, dim];
+    h = tile.h;
+    dh = tile.dh;
 
     _fbackup = new Vector4[dim, dim];
     _Cbackup = new Vector4[dim, dim];
@@ -131,7 +137,7 @@ public class CC_Tile
   }
 
   // **************************************************************
-  //  		READ data
+  //  		READ data - discrete
   // **************************************************************
   public float readData_rho(int xTile, int yTile)
   {
@@ -140,6 +146,14 @@ public class CC_Tile
   public float readData_g(int xTile, int yTile)
   {
     return g[xTile, yTile];
+  }
+  public float readData_h(int xTile, int yTile)
+  {
+    return h[xTile, yTile];
+  }
+  public Vector2 readData_dh(int xTile, int yTile)
+  {
+    return dh[xTile, yTile];
   }
   public Vector2 readData_vAve(int xTile, int yTile)
   {
@@ -152,5 +166,37 @@ public class CC_Tile
   public Vector4 readData_C(int xTile, int yTile)
   {
     return C[xTile, yTile];
+  }
+
+  // **************************************************************
+  //  		READ data - fuzzy
+  // **************************************************************
+  public float readData_h(float xTile, float yTile)
+  {
+    return h.Interpolate(xTile, yTile);
+  }
+  public Vector2 readData_dh(float xTile, float yTile)
+  {
+    return dh.Interpolate(xTile, yTile);
+  }
+  public float readData_rho(float xTile, float yTile)
+  {
+    return rho.Interpolate(xTile, yTile);
+  }
+  public float readData_g(float xTile, float yTile)
+  {
+    return g.Interpolate(xTile, yTile);
+  }
+  public Vector2 readData_vAve(float xTile, float yTile)
+  {
+    return vAve.Interpolate(xTile, yTile);
+  }
+  public Vector4 readData_f(float xTile, float yTile)
+  {
+    return f.Interpolate(xTile, yTile);
+  }
+  public Vector4 readData_C(float xTile, float yTile)
+  {
+    return C.Interpolate(xTile, yTile);
   }
 }
