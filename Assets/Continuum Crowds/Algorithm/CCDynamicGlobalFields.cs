@@ -107,7 +107,7 @@ public class CCDynamicGlobalFields
     // these next values are derived from rho, vAve, and g_P, so we simply iterate
     // through the tiles and ONLY update the ones that have had their values changed
     foreach (CC_Tile cct in _tiles.Values) {
-      if (cct.UPDATE_TILE) {
+      //if (cct.UPDATE_TILE) {
         // (3) 	now that the velocity field and density fields are implemented,
         // 		divide the velocity by density to get average velocity field
         computeAverageVelocityField(cct);
@@ -117,7 +117,7 @@ public class CCDynamicGlobalFields
         // (5) 	the cost field depends only on f and g, so it can be computed in its
         //		entirety now as well
         computeCostField(cct);
-      }
+      //}
     }
   }
 
@@ -136,46 +136,6 @@ public class CCDynamicGlobalFields
   {
     return _tiles[corner];
   }
-
-  //public CC_Map_Package BuildCCMapPackage(Rect r)
-  //{
-  //  float[,] gt;
-  //  Vector4[,] ft, Ct;
-
-  //  int xs = (int)Math.Floor((double)r.x);
-  //  int ys = (int)Math.Floor((double)r.y);
-
-  //  int xf = (int)Math.Ceiling((double)(r.x + r.width));
-  //  int yf = (int)Math.Ceiling((double)(r.y + r.height));
-
-  //  if (xs < 0)
-  //    xs = 0;
-  //  if (xf > _mapX)
-  //    xf = _mapX;
-  //  if (ys < 0)
-  //    ys = 0;
-  //  if (yf > _mapY)
-  //    yf = _mapY;
-
-  //  int xdim = xf - xs;
-  //  int ydim = yf - ys;
-
-  //  gt = new float[xdim, ydim];
-  //  ft = new Vector4[xdim, ydim];
-  //  Ct = new Vector4[xdim, ydim];
-
-  //  for (int xI = 0; xI < xdim; xI++)
-  //  {
-  //    for (int yI = 0; yI < ydim; yI++)
-  //    {
-  //      gt[xI, yI] = /*theMapData.getDiscomfortMap(xs + xI, ys + yI) +*/ readDataFromPoint_g(xs + xI, ys + yI);
-  //      ft[xI, yI] = readDataFromPoint_f(xs + xI, ys + yI);
-  //      Ct[xI, yI] = readDataFromPoint_C(xs + xI, ys + yI);
-  //    }
-  //  }
-  //  CC_Map_Package map = new CC_Map_Package(gt, ft, Ct);
-  //  return map;
-  //}
 
   // ******************************************************************************************
   // 							FIELD SOLVING FUNCTIONS
@@ -302,8 +262,8 @@ public class CCDynamicGlobalFields
   {
     for (int n = 0; n < tileSize; n++) {
       for (int m = 0; m < tileSize; m++) {
-        for (int d = 0; d < CCvals.ENSW.Length; d++) {
-          cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, CCvals.ENSW[d]);
+        for (int d = 0; d < CCValues.Instance.ENSW.Length; d++) {
+          cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, CCValues.Instance.ENSW[d]);
         }
       }
     }
@@ -327,7 +287,7 @@ public class CCDynamicGlobalFields
     if (xLocalInto < 0 || xLocalInto > tileSize - 1 || yLocalInto < 0 || yLocalInto > tileSize - 1) {
       // if we're looking off the map, dont store this value
       if (!isPointValid(xGlobalInto, yGlobalInto)) {
-        return CCvals.f_speedMin;
+        return CCValues.Instance.f_speedMin;
       }
       r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
     } else {
@@ -335,11 +295,11 @@ public class CCDynamicGlobalFields
     }
 
     // test the density INTO WHICH we move:
-    if (r < CCvals.f_rhoMin) {
+    if (r < CCValues.Instance.f_rhoMin) {
       // rho < rho_min calc
       ft = computeTopographicalSpeed(tileX, tileY, readDataFromPoint_dh(xGlobalInto, yGlobalInto), direction);
       ff = ft;
-    } else if (r > CCvals.f_rhoMax) {
+    } else if (r > CCValues.Instance.f_rhoMax) {
       // rho > rho_max calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
       ff = fv;
@@ -347,10 +307,10 @@ public class CCDynamicGlobalFields
       // rho in-between calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
       ft = computeTopographicalSpeed(tileX, tileY, readDataFromPoint_dh(xGlobalInto, yGlobalInto), direction);
-      ff = ft + (r - CCvals.f_rhoMin) / (CCvals.f_rhoMax - CCvals.f_rhoMin) * (fv - ft);
+      ff = ft + (r - CCValues.Instance.f_rhoMin) / (CCValues.Instance.f_rhoMax - CCValues.Instance.f_rhoMin) * (fv - ft);
     }
-    // ff = Mathf.Clamp (ff, CCvals.f_speedMin, CCvals.f_speedMax);
-    return Math.Max(CCvals.f_speedMin, ff);
+    ff = Mathf.Clamp(ff, CCValues.Instance.f_speedMin, CCValues.Instance.f_speedMax);
+    return Math.Max(CCValues.Instance.f_speedMin, ff);
   }
 
   private float computeTopographicalSpeed(int x, int y, Vector2 dh, Vector2 direction)
@@ -364,9 +324,9 @@ public class CCDynamicGlobalFields
     //						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
     float dhInDirection = direction.x * dh.x + direction.y * dh.y;
     // calculate the speed field from the equation
-    return CCvals.f_speedMax
-        + (dhInDirection - CCvals.f_slopeMin) / (CCvals.f_slopeMax - CCvals.f_slopeMin)
-        * (CCvals.f_speedMin - CCvals.f_speedMax);
+    return CCValues.Instance.f_speedMax
+        + (dhInDirection - CCValues.Instance.f_slopeMin) / (CCValues.Instance.f_slopeMax - CCValues.Instance.f_slopeMin)
+        * (CCValues.Instance.f_speedMin - CCValues.Instance.f_speedMax);
   }
 
   private float computeFlowSpeed(int xI, int yI, Vector2 direction)
@@ -376,15 +336,15 @@ public class CCDynamicGlobalFields
     // dotted with the direction vector
     var vAvePt = readDataFromPoint_vAve(xI, yI);
     float dot = vAvePt.x * direction.x + vAvePt.y * direction.y;
-    return Math.Max(CCvals.f_speedMin, dot);
+    return Math.Max(CCValues.Instance.f_speedMin, dot);
   }
 
   private void computeCostField(CC_Tile cct)
   {
     for (int n = 0; n < tileSize; n++) {
       for (int m = 0; m < tileSize; m++) {
-        for (int d = 0; d < CCvals.ENSW.Length; d++) {
-          cct.C[n, m][d] = computeCostFieldValue(n, m, d, CCvals.ENSW[d], cct);
+        for (int d = 0; d < CCValues.Instance.ENSW.Length; d++) {
+          cct.C[n, m][d] = computeCostFieldValue(n, m, d, CCValues.Instance.ENSW[d], cct);
         }
       }
     }
@@ -404,28 +364,28 @@ public class CCDynamicGlobalFields
     }
 
     // initialize g as the map discomfort data value
-    float g = 0; // = theMapData.getDiscomfortMap(xGlobalInto, yGlobalInto);
-    float r;
+    float g = readDataFromPoint_g(xGlobalInto, yGlobalInto);
+    float rho;
 
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
     if (xLocalInto < 0 || xLocalInto > tileSize - 1 ||
         yLocalInto < 0 || yLocalInto > tileSize - 1
     ) {
       g += readDataFromPoint_g(xGlobalInto, yGlobalInto);
-      r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
+      rho = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
     } else {
       g += cct.g[xLocalInto, yLocalInto];
-      r = cct.rho[xLocalInto, yLocalInto];
+      rho = cct.rho[xLocalInto, yLocalInto];
     }
 
     // clamp g to make sure it's not > 1
     g = Mathf.Clamp01(g);
 
     // compute the cost weighted by our coefficients
-    float cost = (CCvals.C_alpha * cct.f[tileX, tileY][d]
-                + CCvals.C_beta
-                + CCvals.C_gamma * g
-                + CCvals.C_delta * r)
+    float cost = (CCValues.Instance.C_alpha * cct.f[tileX, tileY][d]
+                + CCValues.Instance.C_beta
+                + CCValues.Instance.C_gamma * g
+                /*+ CCValues.Instance.C_delta * rho*/)
                     / cct.f[tileX, tileY][d];
 
     return cost;
@@ -442,10 +402,9 @@ public class CCDynamicGlobalFields
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
     // check to make sure the point is not in a place dis-allowed by terrain (slope)
-    //if (theMapData.getDiscomfortMap(x, y) >= 1)
-    //{
-    //  return false;
-    //}
+    if (readDataFromPoint_g(globalX, globalY) >= 1) {
+      return false;
+    }
     return true;
   }
 

@@ -125,6 +125,11 @@ public class NavSystem
     }
     return mapTiles[0];
   }
+
+  public void ForceTileUpdate()
+  {
+    ccFields.UpdateTiles();
+  }
 }
 
 public class NavigationSolution

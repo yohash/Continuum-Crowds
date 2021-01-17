@@ -3,10 +3,13 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Linq;
 
 public class CCTester : MonoBehaviour
 {
+  public static CCTester Instant;
+
   [Header("Assign UI")]
   public TextMeshProUGUI TilesTotalText;
   public TMP_InputField TilesInputField;
@@ -15,6 +18,8 @@ public class CCTester : MonoBehaviour
   public TMP_InputField BordersInputField;
 
   public TextMeshProUGUI LoadTimeText;
+
+  public Button SolveButton;
 
   [Header("Public refs")]
   public NavSystem NavSystem;
@@ -40,6 +45,7 @@ public class CCTester : MonoBehaviour
   // ***************************************************************************
   private void Awake()
   {
+    Instant = this;
     stopwatch = new Stopwatch();
 
     NavSystem = new NavSystem(TileGenerator.Instant.Tiles);
@@ -59,7 +65,7 @@ public class CCTester : MonoBehaviour
       displaySolution();
 
       // see if we should compute a new test path
-      if (Input.GetMouseButtonDown(0)) {
+      if (Input.GetMouseButton(0)) {
         // raycast to find tap point
         RaycastHit hit;
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -105,6 +111,7 @@ public class CCTester : MonoBehaviour
       UnityEngine.Debug.LogWarning("Tile or Border are null");
       return;
     }
+    NavSystem.ForceTileUpdate();
     solveTileCcAtBorder(currentTile, currentBorder);
   }
 
@@ -146,8 +153,8 @@ public class CCTester : MonoBehaviour
         float worldX = tileX + .5f + currentTile.Corner.x;
         float worldY = tileY + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);
-        var start = new Vector3(worldX - vel.x / 2, height, worldY - vel.y / 2);
-        var end = new Vector3(worldX + vel.x / 2, height, worldY + vel.y / 2);
+        var start = new Vector3(worldX - vel.x / 2, height + .2f, worldY - vel.y / 2);
+        var end = new Vector3(worldX + vel.x / 2, height + .2f, worldY + vel.y / 2);
         UnityEngine.Debug.DrawLine(start, end, Color.blue);
       }
     }
@@ -163,7 +170,9 @@ public class CCTester : MonoBehaviour
 
     while (dir != Vector2.zero) {
       // store next
-      testPath.Add(next + currentTile.Corner.ToVector3());
+      testPath.Add(next
+        + currentTile.Corner.ToVector3()
+        + Vector3.up * (currentTile.Height(next.x, next.z) + .2f));
       // get dir at location NEXT
       dir = tileSolution(next.XYZtoXY());
       // normalize dir if not zero

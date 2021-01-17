@@ -240,8 +240,8 @@ public class CCEikonalSolver
           // weighted mean - appears to offer the best compromise
           var max = (float)Math.Max(soln1, soln2);
           var min = (float)Math.Min(soln1, soln2);
-          float wMax = 2.5f;
-          float wMin = 1f;
+          float wMax = CCValues.Instance.maxWeight;
+          float wMin = CCValues.Instance.minWeight;
           phi_proposed = (float)(max * wMax + min * wMin) / (wMax + wMin);
         }
 
