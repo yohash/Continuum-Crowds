@@ -16,8 +16,8 @@ public class CC_Unit
   public Vector2 GetAnchorPoint()
   {
     //_CC_Footprint_Anchor = _myUnit.GetCurrent2DPosition();
-    _ccu_anchor += -new Vector2(((float)getFootprint().GetLength(0)) / 2f,
-                                ((float)getFootprint().GetLength(1)) / 2f);
+    _ccu_anchor += -new Vector2(getFootprint().GetLength(0) / 2f,
+                                getFootprint().GetLength(1) / 2f);
     return _ccu_anchor;
   }
   public Vector2 GetVelocity() { return getVelocity(); }
