@@ -108,15 +108,15 @@ public class CCDynamicGlobalFields
     // through the tiles and ONLY update the ones that have had their values changed
     foreach (CC_Tile cct in _tiles.Values) {
       //if (cct.UPDATE_TILE) {
-        // (3) 	now that the velocity field and density fields are implemented,
-        // 		divide the velocity by density to get average velocity field
-        computeAverageVelocityField(cct);
-        // (4)	now that the average velocity field is computed, and the density
-        // 		field is in place, we calculate the speed field, f
-        computeSpeedField(cct);
-        // (5) 	the cost field depends only on f and g, so it can be computed in its
-        //		entirety now as well
-        computeCostField(cct);
+      // (3) 	now that the velocity field and density fields are implemented,
+      // 		divide the velocity by density to get average velocity field
+      computeAverageVelocityField(cct);
+      // (4)	now that the average velocity field is computed, and the density
+      // 		field is in place, we calculate the speed field, f
+      computeSpeedField(cct);
+      // (5) 	the cost field depends only on f and g, so it can be computed in its
+      //		entirety now as well
+      computeCostField(cct);
       //}
     }
   }
@@ -278,9 +278,7 @@ public class CCDynamicGlobalFields
     int yGlobalInto = cct.Corner.y * tileSize + yLocalInto;
 
     // otherwise, run the speed field calculation
-    float ff = 0;
-    float ft = 0;
-    float fv = 0;
+    float ff, ft, fv;
 
     float r;
     // test to see if the point we're looking INTO is in another tile, and if so, pull it
@@ -365,17 +363,17 @@ public class CCDynamicGlobalFields
 
     // initialize g as the map discomfort data value
     float g = readDataFromPoint_g(xGlobalInto, yGlobalInto);
-    float rho;
+    //float rho;
 
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
     if (xLocalInto < 0 || xLocalInto > tileSize - 1 ||
         yLocalInto < 0 || yLocalInto > tileSize - 1
     ) {
       g += readDataFromPoint_g(xGlobalInto, yGlobalInto);
-      rho = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
+      //rho = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
     } else {
       g += cct.g[xLocalInto, yLocalInto];
-      rho = cct.rho[xLocalInto, yLocalInto];
+      //rho = cct.rho[xLocalInto, yLocalInto];
     }
 
     // clamp g to make sure it's not > 1
