@@ -4,6 +4,10 @@ using System;
 [System.Serializable]
 public class CC_Unit
 {
+  // store unit size
+  public int sizeX;
+  public int sizeY;
+
   // private variables
   [SerializeField] private Vector2 _ccu_anchor;
 

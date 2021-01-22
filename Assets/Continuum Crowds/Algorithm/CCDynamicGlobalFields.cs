@@ -147,27 +147,22 @@ public class CCDynamicGlobalFields
     var footprint = ccu.GetFootprint();
     var anchor = ccu.GetAnchorPoint();
 
-    int xOffset, yOffset;
-    int xIndex, yIndex;
-
     // cache the x - offset
-    if (ccu.UnitX % 2 == 0) {
-      // if even, use Math.Round
-      xOffset = (int)Math.Round(anchor.x);
-    } else {
-      // is odd, use Math.Floor
-      xOffset = (int)Math.Floor(anchor.x);
-    }
+    int xOffset = ccu.sizeX % 2 == 0 ?
+        // if even, use Math.Round
+        (int)Math.Round(anchor.x) :
+        // is odd, use Math.Floor
+        (int)Math.Floor(anchor.x);
 
     // cache y - offset
-    if (ccu.UnitY % 2 == 0) {
-      // if even, use Math.Round
-      yOffset = (int)Math.Round(anchor.y);
-    } else {
-      // is odd, use Math.Floor
-      yOffset = (int)Math.Floor(anchor.y);
-    }
+    int yOffset = ccu.sizeY % 2 == 0 ?
+        // if even, use Math.Round
+        (int)Math.Round(anchor.y) :
+        // is odd, use Math.Floor
+        (int)Math.Floor(anchor.y);
 
+    // cache iterators
+    int xIndex, yIndex;
     // scan the grid, stamping the footprint onto the tile
     for (int x = 0; x < footprint.GetLength(0); x++) {
       for (int y = 0; y < footprint.GetLength(1); y++) {
