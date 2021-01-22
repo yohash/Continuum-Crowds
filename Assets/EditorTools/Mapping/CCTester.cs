@@ -155,7 +155,7 @@ public class CCTester : MonoBehaviour
         var height = currentTile.Height(worldX, worldY);
         var start = new Vector3(worldX - vel.x / 2, height + .2f, worldY - vel.y / 2);
         var end = new Vector3(worldX + vel.x / 2, height + .2f, worldY + vel.y / 2);
-        UnityEngine.Debug.DrawLine(start, end, Color.blue);
+        UnityEngine.Debug.DrawLine(start, end, Color.cyan);
       }
     }
   }

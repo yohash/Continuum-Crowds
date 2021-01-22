@@ -4,7 +4,7 @@
 public class CCValues : ScriptableObject
 {
   static private CCValues instance;
-  static public CCValues Instance {
+  static public CCValues S {
     get {
       return instance ??
         (instance = Resources.Load("CCConstants") as CCValues);
