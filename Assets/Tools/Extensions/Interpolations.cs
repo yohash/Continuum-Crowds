@@ -424,7 +424,10 @@ public static class Interpolations
   //******************************************************************************
   private static bool isPointInsideArray(int x, int y, int xl, int yl)
   {
-    return x < 0 && x > xl - 1 && y < 0 && y > yl - 1;
+    if (x < 0 || x > xl - 1 || y < 0 || y > yl - 1) {
+      return false;
+    }
+    return true;
   }
 
   private static float modulus(float x, float m)

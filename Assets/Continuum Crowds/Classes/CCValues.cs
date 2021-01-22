@@ -1,8 +1,17 @@
 ﻿using UnityEngine;
-public static class CCvals
+
+[CreateAssetMenu(menuName = "New Continuum Crowds Constants", fileName = "CCConstants")]
+public class CCValues : ScriptableObject
 {
+  static private CCValues instance;
+  static public CCValues S {
+    get {
+      return instance ??
+        (instance = Resources.Load("CCConstants") as CCValues);
+    }
+  }
   // scalar for density to splat onto discomfort map
-  public static float rho_sc = 1f;
+  public float rho_sc = 1f;
 
   // **************************************************************************************************
   // ************ deprecated due to visually unappealing 'dodging' ************************************
@@ -12,35 +21,41 @@ public static class CCvals
   //	 public static float g_weight = 0.5f;
   // **************************************************************************************************
   // everything above this must be clamped to 'unpassable' discomfort map
-  public static float f_slopeMax = 1f;
-  public static float f_slopeMin = -1f;
+  public float f_slopeMax = 1f;
+  public float f_slopeMin = -1f;
 
-  public static float f_rhoMax = 2f;
-  public static float f_rhoMin = 0.6f;
+  public float f_rhoMax = 2f;
+  public float f_rhoMin = 0.6f;
 
   // set to some small positive number to clamp flow speed
-  public static float f_speedMin = 0.1f;
+  public float f_speedMin = 0f;
   // set this to 1 to automatically just receive normalized 'direction'
   // then, we simply scale by the units particular maxSpeed
-  public static float f_speedMax = 40f;
+  public float f_speedMax = 40f;
 
   // path length field weight
-  public static float C_alpha = 0.5f;
+  public float C_alpha = 1f;
   // time weight (inverse of speed)
-  public static float C_beta = 0.3f;
+  public float C_beta = 1f;
   // discomfort weight
-  public static float C_gamma = 0.8f;
+  public float C_gamma = 1f;
   // density weight
-  public static float C_delta = 1.5f;
+  public float C_delta = 1f;
+
+  // Eikonal solver weighted average, max weight
+  public float maxWeight = 2.5f;
+  // Eikonal solver weighted average, min weight
+  public float minWeight = 1f;
+
 
   // this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
-  public static Vector2[] ENSW = new Vector2[] {
+  public Vector2[] ENSW = new Vector2[] {
     Vector2.right,
     Vector2.up,
     Vector2.left,
     Vector2.down
   };
-  public static Vector2Int[] ENSWint = new Vector2Int[] {
+  public Vector2Int[] ENSWint = new Vector2Int[] {
     Vector2Int.right,
     Vector2Int.up,
     Vector2Int.left,

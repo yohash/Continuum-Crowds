@@ -110,7 +110,7 @@ public class NavSystem
 
     solution.SolveContinuumCrowdsForTile(ccTile, goals.Select(g => g - tile.Corner).ToList());
 
-    tileSolutionCallback(vel => solution.velocity.Interpolate(vel));
+    tileSolutionCallback(vel => solution.velocity.Interpolate(vel.x, vel.y));
 
     // (2) store the velocity field (solution) in a list with some identifier
     //      to clearly show what we've solved and can therefore reference later
@@ -124,6 +124,11 @@ public class NavSystem
       if (tile.ContainsPoint(location)) { return tile; }
     }
     return mapTiles[0];
+  }
+
+  public void ForceTileUpdate()
+  {
+    ccFields.UpdateTiles();
   }
 }
 
