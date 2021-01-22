@@ -128,8 +128,9 @@ public class CCDynamicGlobalFields
 
   public void RemoveCCUnit(CC_Unit ccu)
   {
-    if (_units.Contains(ccu))
+    if (_units.Contains(ccu)) {
       _units.Remove(ccu);
+    }
   }
 
   public CC_Tile GetCCTile(Location corner)
@@ -140,49 +141,49 @@ public class CCDynamicGlobalFields
   // ******************************************************************************************
   // 							FIELD SOLVING FUNCTIONS
   // ******************************************************************************************
-  private void computeDensityField(CC_Unit cc_u)
+  private void computeDensityField(CC_Unit ccu)
   {
     // grab the NxN footprint matrix
-    float[,] cc_u_footprint = cc_u.GetFootprint();
-    Vector2 gridAnchor = cc_u.GetAnchorPoint();
+    var footprint = ccu.GetFootprint();
+    var anchor = ccu.GetAnchorPoint();
 
-    int xOff, yOff;
-    int xInd, yInd;
+    int xOffset, yOffset;
+    int xIndex, yIndex;
 
     // cache the x - offset
-    if (cc_u.UnitX % 2 == 0) {
+    if (ccu.UnitX % 2 == 0) {
       // if even, use Math.Round
-      xOff = (int)Math.Round(gridAnchor.x);
+      xOffset = (int)Math.Round(anchor.x);
     } else {
       // is odd, use Math.Floor
-      xOff = (int)Math.Floor(gridAnchor.x);
+      xOffset = (int)Math.Floor(anchor.x);
     }
 
     // cache y - offset
-    if (cc_u.UnitY % 2 == 0) {
+    if (ccu.UnitY % 2 == 0) {
       // if even, use Math.Round
-      yOff = (int)Math.Round(gridAnchor.y);
+      yOffset = (int)Math.Round(anchor.y);
     } else {
       // is odd, use Math.Floor
-      yOff = (int)Math.Floor(gridAnchor.y);
+      yOffset = (int)Math.Floor(anchor.y);
     }
 
     // scan the grid, stamping the footprint onto the tile
-    for (int x = 0; x < cc_u_footprint.GetLength(0); x++) {
-      for (int y = 0; y < cc_u_footprint.GetLength(1); y++) {
+    for (int x = 0; x < footprint.GetLength(0); x++) {
+      for (int y = 0; y < footprint.GetLength(1); y++) {
         // get the rho value
-        float rho = cc_u_footprint[x, y];
+        float rho = footprint[x, y];
         float rt = 0f;
 
-        xInd = x + xOff;
-        yInd = y + yOff;
+        xIndex = x + xOffset;
+        yIndex = y + yOffset;
 
-        if (isPointValid(xInd, yInd)) {
-          rt = readDataFromPoint_rho(xInd, yInd);
-          writeDataToPoint_rho(xInd, yInd, rho + rt);
+        if (isPointValid(xIndex, yIndex)) {
+          rt = readDataFromPoint_rho(xIndex, yIndex);
+          writeDataToPoint_rho(xIndex, yIndex, rho + rt);
         }
         // compute velocity field with this density
-        computeVelocityFieldPoint(xInd, yInd, cc_u.GetVelocity(), rt);
+        computeVelocityFieldPoint(xIndex, yIndex, ccu.GetVelocity(), rt);
       }
     }
   }
@@ -377,7 +378,7 @@ public class CCDynamicGlobalFields
     }
 
     // clamp g to make sure it's not > 1
-    g = Mathf.Clamp01(g);
+    if (g > 1) { g = 1; } else if (g < 0) { g = 0; }
 
     // compute the cost weighted by our coefficients
     float cost = (CCValues.S.C_alpha * cct.f[tileX, tileY][d]
@@ -389,9 +390,9 @@ public class CCDynamicGlobalFields
     return cost;
   }
 
-  // ******************************************************************************
+  // *****************************************************************************
   //			TOOLS AND UTILITIES
-  //******************************************************************************
+  // *****************************************************************************
   public bool isPointValid(int globalX, int globalY)
   {
     // check to make sure the point is not outside the tile
