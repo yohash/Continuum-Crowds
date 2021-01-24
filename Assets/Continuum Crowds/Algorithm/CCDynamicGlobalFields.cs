@@ -31,13 +31,6 @@ public class CCDynamicGlobalFields
     initiateTiles(tiles);
   }
 
-  public void UpdateCCUnits()
-  {
-    for (int i = 0; i < _units.Count; i++) {
-      _units[i].UpdatePhysics();
-    }
-  }
-
   private bool initiateTiles(List<MapTile> tiles)
   {
     if (tiles.Count == 0) { throw new NavSystemException("CCDynamicGlobalFields: No Tiles"); }

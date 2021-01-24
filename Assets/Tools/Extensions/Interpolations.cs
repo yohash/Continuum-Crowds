@@ -281,38 +281,24 @@ public static class Interpolations
   /// (0,0) < (x,y) < (1,1). Fractionally breaks the single value
   /// onto each of the 4 grid points based on the (x,y) location
   /// </summary>
-  /// <param name="x"></param>
-  /// <param name="y"></param>
-  /// <param name="scalar"></param>
-  public static float[,] Linear1stOrderSplat(float x, float y, float scalar)
+  /// <param name="x">x</param>
+  /// <param name="y">y</param>
+  /// <param name="scalar">scale the result by this parameter, default = 1</param>
+  public static float[,] Linear1stOrderSplat(float x, float y, float scalar = 1)
   {
-    float[,] mat = new float[2, 2];
+    // roll the range up to (0 < x < 1) to obtain the delta
+    float dx = modulus(x, 1);
+    float dy = modulus(y, 1);
 
-    mat[0, 0] = 0;
-    mat[0, 1] = 0;
-    mat[1, 0] = 0;
-    mat[1, 1] = 0;
-
-    int xInd = (int)Math.Floor((double)x);
-    int yInd = (int)Math.Floor((double)y);
-
-    float delx = x - xInd;
-    float dely = y - yInd;
-
-    // use += to stack density field up
-    mat[0, 0] += Math.Min(1 - delx, 1 - dely);
-    mat[0, 0] *= scalar;
-
-    mat[1, 0] += Math.Min(delx, 1 - dely);
-    mat[1, 0] *= scalar;
-
-    mat[0, 1] += Math.Min(1 - delx, dely);
-    mat[0, 1] *= scalar;
-
-    mat[1, 1] += Math.Min(delx, dely);
-    mat[1, 1] *= scalar;
-
-    return mat;
+    // return matrix of form:
+    //   mat[0, 0] = Math.Min(1 - dx, 1 - dy) * scalar;
+    //   mat[0, 1] = Math.Min(1 - dx, dy) * scalar;
+    //   mat[1, 0] = Math.Min(dx, 1 - dy) * scalar;
+    //   mat[1, 1] = Math.Min(dx, dy) * scalar;
+    return new float[,] {
+        { Math.Min(1 - dx, 1 - dy) * scalar,  Math.Min(1 - dx, dy) * scalar },
+        { Math.Min(dx, 1 - dy) * scalar,      Math.Min(dx, dy) * scalar }
+    };
   }
 
   public static float[,] BilinearInterpolation(this float[,] grid, Vector2 offset)
@@ -320,7 +306,9 @@ public static class Interpolations
     return grid.BilinearInterpolation(offset.x, offset.y);
   }
   /// <summary>
-  /// Uses bilinear interpolation to shift a grid of points by [offset]
+  /// Uses bilinear interpolation to shift a grid of points by [offset],
+  /// where [offset] is wrapped via modulus to the range
+  ///   0 <  [offset] < gridSize
   /// </summary>
   /// <param name="grid"></param>
   /// <param name="offset"></param>
@@ -335,8 +323,8 @@ public static class Interpolations
     // precompute some quantities
     // (these quantities are inverse to the actual equations because we are translating
     // from a transformed coordinate plane Back Into the original)
-    float dx2 = modulus(xOffset, 1f);
-    float dy2 = modulus(yOffset, 1f);
+    float dx2 = modulus(xOffset, 1);
+    float dy2 = modulus(yOffset, 1);
     float dx1 = 1f - dx2;
     float dy1 = 1f - dy2;
 
@@ -417,6 +405,11 @@ public static class Interpolations
     }
 
     return interpolatedGrid;
+  }
+
+  public static float Modulus(this float x, float m)
+  {
+    return (x % m + m) % m;
   }
 
   // ******************************************************************************

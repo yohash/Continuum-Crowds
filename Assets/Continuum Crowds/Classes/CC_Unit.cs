@@ -8,29 +8,39 @@ public class CC_Unit
   public int sizeX;
   public int sizeY;
 
-  // private variables
-  [SerializeField] private Vector2 _ccu_anchor;
-
-  // getters and setters
-  public float[,] GetFootprint() { return getFootprint(); }
-  public Vector2 GetAnchorPoint()
-  {
-    //_CC_Footprint_Anchor = _myUnit.GetCurrent2DPosition();
-    _ccu_anchor += -new Vector2(getFootprint().GetLength(0) / 2f,
-                                getFootprint().GetLength(1) / 2f);
-    return _ccu_anchor;
-  }
   public Vector2 GetVelocity() { return getVelocity(); }
+  public Vector2 GetPosition() { return getPosition(); }
 
   private Func<Vector2> getVelocity;
-  private Func<Vector2> getAnchor;
-  private Func<float[,]> getFootprint;
+  // in xz euler angles
+  private Func<Vector2> getRotation;
+  private Func<Vector2> getPosition;
 
-
-  public CC_Unit(Func<Vector2> getVelocity, Func<Vector2> getAnchor, Func<float[,]> getFootprint)
+  public CC_Unit(Func<Vector2> getVelocity, Func<Vector2> getRotation, Func<Vector2> getPosition, Vector2 unitDimensions)
   {
+    sizeX = (int)Math.Round(unitDimensions.x);
+    sizeY = (int)Math.Round(unitDimensions.y);
+
     this.getVelocity = getVelocity;
-    this.getAnchor = getAnchor;
-    this.getFootprint = getFootprint;
+    this.getRotation = getRotation;
+    this.getPosition = getPosition;
+  }
+
+  public float[,] GetFootprint()
+  {
+    // use getPosition(), getRotation(), and unit size to compute
+    // the footprint, properly interpolated and splatted into a 2x2 grid
+
+
+    // wrap getPostion to the range 0 < position < 1 (grid size)
+    float xOffset = getPosition().x.Modulus(1f);
+    float yOffset = getPosition().y.Modulus(1f);
+
+
+
+    // TODO: figure out, based on sizeX and sizeY, and rotation, how big footprint should be
+    float[,] footprint = new float[sizeX, sizeY];
+
+    return footprint;
   }
 }
