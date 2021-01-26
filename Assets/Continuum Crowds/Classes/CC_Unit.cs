@@ -26,7 +26,7 @@ public class CC_Unit
   {
     sizeX = (int)Math.Round(unitDimensions.x);
     sizeY = (int)Math.Round(unitDimensions.y);
-
+    // verify 
     if (sizeX < 1 || sizeY < 1) {
       Debug.LogWarning("CC_Unit created with unit size dimension <1");
     }
@@ -73,7 +73,27 @@ public class CC_Unit
 
     for (int x = 0; x < cols; x++) {
       for (int y = 0; y < rows; y++) {
-        // first, see if x is outside the footprint zone
+        // check for the different zones
+        // (1) within the main footprint range
+        // (2) within the buffer to the left/right or top/bottom of the main footprint
+        //      where footprint drops off linearly
+        // (3) one of the 4 corners, where footprint drops off radially
+
+        if (x < buffer || x > sizeX + buffer ||
+            y < buffer || y > sizeY + buffer) {
+          // get x distance
+          float xVar = x < buffer ? buffer - x :
+                       x > buffer + sizeX ? sizeX + buffer - x :
+                       0;
+          // get y distance
+          float yVar = y < buffer ? buffer - y :
+                       y > buffer + sizeY ? sizeY + buffer - y :
+                       0;
+          // linearly fade to the nearest
+          footprint[x, y] = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
+        } else {
+          footprint[x, y] = 1;
+        }
       }
     }
 
