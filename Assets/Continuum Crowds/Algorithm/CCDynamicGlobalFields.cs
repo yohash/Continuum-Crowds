@@ -138,7 +138,7 @@ public class CCDynamicGlobalFields
   {
     // grab the NxN footprint matrix
     var footprint = ccu.GetFootprint();
-    var anchor = ccu.GetAnchorPoint();
+    var anchor = ccu.GetPosition();
 
     // cache the x - offset
     int xOffset = ccu.sizeX % 2 == 0 ?

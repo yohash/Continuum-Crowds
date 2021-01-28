@@ -51,22 +51,16 @@ public class CC_Unit
     float xOffset = getPosition().x.Modulus(1f);
     float yOffset = getPosition().y.Modulus(1f);
 
-
-
-    // TODO: figure out, based on sizeX and sizeY, and rotation, how big footprint should be
-    float[,] footprint = new float[sizeX, sizeY];
-
-    return footprint;
+    // TODO: integrate rotation
+    return baseprint.BilinearInterpolation(xOffset, yOffset);
   }
 
   private float[,] computeBaseFootprint()
   {
-    // (1) initialize 'positions' with the standard grid and dimensions provided 
+    // initialize 'positions' with the standard grid and dimensions provided 
     int buffer = (int)Math.Ceiling(fadeout);
     int cols = sizeX + buffer * 2;
     int rows = sizeY + buffer * 2;
-
-    Vector2 center = new Vector2((cols - 1) / 2f, (rows - 1) / 2f);
 
     // init the footprint
     var footprint = new float[cols, rows];
@@ -82,16 +76,17 @@ public class CC_Unit
         if (x < buffer || x > sizeX + buffer ||
             y < buffer || y > sizeY + buffer) {
           // get x distance
-          float xVar = x < buffer ? buffer - x :
-                       x > buffer + sizeX ? sizeX + buffer - x :
+          float xVar = x < buffer ? (fadeout - x) / fadeout :
+                       x > buffer + sizeX ? (sizeX + fadeout - x) / (sizeX + fadeout) :
                        0;
           // get y distance
-          float yVar = y < buffer ? buffer - y :
-                       y > buffer + sizeY ? sizeY + buffer - y :
+          float yVar = y < buffer ? (fadeout - y) / fadeout :
+                       y > buffer + sizeY ? (sizeY + fadeout - y) / (sizeY + fadeout) :
                        0;
           // linearly fade to the nearest
           footprint[x, y] = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
         } else {
+          // within the main footprint range, everything is 1
           footprint[x, y] = 1;
         }
       }
