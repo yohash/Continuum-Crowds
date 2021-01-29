@@ -48,9 +48,9 @@ public class TileMap : MonoBehaviour
 
   void Awake()
   {
-    mesh_filter = GetComponent<MeshFilter>();
-    mesh_renderer = GetComponent<MeshRenderer>();
-    mesh_collider = GetComponent<MeshCollider>();
+    mesh_filter = gameObject.GetOrAddComponent<MeshFilter>();
+    mesh_renderer = gameObject.GetOrAddComponent<MeshRenderer>();
+    mesh_collider = gameObject.GetOrAddComponent<MeshCollider>();
 
     if (enableProceduralMaterial) {
       Color c = Color.white;
