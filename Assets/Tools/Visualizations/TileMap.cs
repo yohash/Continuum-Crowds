@@ -1,15 +1,12 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 ///  An example of the use case from OVerlord, to make a tilemap
 ///  that conformed to terrain and would display a texture
 //private void setTileMapToMatrix(Vector2 baseCorner, Vector2[,] mat)
 //{
-//  GameObject temp = ObjectPool.S.GetPooledDebugTool_TileMap();
-//  TileMap tm = temp.GetComponent<TileMap>();
 //  float[,] map = NavSystem.S.GetRangeOfHeightData(baseCorner, new Vector2(mat.GetLength(0), mat.GetLength(1)));
-//  tm.BuildMesh(Vector2.zero, map);
+//  TileMap tm.BuildMesh(Vector2.zero, map);
 
 //  Texture2D hmap = new Texture2D(map.GetLength(0), map.GetLength(1));
 
@@ -27,63 +24,125 @@ using System.Collections.Generic;
 //  tm.BuildTexture(hmap);
 //  tm.transform.position = new Vector3(baseCorner.x, 0f, baseCorner.y);
 //  tm.gameObject.SetActive(true);
-//  tm.GetComponent<DisableAfterNsec>().NSeconds = CC_VelocityFieldUpdateTime * 1.25f;
 //}
 
 
 public class TileMap : MonoBehaviour
 {
-  public MeshFilter mesh_filter;
-  public MeshRenderer mesh_renderer;
-  public MeshCollider mesh_collider;
+  [SerializeField] private MeshFilter mesh_filter;
+  [SerializeField] private MeshRenderer mesh_renderer;
+  [SerializeField] private MeshCollider mesh_collider;
 
-  public Material mat;
+  [SerializeField] private float tileSize = 1f;
 
-  public bool enableProceduralMaterial = false;
+  public static TileMap Build()
+  {
+    return new GameObject($"TileMap", typeof(MeshFilter), typeof(MeshRenderer)).AddComponent<TileMap>();
+  }
 
-  int mapX;
-  int mapZ;
-
-  public float tileSize = 1f;
-
-  void Awake()
+  // ***************************************************************************
+  //  MONOBEHAVIOURS
+  // ***************************************************************************
+  private void Awake()
   {
     mesh_filter = gameObject.GetOrAddComponent<MeshFilter>();
     mesh_renderer = gameObject.GetOrAddComponent<MeshRenderer>();
     mesh_collider = gameObject.GetOrAddComponent<MeshCollider>();
 
-    if (enableProceduralMaterial) {
-      Color c = Color.white;
-      c.a = 0.7f;
+    Color c = Color.white;
+    c.a = 0.7f;
 
-      mat = new Material(Shader.Find("Standard"));
-      mat.SetColor("_Color", c);
-      mat.SetFloat("_Mode", 3);
-      mat.SetFloat("_Glossiness", 0);
-      mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-      mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-      mat.SetInt("_ZWrite", 0);
-      mat.DisableKeyword("_ALPHATEST_ON");
-      mat.EnableKeyword("_ALPHABLEND_ON");
-      mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-      mat.renderQueue = 3000;
+    var mat = new Material(Shader.Find("Standard"));
+    mat.SetColor("_Color", c);
+    mat.SetFloat("_Mode", 3);
+    mat.SetFloat("_Glossiness", 0);
+    mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+    mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+    mat.SetInt("_ZWrite", 0);
+    mat.DisableKeyword("_ALPHATEST_ON");
+    mat.EnableKeyword("_ALPHABLEND_ON");
+    mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+    mat.renderQueue = 3000;
 
-      mesh_renderer.material = mat;
-      mesh_renderer.sharedMaterials[0] = mat;
-    }
+    mesh_renderer.material = mat;
+    mesh_renderer.sharedMaterials[0] = mat;
   }
 
+  // ***************************************************************************
+  //  PUBLIC ACCESSORS
+  // ***************************************************************************
   public void BuildTexture(Texture2D tex)
   {
     mesh_renderer.sharedMaterials[0].mainTexture = tex;
   }
 
+  public void BuildMesh(float[,] mat)
+  {
+    var xLength = mat.GetLength(0);
+    var zLength = mat.GetLength(1);
+
+    int numTiles = xLength * zLength;
+    int numTris = numTiles * 2;
+
+    int vSize_x = xLength + 1;
+    int vSize_z = zLength + 1;
+    int numVerts = vSize_x * vSize_z;
+
+    // generate mesh data
+    Vector3[] vertices = new Vector3[numVerts];
+    Vector3[] normals = new Vector3[numVerts];
+    Vector2[] uv = new Vector2[numVerts];
+
+    int[] triangles = new int[numTris * 3];
+
+    int x, z;
+    for (z = 0; z < vSize_z; z++) {
+      for (x = 0; x < vSize_x; x++) {
+        float h;
+        if (z >= zLength && x >= xLength) {
+          h = mat[x - 1, z - 1];
+        } else if (z >= zLength) {
+          h = mat[x, z - 1];
+        } else if (x >= xLength) {
+          h = mat[x - 1, z];
+        } else {
+          h = mat[x, z];
+        }
+        vertices[z * vSize_x + x] = new Vector3(x * tileSize, h + .1f, z * tileSize);
+        normals[z * vSize_x + x] = Vector3.up;
+        uv[z * vSize_x + x] = new Vector2((float)x / vSize_x, (float)z / vSize_z);
+      }
+    }
+
+    for (z = 0; z < zLength; z++) {
+      for (x = 0; x < xLength; x++) {
+        int squareIndex = z * xLength + x;
+        int triOffset = squareIndex * 6;
+
+        triangles[triOffset + 0] = z * vSize_x + x + 0;
+        triangles[triOffset + 1] = z * vSize_x + x + vSize_x + 0;
+        triangles[triOffset + 2] = z * vSize_x + x + vSize_x + 1;
+
+        triangles[triOffset + 3] = z * vSize_x + x + 0;
+        triangles[triOffset + 4] = z * vSize_x + x + vSize_x + 1;
+        triangles[triOffset + 5] = z * vSize_x + x + 1;
+      }
+    }
+
+    // create a new mesh and populate with data
+    Mesh mesh = new Mesh();
+    mesh.vertices = vertices;
+    mesh.triangles = triangles;
+    mesh.normals = normals;
+    mesh.uv = uv;
+
+    // assign our mesh to our filter/renderer
+    mesh_filter.mesh = mesh;
+  }
+
   public void BuildCircle(List<Vector3> vertices)
   {
-    // receive the vertices
-    List<Vector3> vertexList = vertices;
-
-    int numOfPoints = vertexList.Count - 3;
+    int numOfPoints = vertices.Count - 3;
 
     // instantiate other variables
     List<int> triangleList = new List<int>();
@@ -110,7 +169,7 @@ public class TileMap : MonoBehaviour
       normalList.Add(Vector3.up);
     }
     Mesh mesh = new Mesh();
-    mesh.vertices = vertexList.ToArray();
+    mesh.vertices = vertices.ToArray();
     mesh.triangles = triangleList.ToArray();
     mesh.uv = uvList.ToArray();
     mesh.normals = normalList.ToArray();
@@ -120,67 +179,4 @@ public class TileMap : MonoBehaviour
     mesh_collider.sharedMesh = mesh;
   }
 
-  public void BuildMesh(Vector2 corner, float[,] mat)
-  {
-    mapX = mat.GetLength(0);
-    mapZ = mat.GetLength(1);
-
-    int numTiles = mapX * mapZ;
-    int numTris = numTiles * 2;
-
-    int vSize_x = mapX + 1;
-    int vSize_z = mapZ + 1;
-    int numVerts = vSize_x * vSize_z;
-
-    // generate mesh data
-    Vector3[] vertices = new Vector3[numVerts];
-    Vector3[] normals = new Vector3[numVerts];
-    Vector2[] uv = new Vector2[numVerts];
-
-    int[] triangles = new int[numTris * 3];
-
-    int x, z;
-    for (z = 0; z < vSize_z; z++) {
-      for (x = 0; x < vSize_x; x++) {
-        float h;
-        if (z >= mapZ && x >= mapX) {
-          h = mat[x - 1, z - 1];
-        } else if (z >= mapZ) {
-          h = mat[x, z - 1];
-        } else if (x >= mapX) {
-          h = mat[x - 1, z];
-        } else {
-          h = mat[x, z];
-        }
-        vertices[z * vSize_x + x] = new Vector3(corner.x + x * tileSize, h + .1f, corner.y + z * tileSize);
-        normals[z * vSize_x + x] = Vector3.up;
-        uv[z * vSize_x + x] = new Vector2((float)x / vSize_x, (float)z / vSize_z);
-      }
-    }
-
-    for (z = 0; z < mapZ; z++) {
-      for (x = 0; x < mapX; x++) {
-        int squareIndex = z * mapX + x;
-        int triOffset = squareIndex * 6;
-
-        triangles[triOffset + 0] = z * vSize_x + x + 0;
-        triangles[triOffset + 1] = z * vSize_x + x + vSize_x + 0;
-        triangles[triOffset + 2] = z * vSize_x + x + vSize_x + 1;
-
-        triangles[triOffset + 3] = z * vSize_x + x + 0;
-        triangles[triOffset + 4] = z * vSize_x + x + vSize_x + 1;
-        triangles[triOffset + 5] = z * vSize_x + x + 1;
-      }
-    }
-
-    // create a new mesh and populate with data
-    Mesh mesh = new Mesh();
-    mesh.vertices = vertices;
-    mesh.triangles = triangles;
-    mesh.normals = normals;
-    mesh.uv = uv;
-
-    // assign our mesh to our filter/renderer
-    mesh_filter.mesh = mesh;
-  }
 }

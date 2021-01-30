@@ -30,9 +30,12 @@ public class TileGenerator : MonoBehaviour
   // viewables
   private bool viewTiles;
   private bool viewBorders;
+  private bool viewDiscomfort;
+  private TileMap tilemap;
   private bool viewNeighborBorders;
   public void ViewTiles(bool show) { viewTiles = show; }
   public void ViewBorders(bool show) { viewBorders = show; }
+  public void ViewDiscomfort(bool show) { viewDiscomfort = show; }
   public void ViewNeighbors(bool show) { viewNeighborBorders = show; }
   public void ViewTileIndex(string i)
   {
@@ -71,6 +74,12 @@ public class TileGenerator : MonoBehaviour
           );
         }
       }
+    }
+
+    if (viewDiscomfort && Tiles.Count > tileIndex && tileIndex >= 0) {
+      if (tilemap == null) { tilemap = TileMap.Build(); }
+      tilemap.BuildTexture(TextureGenerator.TextureFromMatrix(g, Color.clear, Color.red));
+      tilemap.BuildMesh(h);
     }
 
 
