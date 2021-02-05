@@ -87,13 +87,13 @@ public static class FileUtility
   public static float[,] LoadCsvIntoFloatMatrix(string fullPath)
   {
     if (!File.Exists(fullPath)) {
-      Debug.LogError($"FileUtility.LoadCsvIntoMatrix - path\n\t{fullPath} \ndoes not exist! Returning empty.");
+      Debug.LogError($"FileUtility.LoadCsvIntoMatrix path does not exist! Returning empty\n\t{fullPath}");
       return new float[0, 0];
     }
 
     var readfile = File.ReadAllLines(fullPath);
     if (readfile.Length == 0) {
-      Debug.LogError($"FileUtility.LoadCsvIntoMatrix - path\n\t{fullPath} \nis mepty! Returning empty.");
+      Debug.LogError($"FileUtility.LoadCsvIntoMatrix path is mepty! Returning empty\n\t{fullPath}");
       return new float[0, 0];
     }
 
@@ -125,8 +125,7 @@ public static class FileUtility
     if (!Directory.Exists(path)) {
       try {
         Directory.CreateDirectory(path);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Debug.LogError("Save Texture: Could not create path: " + path + "\n" + e);
       }
     }

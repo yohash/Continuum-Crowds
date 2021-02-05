@@ -19,7 +19,7 @@ public class CCTester : MonoBehaviour
 
   public TextMeshProUGUI LoadTimeText;
 
-  public Button SolveButton;
+  public Toggle SolveToggle;
 
   [Header("Public refs")]
   public NavSystem NavSystem;
@@ -30,6 +30,10 @@ public class CCTester : MonoBehaviour
 
   [SerializeField] private MapTile currentTile;
   [SerializeField] private Border currentBorder;
+
+  [SerializeField] private bool solve;
+  public void SetSolve(bool solve) { this.solve = solve; }
+  private bool solutionProcessing = false;
 
   private bool tileSolutionAvailable;
   private CCEikonalSolver solution;
@@ -59,6 +63,13 @@ public class CCTester : MonoBehaviour
   {
     if (currentBorder != null) {
       TileGenerator.DrawBorder(currentBorder, Color.green);
+    }
+
+    SolveToggle.interactable = currentTile != null && currentBorder != null;
+    if (solve) {
+      if (!solutionProcessing) {
+        Solve();
+      }
     }
 
     if (tileSolutionAvailable) {
@@ -120,11 +131,16 @@ public class CCTester : MonoBehaviour
   // ***************************************************************************
   private void solveTileCcAtBorder(MapTile m, Border b)
   {
+    solutionProcessing = true;
+    stopwatch.Reset();
     stopwatch.Start();
     NavSystem.SolveCCforTileWithCallback(
         m,
         b.GetLocations().ToList(),
-        (callback) => { tileSolution = callback; }
+        (callback) => { 
+          tileSolution = callback;
+          solutionProcessing = false;
+        }
     );
     stopwatch.Stop();
     LoadTimeText.text = Math.Round(stopwatch.Elapsed.TotalSeconds, 3).ToString();

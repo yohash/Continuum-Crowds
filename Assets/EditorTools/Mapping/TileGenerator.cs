@@ -85,7 +85,6 @@ public class TileGenerator : MonoBehaviour
       }
     }
 
-
     if (viewBorders && Tiles.Count > tileIndex && tileIndex >= 0) {
       var tile = Tiles[tileIndex];
 

@@ -22,6 +22,6 @@ public class Clicker : MonoBehaviour
 
     handle.ContinuumCrowdsButton.onClick.Invoke();
     var cctester = CCTester.Instant;
-    cctester.SolveButton.onClick.Invoke();
+    //cctester.SolveButton.onClick.Invoke();
   }
 }
