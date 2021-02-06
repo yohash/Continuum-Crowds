@@ -1,33 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-///  An example of the use case from OVerlord, to make a tilemap
-///  that conformed to terrain and would display a texture
-//private void setTileMapToMatrix(Vector2 baseCorner, Vector2[,] mat)
-//{
-//  float[,] map = NavSystem.S.GetRangeOfHeightData(baseCorner, new Vector2(mat.GetLength(0), mat.GetLength(1)));
-//  TileMap tm.BuildMesh(Vector2.zero, map);
-
-//  Texture2D hmap = new Texture2D(map.GetLength(0), map.GetLength(1));
-
-//  float mm = vect2MatrixMax(mat);
-//  if (mm == 0f) { mm = 1f; }
-
-//  for (int n = 0; n < map.GetLength(0); n++) {
-//    for (int m = 0; m < map.GetLength(1); m++) {
-//      Color c = new Color(((mat[n, m].x) / mm) / 2f + 0.5f, 0f, ((mat[n, m].y) / mm) / 2f + 0.5f, 0.8f);
-//      hmap.SetPixel(n, m, c);
-//    }
-//  }
-//  hmap.Apply();
-//  hmap.filterMode = FilterMode.Point;
-//  tm.BuildTexture(hmap);
-//  tm.transform.position = new Vector3(baseCorner.x, 0f, baseCorner.y);
-//  tm.gameObject.SetActive(true);
-//}
-
-
-public class TileMap : MonoBehaviour
+public class TileMap
 {
   [SerializeField] private MeshFilter mesh_filter;
   [SerializeField] private MeshRenderer mesh_renderer;
@@ -35,19 +9,27 @@ public class TileMap : MonoBehaviour
 
   [SerializeField] private float tileSize = 1f;
 
-  public static TileMap Build()
-  {
-    return new GameObject($"TileMap", typeof(MeshFilter), typeof(MeshRenderer)).AddComponent<TileMap>();
+  [SerializeField] private GameObject tileMap;
+
+  private Vector3 _location;
+  public Vector3 Location {
+    get { return _location; }
+    set {
+      _location = value;
+      tileMap.transform.position = value;
+    }
   }
 
   // ***************************************************************************
-  //  MONOBEHAVIOURS
+  //    Tilemap
   // ***************************************************************************
-  private void Awake()
+  public TileMap()
   {
-    mesh_filter = gameObject.GetOrAddComponent<MeshFilter>();
-    mesh_renderer = gameObject.GetOrAddComponent<MeshRenderer>();
-    mesh_collider = gameObject.GetOrAddComponent<MeshCollider>();
+    tileMap = new GameObject($"TileMap", typeof(MeshFilter), typeof(MeshRenderer));
+
+    mesh_filter = tileMap.GetOrAddComponent<MeshFilter>();
+    mesh_renderer = tileMap.GetOrAddComponent<MeshRenderer>();
+    mesh_collider = tileMap.GetOrAddComponent<MeshCollider>();
 
     Color c = Color.white;
     c.a = 0.7f;
@@ -68,15 +50,31 @@ public class TileMap : MonoBehaviour
     mesh_renderer.sharedMaterials[0] = mat;
   }
 
-  // ***************************************************************************
-  //  PUBLIC ACCESSORS
-  // ***************************************************************************
-  public void BuildTexture(Texture2D tex)
+  ~TileMap()
   {
-    mesh_renderer.sharedMaterials[0].mainTexture = tex;
+    Object.Destroy(tileMap);
   }
 
-  public void BuildMesh(float[,] mat)
+  // ***************************************************************************
+  //    Public
+  // ***************************************************************************
+  public TileMap Off() { tileMap.SetActive(false); return this; }
+  public TileMap On() { tileMap.SetActive(true); return this; }
+
+  public TileMap BuildTileMap(Texture2D texture, float[,] heightMap)
+  {
+    BuildTexture(texture);
+    BuildMesh(heightMap);
+    return this;
+  }
+
+  public TileMap BuildTexture(Texture2D tex)
+  {
+    mesh_renderer.sharedMaterials[0].mainTexture = tex;
+    return this;
+  }
+
+  public TileMap BuildMesh(float[,] mat)
   {
     var xLength = mat.GetLength(0);
     var zLength = mat.GetLength(1);
@@ -138,6 +136,7 @@ public class TileMap : MonoBehaviour
 
     // assign our mesh to our filter/renderer
     mesh_filter.mesh = mesh;
+    return this;
   }
 
   public void BuildCircle(List<Vector3> vertices)

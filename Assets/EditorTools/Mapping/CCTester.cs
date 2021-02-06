@@ -25,27 +25,31 @@ public class CCTester : MonoBehaviour
   public NavSystem NavSystem;
   public List<MapTile> Tiles;
 
+  // vars to track the current solution MapTile and Border
   [SerializeField] private int currentTileN;
   [SerializeField] private int currentBorderN;
-
   [SerializeField] private MapTile currentTile;
   [SerializeField] private Border currentBorder;
 
+  // TileMap visualization tool handler
+  private TileMap tilemap;
+
+  // vars to track CC solution solving process
   [SerializeField] private bool solve;
   public void SetSolve(bool solve) { this.solve = solve; }
   private bool solutionProcessing = false;
 
+  // vars to track CC solution itself
   private bool tileSolutionAvailable;
-  private CCEikonalSolver solution;
-
   private Func<Vector2, Vector2> tileSolution;
 
+  // track speed of solution
   private Stopwatch stopwatch;
-
+  // store path requested by the user
   private List<Vector3> testPath;
 
   // ***************************************************************************
-  //  Monobehaviours
+  //    Monobehaviours
   // ***************************************************************************
   private void Awake()
   {
@@ -56,6 +60,9 @@ public class CCTester : MonoBehaviour
     Tiles = TileGenerator.Instant.Tiles;
 
     TilesTotalText.text = Tiles.Count.ToString();
+
+    tilemap = new TileMap();
+
     TileInputChanged("0");
   }
 
@@ -93,7 +100,7 @@ public class CCTester : MonoBehaviour
   }
 
   // ***************************************************************************
-  //  INTERFACE
+  //    Public
   // ***************************************************************************
   public void TileInputChanged(string s)
   {
@@ -127,7 +134,7 @@ public class CCTester : MonoBehaviour
   }
 
   // ***************************************************************************
-  //  Private methods
+  //    Private
   // ***************************************************************************
   private void solveTileCcAtBorder(MapTile m, Border b)
   {
@@ -137,7 +144,7 @@ public class CCTester : MonoBehaviour
     NavSystem.SolveCCforTileWithCallback(
         m,
         b.GetLocations().ToList(),
-        (callback) => { 
+        (callback) => {
           tileSolution = callback;
           solutionProcessing = false;
         }
