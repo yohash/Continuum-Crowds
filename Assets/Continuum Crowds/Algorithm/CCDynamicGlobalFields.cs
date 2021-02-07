@@ -131,6 +131,19 @@ public class CCDynamicGlobalFields
     return _tiles[corner];
   }
 
+  private void purgeUnits()
+  {
+    var remove = new List<CC_Unit>();
+    for (int i = 0; i < _units.Count; i++) {
+      if (_units[i] == null) {
+        remove.Add(_units[i]);
+      }
+    }
+    for (int i = 0; i < remove.Count; i++) {
+      RemoveCCUnit(remove[i]);
+    }
+  }
+
   // ******************************************************************************************
   // 							FIELD SOLVING FUNCTIONS
   // ******************************************************************************************

@@ -22,11 +22,11 @@ public class CC_Unit
   // local vars
   private float[,] baseprint;
 
-  public CC_Unit(Func<Vector2> getVelocity, Func<Vector2> getRotation, Func<Vector2> getPosition, Vector2 unitDimensions)
+  public CC_Unit(Func<Vector2> getVelocity, Func<Vector2> getRotation, Func<Vector2> getPosition, Func<Vector2> unitDimensions)
   {
-    sizeX = (int)Math.Round(unitDimensions.x);
-    sizeY = (int)Math.Round(unitDimensions.y);
-    // verify 
+    sizeX = (int)Math.Round(unitDimensions().x);
+    sizeY = (int)Math.Round(unitDimensions().y);
+    // verify
     if (sizeX < 1 || sizeY < 1) {
       Debug.LogWarning("CC_Unit created with unit size dimension <1");
     }
@@ -57,7 +57,7 @@ public class CC_Unit
 
   private float[,] computeBaseFootprint()
   {
-    // initialize 'positions' with the standard grid and dimensions provided 
+    // initialize 'positions' with the standard grid and dimensions provided
     int buffer = (int)Math.Ceiling(fadeout);
     int cols = sizeX + buffer * 2;
     int rows = sizeY + buffer * 2;

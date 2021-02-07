@@ -32,6 +32,11 @@ public class NavSystem
     TileSize = tiles[0].TileSize;
   }
 
+  public void TrackUnit(CC_Unit ccu)
+  {
+    ccFields.AddNewCCUnit(ccu);
+  }
+
   /// <summary>
   /// Provided start and end locations, this will plot an A* path
   /// </summary>

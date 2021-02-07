@@ -1,14 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public static class VectorExtensions
 {
-  public static Vector3 ToXZ(this Vector2 v)
-  {
-    return new Vector3(v.x, 0, v.y);
-  }
-
   public static Vector3 ToXZ(this Vector2Int v)
   {
     return new Vector3(v.x, 0, v.y);
@@ -36,9 +30,13 @@ public static class VectorExtensions
   {
     return new Vector3(v.x, v.y, z);
   }
-  public static Vector2 XYZtoXY(this Vector3 v)
+  public static Vector2 XYZtoXZ(this Vector3 v)
   {
     return new Vector2(v.x, v.z);
+  }
+  public static Vector2 XYZtoXY(this Vector3 v)
+  {
+    return new Vector2(v.x, v.y);
   }
 
   public static Vector2Int Average(this List<Vector2Int> v)

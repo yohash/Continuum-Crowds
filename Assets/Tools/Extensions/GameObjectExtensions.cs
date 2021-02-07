@@ -11,4 +11,11 @@ public static class GameObjectExtensions
     component = go.AddComponent<T>();
     return component;
   }
+
+  public static void SoftSetActive(this GameObject go, bool activeSelf)
+  {
+    if (go && go.activeSelf != activeSelf) {
+      go.SetActive(activeSelf);
+    }
+  }
 }

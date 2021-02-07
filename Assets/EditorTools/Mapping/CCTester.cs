@@ -19,24 +19,38 @@ public class CCTester : MonoBehaviour
 
   public TextMeshProUGUI LoadTimeText;
 
+  // toggles and their bools
+  public void SetSolve(bool value) { solve = value; }
+  [SerializeField] private bool solve;
   public Toggle SolveToggle;
 
-  [Header("Public refs")]
+  public void ShowUnit(bool value) { unit = value; }
+  [SerializeField] private bool unit;
+  public Toggle UnitToggle;
+
+  public void ShowDensity(bool value) { density = value; }
+  [SerializeField] private bool density;
+  public Toggle DensityToggle;
+
+  public void ShowVelocity(bool value) { velocity = value; }
+  [SerializeField] private bool velocity;
+  public Toggle VelocityToggle;
+
   public NavSystem NavSystem;
   public List<MapTile> Tiles;
 
+  [Header("Public refs")]
   // vars to track the current solution MapTile and Border
   [SerializeField] private int currentTileN;
   [SerializeField] private int currentBorderN;
   [SerializeField] private MapTile currentTile;
   [SerializeField] private Border currentBorder;
 
-  // TileMap visualization tool handler
+  // visualization tool handlers
   private TileMap tilemap;
+  private GameObject TestUnit;
 
   // vars to track CC solution solving process
-  [SerializeField] private bool solve;
-  public void SetSolve(bool solve) { this.solve = solve; }
   private bool solutionProcessing = false;
 
   // vars to track CC solution itself
@@ -96,6 +110,24 @@ public class CCTester : MonoBehaviour
       if (testPath.Count > 0) {
         drawTestPath();
       }
+    }
+
+    if (unit) {
+      // create a test unit
+      if (TestUnit == null) {
+        TestUnit = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        TestUnit.AddComponent<CCTestUnit>();
+        NavSystem.TrackUnit(new CC_Unit(
+            () => TestUnit.GetComponent<CCTestUnit>().velocity,
+            () => TestUnit.transform.eulerAngles.XYZtoXZ(),
+            () => TestUnit.transform.position.XYZtoXZ(),
+            () => TestUnit.GetComponent<CCTestUnit>().dimensions
+        ));
+      }
+      TestUnit.SoftSetActive(true);
+    } else {
+      // disable the test unit
+      TestUnit.SoftSetActive(false);
     }
   }
 
@@ -197,7 +229,7 @@ public class CCTester : MonoBehaviour
         + currentTile.Corner.ToVector3()
         + Vector3.up * (currentTile.Height(next.x, next.z) + .2f));
       // get dir at location NEXT
-      dir = tileSolution(next.XYZtoXY());
+      dir = tileSolution(next.XYZtoXZ());
       // normalize dir if not zero
       if (dir != Vector2.zero) {
         dir.Normalize();
