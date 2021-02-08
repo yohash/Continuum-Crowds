@@ -32,6 +32,11 @@ public class NavSystem
     TileSize = tiles[0].TileSize;
   }
 
+  public CC_Tile GetCCTile(Location location)
+  {
+    return ccFields.GetCCTile(location);
+  }
+
   public void TrackUnit(CC_Unit ccu)
   {
     ccFields.AddNewCCUnit(ccu);

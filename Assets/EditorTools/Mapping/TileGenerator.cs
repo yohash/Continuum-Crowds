@@ -53,7 +53,7 @@ public class TileGenerator : MonoBehaviour
   private void Awake()
   {
     Instant = this;
-    tilemap = new TileMap();
+    tilemap = new TileMap("TileGenerator TileMap");
   }
 
   private void Update()

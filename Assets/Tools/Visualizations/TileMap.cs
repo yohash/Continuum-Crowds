@@ -23,9 +23,10 @@ public class TileMap
   // ***************************************************************************
   //    Tilemap
   // ***************************************************************************
-  public TileMap()
+  public TileMap(string name)
   {
     tileMap = new GameObject($"TileMap", typeof(MeshFilter), typeof(MeshRenderer));
+    tileMap.name = name;
 
     mesh_filter = tileMap.GetOrAddComponent<MeshFilter>();
     mesh_renderer = tileMap.GetOrAddComponent<MeshRenderer>();

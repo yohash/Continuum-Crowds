@@ -75,7 +75,7 @@ public class CCTester : MonoBehaviour
 
     TilesTotalText.text = Tiles.Count.ToString();
 
-    tilemap = new TileMap();
+    tilemap = new TileMap("CCTester Tilemap");
 
     TileInputChanged("0");
   }
@@ -128,6 +128,12 @@ public class CCTester : MonoBehaviour
     } else {
       // disable the test unit
       TestUnit.SoftSetActive(false);
+    }
+
+    if (density) {
+      var tile = NavSystem.GetCCTile(currentTile.Corner);
+      tilemap.BuildTexture(TextureGenerator.TextureFromMatrix(tile.rho, Color.clear, Color.blue));
+      tilemap.BuildMesh(tile.h);
     }
   }
 
