@@ -131,6 +131,7 @@ public class CCTester : MonoBehaviour
     }
 
     if (density) {
+      NavSystem.ForceTileUpdate();
       var tile = NavSystem.GetCCTile(currentTile.Corner);
       tilemap.BuildTexture(TextureGenerator.TextureFromMatrix(tile.rho, Color.clear, Color.blue));
       tilemap.BuildMesh(tile.h);
