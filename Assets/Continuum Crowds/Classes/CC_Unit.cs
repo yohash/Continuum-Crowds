@@ -7,10 +7,6 @@ public class CC_Unit
   // class vars
   private static readonly float fadeout = 2.5f;
 
-  // store unit size
-  public int sizeX;
-  public int sizeY;
-
   public Vector2 GetVelocity() { return getVelocity(); }
   public Vector2 GetPosition() { return getPosition(); }
 
@@ -18,22 +14,21 @@ public class CC_Unit
   // in xz euler angles
   private Func<Vector2> getRotation;
   private Func<Vector2> getPosition;
-
+  private Func<Vector2> getSize;
   // local vars
   private float[,] baseprint;
 
+  private Vector2Int size;
+  public int SizeX { get { return size.x; } }
+  public int SizeY { get { return size.y; } }
+
   public CC_Unit(Func<Vector2> getVelocity, Func<Vector2> getRotation, Func<Vector2> getPosition, Func<Vector2> unitDimensions)
   {
-    sizeX = (int)Math.Round(unitDimensions().x);
-    sizeY = (int)Math.Round(unitDimensions().y);
+    getSize = unitDimensions;
     // verify
-    if (sizeX < 1 || sizeY < 1) {
+    if (getSize().x < 1 || getSize().y < 1) {
       Debug.LogWarning("CC_Unit created with unit size dimension <1");
     }
-
-    // ensure we're clamped above 1
-    sizeX = Math.Max(sizeX, 1);
-    sizeY = Math.Max(sizeY, 1);
 
     this.getVelocity = getVelocity;
     this.getRotation = getRotation;
@@ -51,12 +46,23 @@ public class CC_Unit
     float xOffset = getPosition().x.Modulus(1f);
     float yOffset = getPosition().y.Modulus(1f);
 
+    // TEMPORARY
+    baseprint = computeBaseFootprint();
+
     // TODO: integrate rotation
     return baseprint.BilinearInterpolation(xOffset, yOffset);
   }
 
   private float[,] computeBaseFootprint()
   {
+    var sizeX = (int)Math.Round(getSize().x);
+    var sizeY = (int)Math.Round(getSize().y);
+    // ensure we're clamped above 1
+    sizeX = Math.Max(sizeX, 1);
+    sizeY = Math.Max(sizeY, 1);
+    // cache
+    size = new Vector2Int(sizeX, sizeY);
+
     // initialize 'positions' with the standard grid and dimensions provided
     int buffer = (int)Math.Ceiling(fadeout);
     int cols = sizeX + buffer * 2;
@@ -76,13 +82,16 @@ public class CC_Unit
         if (x < buffer || x > sizeX + buffer ||
             y < buffer || y > sizeY + buffer) {
           // get x distance
-          float xVar = x < buffer ? (fadeout - x) / fadeout :
-                       x > buffer + sizeX ? (sizeX + fadeout - x) / (sizeX + fadeout) :
+          float xVar = x < buffer ? x / fadeout :
+                       x > buffer + sizeX ? (cols - x) / cols :
                        0;
           // get y distance
-          float yVar = y < buffer ? (fadeout - y) / fadeout :
-                       y > buffer + sizeY ? (sizeY + fadeout - y) / (sizeY + fadeout) :
+          float yVar = y < buffer ? y / fadeout :
+                       y > buffer + sizeY ? (rows - y) / rows :
                        0;
+          // clamp above 0
+          xVar = xVar < 0 ? 0 : xVar;
+          yVar = yVar < 0 ? 0 : yVar;
           // linearly fade to the nearest
           footprint[x, y] = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
         } else {

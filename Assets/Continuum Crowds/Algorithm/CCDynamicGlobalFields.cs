@@ -154,14 +154,14 @@ public class CCDynamicGlobalFields
     var anchor = ccu.GetPosition();
 
     // cache the x - offset
-    int xOffset = ccu.sizeX % 2 == 0 ?
+    int xOffset = ccu.SizeX % 2 == 0 ?
         // if even, use Math.Round
         (int)Math.Round(anchor.x) :
         // is odd, use Math.Floor
         (int)Math.Floor(anchor.x);
 
     // cache y - offset
-    int yOffset = ccu.sizeY % 2 == 0 ?
+    int yOffset = ccu.SizeY % 2 == 0 ?
         // if even, use Math.Round
         (int)Math.Round(anchor.y) :
         // is odd, use Math.Floor
