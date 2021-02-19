@@ -101,34 +101,21 @@ public class CC_Unit
         }
         // anything else, we're in a corner, drop off radially
         else {
-
-          float xVar = x < buffer ? x + 1 : cols - x;
-          float yVar = y < buffer ? y + 1 : rows - y;
-
+          // determine how far x and y are away from closest corner
+          float xVar = x < buffer ? buffer - x : buffer + x + 1 - cols;
+          float yVar = y < buffer ? buffer - y : buffer + y + 1 - rows;
+          // use distance formula to determine distance from corner
           float dd = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
-          // scale
-          if (dd > buffer) dd = buffer;
+
+          // invert the distance by buffer+1
+          dd = buffer + 1 - dd;
+          if (dd < 0) dd = 0;
+          // scale and record
           footprint[x, y] = dd / (buffer + 1);
-
-
-          //// determine the corner from which we measure distance
-          //int cornerY = y < buffer ? buffer : buffer + sizeY - 1;
-          //int cornerX = x < buffer ? buffer : buffer + sizeX - 1;
-          //// compute delta from said corner
-          //float dx = Math.Abs(cornerX - x);
-          //float dy = Math.Abs(cornerY - y);
-
-          //// use distance formula
-          //float dist = (float)Math.Sqrt(dx * dx + dy * dy);
-          //// invert by value of buffer
-          //float value = buffer - dist;
-          //// clamp above 0
-          //if (value < 0) value = 0;
-          //footprint[x, y] = value / (buffer);
         }
       }
     }
-    Debug.Log(footprint.ToString<float>("{0:.00}"));
+
     return footprint;
   }
 }
