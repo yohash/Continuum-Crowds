@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 using System;
 
-[System.Serializable]
 public class CC_Unit
 {
   // class vars
-  private static readonly float fadeout = 2.5f;
+  private static readonly float fadeout = 4f;
 
   public Vector2 GetVelocity() { return getVelocity(); }
   public Vector2 GetPosition() { return getPosition(); }
@@ -71,6 +70,9 @@ public class CC_Unit
     // init the footprint
     var footprint = new float[cols, rows];
 
+    bool xInside(int x) { return x >= buffer && x < buffer + sizeX; }
+    bool yInside(int y) { return y >= buffer && y < buffer + sizeY; }
+
     for (int x = 0; x < cols; x++) {
       for (int y = 0; y < rows; y++) {
         // check for the different zones
@@ -79,28 +81,45 @@ public class CC_Unit
         //      where footprint drops off linearly
         // (3) one of the 4 corners, where footprint drops off radially
 
-        if (x < buffer || x > sizeX + buffer ||
-            y < buffer || y > sizeY + buffer) {
-          // get x distance
-          float xVar = x < buffer ? x / fadeout :
-                       x > buffer + sizeX ? (cols - x) / cols :
-                       0;
-          // get y distance
-          float yVar = y < buffer ? y / fadeout :
-                       y > buffer + sizeY ? (rows - y) / rows :
-                       0;
-          // clamp above 0
-          xVar = xVar < 0 ? 0 : xVar;
-          yVar = yVar < 0 ? 0 : yVar;
-          // linearly fade to the nearest
-          footprint[x, y] = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
-        } else {
+        // if we're inside the footprint
+        if (xInside(x) && yInside(y)) {
           // within the main footprint range, everything is 1
           footprint[x, y] = 1;
         }
+        // if we're outside the x range, but inside y
+        else if (!xInside(x) && yInside(y)) {
+          // footprint drops off linearly over x
+          // get x distance
+          float xVar = x < buffer ? x : cols - x - 1;
+          footprint[x, y] = xVar / buffer;
+        }
+        // if we're outside the y range, but inside x
+        else if (xInside(x) && !yInside(y)) {
+          // footprint drops off linearly over y
+          float yVar = y < buffer ? y : rows - y - 1;
+          footprint[x, y] = yVar / buffer;
+        }
+        // anything else, we're in a corner, drop off radially
+        else {
+          // determine the corner from which we measure distance
+          int cornerY = y < buffer ? buffer : buffer + sizeY - 1;
+          int cornerX = x < buffer ? buffer : buffer + sizeX - 1;
+          // compute delta from said corner
+          float dx = Math.Abs(cornerX - x);
+          float dy = Math.Abs(cornerY - y);
+
+          // use distance formula
+          float dist = (float)Math.Sqrt(dx * dx + dy * dy);
+          // invert by value of buffer
+          float value = buffer - dist;
+          // clamp above 0
+          if (value < 0) value = 0;
+
+          footprint[x, y] = value / buffer;
+        }
       }
     }
-
+    Debug.Log(footprint.ToString<float>("{0:.00}"));
     return footprint;
   }
 }

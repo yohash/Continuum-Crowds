@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 public static class MatrixExtensions
 {
@@ -176,12 +177,12 @@ public static class MatrixExtensions
     return y;
   }
 
-  public static string ToString<T>(this T[,] matrix)
+  public static string ToString<T>(this T[,] matrix, string format = "")
   {
     string s = "";
     for (int i = 0; i < matrix.GetLength(0); i++) {
       for (int k = 0; k < matrix.GetLength(1); k++) {
-        s += matrix[i, k].ToString() + ", ";
+        s += string.Format(format, matrix[i, k]) + ",\t";
       }
       s += "\n";
     }
