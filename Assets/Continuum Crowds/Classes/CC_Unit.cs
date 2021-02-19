@@ -45,7 +45,8 @@ public class CC_Unit
     float xOffset = getPosition().x.Modulus(1f);
     float yOffset = getPosition().y.Modulus(1f);
 
-    // TEMPORARY
+    // TEMPORARY - dont re-compute each time footprint is sought
+    // performing this action now for the sake of debugging
     baseprint = computeBaseFootprint();
 
     // TODO: integrate rotation
