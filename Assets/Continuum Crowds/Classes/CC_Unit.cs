@@ -4,7 +4,7 @@ using System;
 public class CC_Unit
 {
   // class vars
-  private static readonly float fadeout = 4f;
+  private static readonly float fadeout = 3f;
 
   public Vector2 GetVelocity() { return getVelocity(); }
   public Vector2 GetPosition() { return getPosition(); }
@@ -90,32 +90,41 @@ public class CC_Unit
         else if (!xInside(x) && yInside(y)) {
           // footprint drops off linearly over x
           // get x distance
-          float xVar = x < buffer ? x : cols - x - 1;
-          footprint[x, y] = xVar / buffer;
+          float xVar = x < buffer ? x + 1 : cols - x;
+          footprint[x, y] = xVar / (buffer + 1);
         }
         // if we're outside the y range, but inside x
         else if (xInside(x) && !yInside(y)) {
           // footprint drops off linearly over y
-          float yVar = y < buffer ? y : rows - y - 1;
-          footprint[x, y] = yVar / buffer;
+          float yVar = y < buffer ? y + 1 : rows - y;
+          footprint[x, y] = yVar / (buffer + 1);
         }
         // anything else, we're in a corner, drop off radially
         else {
-          // determine the corner from which we measure distance
-          int cornerY = y < buffer ? buffer : buffer + sizeY - 1;
-          int cornerX = x < buffer ? buffer : buffer + sizeX - 1;
-          // compute delta from said corner
-          float dx = Math.Abs(cornerX - x);
-          float dy = Math.Abs(cornerY - y);
 
-          // use distance formula
-          float dist = (float)Math.Sqrt(dx * dx + dy * dy);
-          // invert by value of buffer
-          float value = buffer - dist;
-          // clamp above 0
-          if (value < 0) value = 0;
+          float xVar = x < buffer ? x + 1 : cols - x;
+          float yVar = y < buffer ? y + 1 : rows - y;
 
-          footprint[x, y] = value / buffer;
+          float dd = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
+          // scale
+          if (dd > buffer) dd = buffer;
+          footprint[x, y] = dd / (buffer + 1);
+
+
+          //// determine the corner from which we measure distance
+          //int cornerY = y < buffer ? buffer : buffer + sizeY - 1;
+          //int cornerX = x < buffer ? buffer : buffer + sizeX - 1;
+          //// compute delta from said corner
+          //float dx = Math.Abs(cornerX - x);
+          //float dy = Math.Abs(cornerY - y);
+
+          //// use distance formula
+          //float dist = (float)Math.Sqrt(dx * dx + dy * dy);
+          //// invert by value of buffer
+          //float value = buffer - dist;
+          //// clamp above 0
+          //if (value < 0) value = 0;
+          //footprint[x, y] = value / (buffer);
         }
       }
     }
