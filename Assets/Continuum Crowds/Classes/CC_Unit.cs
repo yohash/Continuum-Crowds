@@ -3,9 +3,6 @@ using System;
 
 public class CC_Unit
 {
-  // class vars
-  private static readonly float fadeout = 3f;
-
   public Vector2 GetVelocity() { return getVelocity(); }
   public Vector2 GetPosition() { return getPosition(); }
 
@@ -14,6 +11,7 @@ public class CC_Unit
   private Func<Vector2> getRotation;
   private Func<Vector2> getPosition;
   private Func<Vector2> getSize;
+  private Func<float> getFalloff;
   // local vars
   private float[,] baseprint;
 
@@ -21,7 +19,13 @@ public class CC_Unit
   public int SizeX { get { return size.x; } }
   public int SizeY { get { return size.y; } }
 
-  public CC_Unit(Func<Vector2> getVelocity, Func<Vector2> getRotation, Func<Vector2> getPosition, Func<Vector2> unitDimensions)
+  public CC_Unit(
+      Func<Vector2> getVelocity, 
+      Func<Vector2> getRotation, 
+      Func<Vector2> getPosition,
+      Func<Vector2> unitDimensions,
+      Func<float> getFalloff
+  )
   {
     getSize = unitDimensions;
     // verify
@@ -32,8 +36,10 @@ public class CC_Unit
     this.getVelocity = getVelocity;
     this.getRotation = getRotation;
     this.getPosition = getPosition;
+    this.getFalloff = getFalloff;
 
     baseprint = computeBaseFootprint();
+    setLocalSize();
   }
 
   public float[,] GetFootprint()
@@ -53,7 +59,7 @@ public class CC_Unit
     return baseprint.BilinearInterpolation(xOffset, yOffset);
   }
 
-  private float[,] computeBaseFootprint()
+  private void setLocalSize()
   {
     var sizeX = (int)Math.Round(getSize().x);
     var sizeY = (int)Math.Round(getSize().y);
@@ -62,17 +68,25 @@ public class CC_Unit
     sizeY = Math.Max(sizeY, 1);
     // cache
     size = new Vector2Int(sizeX, sizeY);
+  }
+
+  private float[,] computeBaseFootprint()
+  {
+    // TODO: eliminate this when done debugging
+    // cache local references
+    setLocalSize();
+    var fadeout = getFalloff();
 
     // initialize 'positions' with the standard grid and dimensions provided
     int buffer = (int)Math.Ceiling(fadeout);
-    int cols = sizeX + buffer * 2;
-    int rows = sizeY + buffer * 2;
+    int cols = SizeX + buffer * 2;
+    int rows = SizeY + buffer * 2;
 
     // init the footprint
     var footprint = new float[cols, rows];
 
-    bool xInside(int x) { return x >= buffer && x < buffer + sizeX; }
-    bool yInside(int y) { return y >= buffer && y < buffer + sizeY; }
+    bool xInside(int x) { return x >= buffer && x < buffer + SizeX; }
+    bool yInside(int y) { return y >= buffer && y < buffer + SizeY; }
 
     for (int x = 0; x < cols; x++) {
       for (int y = 0; y < rows; y++) {

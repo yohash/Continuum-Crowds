@@ -39,6 +39,9 @@ public class CCTester : MonoBehaviour
   public NavSystem NavSystem;
   public List<MapTile> Tiles;
 
+  [Header("Visualizer constants ")]
+  public Color FlowFieldColor = Color.blue;
+
   [Header("Public refs")]
   // vars to track the current solution MapTile and Border
   [SerializeField] private int currentTileN;
@@ -121,7 +124,8 @@ public class CCTester : MonoBehaviour
             () => TestUnit.GetComponent<CCTestUnit>().velocity,
             () => TestUnit.transform.eulerAngles.XYZtoXZ(),
             () => TestUnit.transform.position.XYZtoXZ(),
-            () => TestUnit.GetComponent<CCTestUnit>().dimensions
+            () => TestUnit.GetComponent<CCTestUnit>().dimensions,
+            () => TestUnit.GetComponent<CCTestUnit>().falloff
         ));
       }
       TestUnit.SoftSetActive(true);
@@ -217,7 +221,7 @@ public class CCTester : MonoBehaviour
         var height = currentTile.Height(worldX, worldY);
         var start = new Vector3(worldX - vel.x / 2, height + .2f, worldY - vel.y / 2);
         var end = new Vector3(worldX + vel.x / 2, height + .2f, worldY + vel.y / 2);
-        UnityEngine.Debug.DrawLine(start, end, Color.cyan);
+        UnityEngine.Debug.DrawLine(start, end, FlowFieldColor);
       }
     }
   }

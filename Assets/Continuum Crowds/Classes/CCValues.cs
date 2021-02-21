@@ -21,12 +21,15 @@ public class CCValues : ScriptableObject
   //	 public static float g_weight = 0.5f;
   // **************************************************************************************************
   // everything above this must be clamped to 'unpassable' discomfort map
+  [Header("Max and Min slopes to scale topographical speed")]
   public float f_slopeMax = 1f;
   public float f_slopeMin = -1f;
 
+  [Header("Max and min densities to scale flow speed")]
   public float f_rhoMax = 2f;
   public float f_rhoMin = 0.6f;
 
+  [Header("Max and min speed field")]
   // set to some small positive number to clamp flow speed
   public float f_speedMin = 0f;
   // set this to 1 to automatically just receive normalized 'direction'
@@ -34,14 +37,19 @@ public class CCValues : ScriptableObject
   public float f_speedMax = 40f;
 
   // path length field weight
+  [Header("Weights: Path Length")]
   public float C_alpha = 1f;
   // time weight (inverse of speed)
+  [Header("Weights: Time (speed field inverse)")]
   public float C_beta = 1f;
   // discomfort weight
+  [Header("Weights: Discomofort")]
   public float C_gamma = 1f;
   // density weight
+  [Header("Weights: Density (Custom - may be removed)")]
   public float C_delta = 1f;
 
+  [Header("Weighted average for Eikonal solutions")]
   // Eikonal solver weighted average, max weight
   public float maxWeight = 2.5f;
   // Eikonal solver weighted average, min weight

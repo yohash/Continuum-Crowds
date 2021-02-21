@@ -382,11 +382,12 @@ public class CCDynamicGlobalFields
     if (g > 1) { g = 1; } else if (g < 0) { g = 0; }
 
     // compute the cost weighted by our coefficients
-    float cost = (CCValues.S.C_alpha * cct.f[tileX, tileY][d]
-                + CCValues.S.C_beta
-                + CCValues.S.C_gamma * g
-                /*+ CCValues.Instance.C_delta * rho*/)
-                    / cct.f[tileX, tileY][d];
+    var f = cct.f[tileX, tileY][d];
+    float cost = CCValues.S.C_alpha
+                + CCValues.S.C_beta * 1 / f
+                + CCValues.S.C_gamma * g / f
+                /*+ CCValues.Instance.C_delta * rho*/;
+                   
 
     return cost;
   }
