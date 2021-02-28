@@ -20,8 +20,8 @@ public class CC_Unit
   public int SizeY { get { return size.y; } }
 
   public CC_Unit(
-      Func<Vector2> getVelocity, 
-      Func<Vector2> getRotation, 
+      Func<Vector2> getVelocity,
+      Func<Vector2> getRotation,
       Func<Vector2> getPosition,
       Func<Vector2> unitDimensions,
       Func<float> getFalloff

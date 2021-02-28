@@ -101,7 +101,7 @@ public class CCDynamicGlobalFields
     // through the tiles and ONLY update the ones that have had their values changed
     foreach (CC_Tile cct in _tiles.Values) {
       //if (cct.UPDATE_TILE) {
-      // (3) 	now that the velocity field and density fields are implemented,
+      // (3) 	now that the velocity field and density fields are computed,
       // 		divide the velocity by density to get average velocity field
       computeAverageVelocityField(cct);
       // (4)	now that the average velocity field is computed, and the density
@@ -174,28 +174,33 @@ public class CCDynamicGlobalFields
       for (int y = 0; y < footprint.GetLength(1); y++) {
         // get the rho value
         float rho = footprint[x, y];
-        float rt = 0f;
+        // only perform storage functions if there is a density value
+        if (rho > 0) {
+          xIndex = x + xOffset;
+          yIndex = y + yOffset;
 
-        xIndex = x + xOffset;
-        yIndex = y + yOffset;
+          if (isPointValid(xIndex, yIndex)) {
+            // add rho to the in-place density
+            float rt = readDataFromPoint_rho(xIndex, yIndex);
+            writeDataToPoint_rho(xIndex, yIndex, rho + rt);
 
-        if (isPointValid(xIndex, yIndex)) {
-          rt = readDataFromPoint_rho(xIndex, yIndex);
-          writeDataToPoint_rho(xIndex, yIndex, rho + rt);
+            // compute velocity field with this density
+            var v = ccu.GetVelocity();
+            // only record velocity if exists
+            if (v.sqrMagnitude > 0) {
+              computeVelocityFieldPoint(xIndex, yIndex, ccu.GetVelocity(), rho);
+            }
+          }
         }
-        // compute velocity field with this density
-        computeVelocityFieldPoint(xIndex, yIndex, ccu.GetVelocity(), rt);
       }
     }
   }
 
   private void computeVelocityFieldPoint(int x, int y, Vector2 v, float rho)
   {
-    Vector2 vAve = readDataFromPoint_vAve(x, y);
-    if (isPointValid(x, y)) {
-      vAve += v * rho;
-      writeDataToPoint_vAve(x, y, vAve);
-    }
+    var vAve = readDataFromPoint_vAve(x, y);
+    vAve += v * rho;
+    writeDataToPoint_vAve(x, y, vAve);
   }
 
   // **********************************************************************
@@ -242,6 +247,7 @@ public class CCDynamicGlobalFields
   //			}
   //		}
   //	}
+
 
   // average velocity fields will just iterate over each tile, since information
   // doesnt 'bleed' into or out from nearby tiles
@@ -387,7 +393,7 @@ public class CCDynamicGlobalFields
                 + CCValues.S.C_beta * 1 / f
                 + CCValues.S.C_gamma * g / f
                 /*+ CCValues.Instance.C_delta * rho*/;
-                   
+
 
     return cost;
   }

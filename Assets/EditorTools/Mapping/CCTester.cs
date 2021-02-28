@@ -39,8 +39,9 @@ public class CCTester : MonoBehaviour
   public NavSystem NavSystem;
   public List<MapTile> Tiles;
 
-  [Header("Visualizer constants ")]
+  [Header("Visualizer constants")]
   public Color FlowFieldColor = Color.blue;
+  public Color VelocityFieldColor = Color.green;
 
   [Header("Public refs")]
   // vars to track the current solution MapTile and Border
@@ -140,6 +141,11 @@ public class CCTester : MonoBehaviour
       tilemap.BuildTexture(TextureGenerator.TextureFromMatrix(tile.rho, Color.clear, Color.blue));
       tilemap.BuildMesh(tile.h);
     }
+
+    if (velocity) {
+      NavSystem.ForceTileUpdate();
+      displayVelocityField();
+    }
   }
 
   // ***************************************************************************
@@ -210,18 +216,37 @@ public class CCTester : MonoBehaviour
 
   private void displaySolution()
   {
-    for (int i = 0; i < currentTile.TileSize; i++) {
-      for (int k = 0; k < currentTile.TileSize; k++) {
-        float tileX = i;
-        float tileY = k;
-        var loc = new Vector2(tileX, tileY);
+    for (int x = 0; x < currentTile.TileSize; x++) {
+      for (int y = 0; y < currentTile.TileSize; y++) {
+        var loc = new Vector2(x, y);
         var vel = tileSolution(loc).normalized;
-        float worldX = tileX + .5f + currentTile.Corner.x;
-        float worldY = tileY + .5f + currentTile.Corner.y;
+        float worldX = x + .5f + currentTile.Corner.x;
+        float worldY = y + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);
         var start = new Vector3(worldX - vel.x / 2, height + .2f, worldY - vel.y / 2);
         var end = new Vector3(worldX + vel.x / 2, height + .2f, worldY + vel.y / 2);
         UnityEngine.Debug.DrawLine(start, end, FlowFieldColor);
+      }
+    }
+  }
+
+  private void displayVelocityField()
+  {
+    var tile = NavSystem.GetCCTile(currentTile.Corner);
+    var velMtx = tile.vAve.Normalize();
+
+    UnityEngine.Debug.Log(tile.vAve.ToString<Vector2>());
+
+
+    for (int x = 0; x < velMtx.GetLength(0); x++) {
+      for (int y = 0; y < velMtx.GetLength(1); y++) {
+        var vel = velMtx[x,y];
+        float worldX = x + .5f + currentTile.Corner.x;
+        float worldY = y + .5f + currentTile.Corner.y;
+        var height = currentTile.Height(worldX, worldY);
+        var start = new Vector3(worldX - vel.x / 2, height + .2f, worldY - vel.y / 2);
+        var end = new Vector3(worldX + vel.x / 2, height + .2f, worldY + vel.y / 2);
+        UnityEngine.Debug.DrawLine(start, end, VelocityFieldColor);
       }
     }
   }
