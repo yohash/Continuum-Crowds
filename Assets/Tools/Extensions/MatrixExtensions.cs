@@ -188,4 +188,69 @@ public static class MatrixExtensions
     }
     return s;
   }
+
+  /// <summary>
+  /// Rotates a matrix counter-clockwise by given degrees
+  /// </summary>
+  /// <param name="matrix"></param>
+  /// <param name="degrees"></param>
+  public static float[,] Rotate(this float[,] matrix, float degrees)
+  {
+    float radians = degrees * Mathf.Deg2Rad;
+    // store constants
+    var n = matrix.GetLength(0);
+    var m = matrix.GetLength(1);
+    // determine the components that sum the side dimensions of our new matrix
+    var na = Mathf.Abs(n * Mathf.Cos(radians));
+    var nb = Mathf.Abs(m * Mathf.Sin(radians));
+    var ma = Mathf.Abs(m * Mathf.Cos(radians));
+    var mb = Mathf.Abs(n * Mathf.Sin(radians));
+
+    // compute new dimensions of the matrix required to hold the rotated matrix
+    var N = Mathf.Ceil(na + nb);
+    var M = Mathf.Ceil(ma + mb);
+
+    // helper function to determine if the given indeces are outside our original matrix
+    bool outside(float x, float y) { return x < 0 || y < 0 || x > n - 1 || y > m - 1; }
+
+    // build a helper function to transform a matrix point
+    float invTransform(float[,] mtx, int u, int v)
+    {
+      // (1) translate to midpoint
+      var up = u - (N - 1) / 2f;
+      var vp = v - (M - 1) / 2f;
+      // (2) apply rotation matrix
+      var ur = up * Mathf.Cos(radians) + vp * Mathf.Sin(radians);
+      var vr = -up * Mathf.Sin(radians) + vp * Mathf.Cos(radians);
+      // (3) re-scale to original frame of reference
+      var x = ur + (n - 1) / 2f;
+      var y = vr + (m - 1) / 2f;
+      // (4) round our rescaled parameter to round integers
+      var xf = Mathf.FloorToInt(x);
+      var xc = Mathf.CeilToInt(x);
+      var yf = Mathf.FloorToInt(y);
+      var yc = Mathf.CeilToInt(y);
+      // (5) build a 2x2 matrix of these 4 corners, using 0 if we're outisde the original matrix
+      mtx[0, 0] = outside(xf, yf) ? 0 : matrix[xf, yf];
+      mtx[0, 1] = outside(xf, yc) ? 0 : matrix[xf, yc];
+      mtx[1, 0] = outside(xc, yf) ? 0 : matrix[xc, yf];
+      mtx[1, 1] = outside(xc, yc) ? 0 : matrix[xc, yc];
+      // (5) interpolate
+      return mtx.Interpolate(x.Modulus(1), y.Modulus(1));
+    }
+
+    // declare new rotated matrix with previously determined dimensions
+    var rotated = new float[(int)N, (int)M];
+    // cache
+    float[,] c = new float[2, 2];
+
+    // build the rotated matrix
+    for (int x = 0; x < N; x++) {
+      for (int y = 0; y < M; y++) {
+        rotated[x,y] = invTransform(c, x, y);
+      }
+    }
+
+    return rotated;
+  }
 }
