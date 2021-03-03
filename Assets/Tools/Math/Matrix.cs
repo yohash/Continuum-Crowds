@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-public static class MatrixExtensions
+public static class Matrix
 {
   public static float[,] SubMatrix(this float[,] matrix, int startX, int startY, int sizeX, int sizeY)
   {
@@ -76,7 +76,7 @@ public static class MatrixExtensions
   }
 
   /// <summary>
-  /// Compute the matrix of absolute values from a vector matrix
+  /// Compute the matrix of absolute maximum values from a vector matrix
   /// </summary>
   /// <param name="matrix"></param>
   /// <returns></returns>
@@ -227,37 +227,38 @@ public static class MatrixExtensions
     float invTransform(float[,] mtx, int u, int v)
     {
       // (1) translate to midpoint
-      var up = u - (N - 1) / 2f;
-      var vp = v - (M - 1) / 2f;
-      // (2) apply rotation matrix
-      var ur = up * Mathf.Cos(radians) + vp * Mathf.Sin(radians);
-      var vr = -up * Mathf.Sin(radians) + vp * Mathf.Cos(radians);
+      var ut = u - (N - 1) / 2f;
+      var vt = v - (M - 1) / 2f;
+      // (2) apply rotation matrix to rotate about (0, 0)
+      var ur = ut * Mathf.Cos(radians) + vt * Mathf.Sin(radians);
+      var vr = -ut * Mathf.Sin(radians) + vt * Mathf.Cos(radians);
       // (3) re-scale to original frame of reference
       var x = ur + (n - 1) / 2f;
       var y = vr + (m - 1) / 2f;
-      // (4) round our rescaled parameter to round integers
+      // (4) determine original mapping vector bounding integers
       var xf = Mathf.FloorToInt(x);
       var xc = Mathf.CeilToInt(x);
       var yf = Mathf.FloorToInt(y);
       var yc = Mathf.CeilToInt(y);
-      // (5) build a 2x2 matrix of these 4 corners, using 0 if we're outisde the original matrix
+      // (5) build a 2x2 matrix of the value from our original matrix, 
+      //    from these 4 corners, using 0 if we're outisde the bounds
       mtx[0, 0] = outside(xf, yf) ? 0 : matrix[xf, yf];
       mtx[0, 1] = outside(xf, yc) ? 0 : matrix[xf, yc];
       mtx[1, 0] = outside(xc, yf) ? 0 : matrix[xc, yf];
       mtx[1, 1] = outside(xc, yc) ? 0 : matrix[xc, yc];
-      // (5) interpolate
+      // (5) interpolate the rotated value from our original matrix
       return mtx.Interpolate(x.Modulus(1), y.Modulus(1));
     }
 
     // declare new rotated matrix with previously determined dimensions
     var rotated = new float[(int)N, (int)M];
-    // cache
+    // cache to reduce allocations per-call to invTransform
     float[,] c = new float[2, 2];
 
     // build the rotated matrix
-    for (int x = 0; x < N; x++) {
-      for (int y = 0; y < M; y++) {
-        rotated[x,y] = invTransform(c, x, y);
+    for (int u = 0; u < N; u++) {
+      for (int v = 0; v < M; v++) {
+        rotated[u,v] = invTransform(c, u, v);
       }
     }
 
