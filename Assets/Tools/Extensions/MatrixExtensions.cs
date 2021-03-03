@@ -190,7 +190,17 @@ public static class MatrixExtensions
   }
 
   /// <summary>
-  /// Rotates a matrix counter-clockwise by given degrees
+  /// Rotates a matrix counter-clockwise by given degrees.
+  /// 
+  /// Performs rotation via "inverse transformation". The rotated
+  /// matrix (u, v) is mapped into the space (frame of reference) 
+  /// of the source matrix (x, y), and each point is determined
+  /// by bilinear interpolation of the 4 nearest-neighbor points in
+  /// the source matrix.
+  /// 
+  /// Returns a new matrix whose dimensions are be greater than or 
+  /// equal to the dimensions of the source matrix. Requires 
+  /// additional allocations 
   /// </summary>
   /// <param name="matrix"></param>
   /// <param name="degrees"></param>
