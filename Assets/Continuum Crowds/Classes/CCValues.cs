@@ -10,16 +10,11 @@ public class CCValues : ScriptableObject
         (instance = Resources.Load("CCConstants") as CCValues);
     }
   }
-  // scalar for density to splat onto discomfort map
-  public float rho_sc = 1f;
 
-  // **************************************************************************************************
-  // ************ deprecated due to visually unappealing 'dodging' ************************************
-  //   // how far into future we predict the path
-  //	 public static float g_predictiveSeconds = 4f;
-  //   // scalar for predictive discomfort to splat onto discomfort map
-  //	 public static float g_weight = 0.5f;
-  // **************************************************************************************************
+  // how far into future we predict the path due to unit with velocity
+  [Header("Number of seconds to extrapolate unit's velocity")]
+  public float v_predictiveSeconds = 4f;
+
   // everything above this must be clamped to 'unpassable' discomfort map
   [Header("Max and Min slopes to scale topographical speed")]
   public float f_slopeMax = 1f;

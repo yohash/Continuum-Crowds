@@ -88,12 +88,11 @@ public class CCDynamicGlobalFields
       //
       //    TODO: Replace with predictive velocity field.
       //
-      //			// predictive discomfort is only applied to moving units
-      //  if (_units[i].GetVelocity () != Vector2.zero)
-      //  {
-      //     // (2) predictive discomfort field
-      //     applyPredictiveDiscomfort (CCvals.g_predictiveSeconds, _units[i]);
-      //  }
+      // predictive discomfort is only applied to moving units
+      if (_units[i].GetVelocity().sqrMagnitude > 0) {
+        // (2) predictive discomfort field
+        applyPredictiveVelocity(_units[i]);
+      }
       // ******************************************************************************************
     }
 
@@ -179,75 +178,65 @@ public class CCDynamicGlobalFields
           xIndex = x + xOffset;
           yIndex = y + yOffset;
 
-          if (isPointValid(xIndex, yIndex)) {
-            // add rho to the in-place density
-            float rt = readDataFromPoint_rho(xIndex, yIndex);
-            writeDataToPoint_rho(xIndex, yIndex, rho + rt);
+          // add rho to the in-place density
+          addDataToPoint_rho(xIndex, yIndex, rho);
 
-            // compute velocity field with this density
-            var v = ccu.GetVelocity();
-            // only record velocity if exists
-            if (v.sqrMagnitude > 0) {
-              computeVelocityFieldPoint(xIndex, yIndex, ccu.GetVelocity(), rho);
-            }
+          // compute velocity field with this density
+          var v = ccu.GetVelocity();
+          // only record velocity if exists
+          if (v.sqrMagnitude > 0) {
+            addDataToPoint_vAve(xIndex, yIndex, v * rho);
           }
         }
       }
     }
   }
 
-  private void computeVelocityFieldPoint(int x, int y, Vector2 v, float rho)
-  {
-    var vAve = readDataFromPoint_vAve(x, y);
-    vAve += v * rho;
-    writeDataToPoint_vAve(x, y, vAve);
-  }
-
   // **********************************************************************
   // 		PREDICTIVE DISCOMFORT - replace wth predictive velocity fields
   // **********************************************************************
-  //	private void applyPredictiveDiscomfort (float numSec, CC_Unit cc_u)
-  //	{
-  //		Vector2 newLoc;
-  //		float sc;
-  //
-  //		Vector2[] cc_u_pos = cc_u.getPositions ();
-  //
-  //		for (int k = 0; k < cc_u_pos.Length; k++) {
-  //
-  //			Vector2 xprime = cc_u_pos[k]  + cc_u.getVelocity () * numSec;
-  //
-  //			float vfMag = Vector2.Distance (cc_u_pos[k], xprime);
-  //
-  //			for (int i = 5; i < vfMag; i++) {
-  //				newLoc = Vector2.MoveTowards (cc_u_pos[k], xprime, i);
-  //
-  //				sc = (vfMag - i) / vfMag;				// inverse scale
-  //				float[,] g = linear1stOrderSplat (newLoc, sc * CCvals.g_weight);
-  //
-  //				int xInd = (int)Math.Floor((double)newLoc.x);
-  //				int yInd = (int)Math.Floor((double)newLoc.y);
-  //
-  //				if (isPointValid (xInd, yInd)) {
-  //					float gt = readDataFromPoint_g (xInd, yInd);
-  //					writeDataToPoint_g (xInd, yInd, gt + g [0, 0]);
-  //				}
-  //				if (isPointValid (xInd + 1, yInd)) {
-  //					float gt = readDataFromPoint_g (xInd + 1, yInd);
-  //					writeDataToPoint_g (xInd + 1, yInd, gt + g [1, 0]);
-  //				}
-  //				if (isPointValid (xInd, yInd + 1)) {
-  //					float gt = readDataFromPoint_g (xInd, yInd + 1);
-  //					writeDataToPoint_g (xInd, yInd + 1, gt +  g [0, 1]);
-  //				}
-  //				if (isPointValid (xInd + 1, yInd + 1)) {
-  //					float gt = readDataFromPoint_g (xInd + 1, yInd + 1);
-  //					writeDataToPoint_g (xInd + 1, yInd + 1, gt + g [1, 1]);
-  //				}
-  //			}
-  //		}
-  //	}
+  private void applyPredictiveVelocity(CC_Unit ccu)
+  {
+    var vel = ccu.GetVelocity();
+    var pos = ccu.GetPosition();
+    // compuate values
+    var distance = (int)Math.Ceiling(vel.magnitude * CCValues.S.v_predictiveSeconds);
+    var footprint = ccu.GetFootprint();
+    // determine falloff rates, start at mid-point between rho min value to consider 
+    // speed fields as a function of velocity fields
+    var start = (CCValues.S.f_rhoMin + CCValues.S.f_rhoMax) / 2f;
 
+    // (1) create a rect with Length = predictive distance, Height = Unit footprint height
+    var rect = new float[distance, footprint.GetLength(0)];
+
+    // (2) taper the ends off according to the "center slice" of the unit footprint
+    var slice = new float[footprint.GetLength(1)];
+    var center = (int)Math.Floor(footprint.GetLength(0) / 2f);
+    for (int i = 0; i < slice.Length; i++) {
+      slice[i] = footprint[center, i];
+    }
+
+    // (3) extend this pattern along the length of the rect
+    for (int i = 0; i < distance; i++) {
+      // taper from <start> down to 0
+      var scalar = (distance - i) / (float)distance * start;
+      for (int k = 0; k < rect.GetLength(1); k++) {
+        // build the predictive velocity rect
+        rect[i, k] = slice[k] * scalar;
+      }
+    }
+
+    // (5) rotate the rect 
+    var rotated = rect.Rotate(ccu.GetRotetion());
+
+    // (6) add the density and velocity along the length of the path, scaling each by the value of the rect
+    for (int x = 0; x < rotated.GetLength(0); x++) {
+      for (int y = 0; y < rotated.GetLength(1); y++) {
+        addDataToPoint_rho((int)pos.x + x, (int)pos.y + y, rotated[x, y]);
+        addDataToPoint_vAve((int)pos.x + x, (int)pos.y + y, rotated[x, y] * vel);
+      }
+    }
+  }
 
   // average velocity fields will just iterate over each tile, since information
   // doesnt 'bleed' into or out from nearby tiles
@@ -396,18 +385,33 @@ public class CCDynamicGlobalFields
   // *****************************************************************************
   //			TOOLS AND UTILITIES
   // *****************************************************************************
-  public bool isPointValid(int globalX, int globalY)
+  private bool isPointValid(int xGlobal, int yGlobal)
   {
     // check to make sure the point is not outside the tile
-    if (globalX < 0 || globalY < 0 || globalX > tileSize - 1 || globalY > tileSize - 1) {
+    if (xGlobal < 0 || yGlobal < 0 || xGlobal > tileSize - 1 || yGlobal > tileSize - 1) {
       return false;
     }
     // check to make sure the point is not on a place of absolute discomfort (like inside a building)
     // check to make sure the point is not in a place dis-allowed by terrain (slope)
-    if (readDataFromPoint_g(globalX, globalY) >= 1) {
+    if (readDataFromPoint_g(xGlobal, yGlobal) >= 1) {
       return false;
     }
     return true;
+  }
+
+  private Location tileCornerFromGlobalCoords(int xGlobal, int yGlobal)
+  {
+    return new Location(
+      Math.Floor((double)xGlobal / tileSize),
+      Math.Floor((double)yGlobal / tileSize));
+  }
+
+  private Location tileCoordsFromGlobal(Location l, int xGlobal, int yGlobal)
+  {
+    return new Location(
+        xGlobal - l.x * tileSize,
+        yGlobal - l.y * tileSize
+    );
   }
 
   // ******************************************************************************************
@@ -419,122 +423,114 @@ public class CCDynamicGlobalFields
   // *** read ops ***
   private float readDataFromPoint_h(int xGlobal, int yGlobal)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_h(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_h(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   private Vector2 readDataFromPoint_dh(int xGlobal, int yGlobal)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_dh(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_dh(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   private float readDataFromPoint_rho(int xGlobal, int yGlobal)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_rho(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_rho(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   private float readDataFromPoint_g(int xGlobal, int yGlobal)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_g(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_g(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   private Vector2 readDataFromPoint_vAve(int xGlobal, int yGlobal)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_vAve(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_vAve(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   private Vector4 readDataFromPoint_f(int xGlobal, int yGlobal)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_f(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_f(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   private Vector4 readDataFromPoint_C(int xGlobal, int yGlobal)
   {
-    Location l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    return _tiles[l].readData_C(xTile, yTile);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    return _tiles[l].readData_C(tileCoordsFromGlobal(l, xGlobal, yGlobal));
   }
 
   // *** write ops ***
   private void writeDataToPoint_rho(int xGlobal, int yGlobal, float val)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    _tiles[l].writeData_rho(xTile, yTile, val);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_rho(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
   }
 
   private void writeDataToPoint_g(int xGlobal, int yGlobal, float val)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    _tiles[l].writeData_g(xTile, yTile, val);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_g(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
   }
 
   private void writeDataToPoint_vAve(int xGlobal, int yGlobal, Vector2 val)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    _tiles[l].writeData_vAve(xTile, yTile, val);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_vAve(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
   }
 
   private void writeDataToPoint_f(int xGlobal, int yGlobal, Vector4 val)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    _tiles[l].writeData_f(xTile, yTile, val);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_f(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
   }
 
   private void writeDataToPoint_C(int xGlobal, int yGlobal, Vector4 val)
   {
-    var l = new Location(
-      Math.Floor((double)xGlobal / tileSize),
-      Math.Floor((double)yGlobal / tileSize));
-    int xTile = xGlobal - l.x * tileSize;
-    int yTile = yGlobal - l.y * tileSize;
-    _tiles[l].writeData_C(xTile, yTile, val);
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_C(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
+  }
+
+  // *** additive write ops ***
+  private void addDataToPoint_rho(int xGlobal, int yGlobal, float val)
+  {
+    if (isPointValid(xGlobal, yGlobal)) {
+      // add rho to the in-place density
+      var t = readDataFromPoint_rho(xGlobal, yGlobal);
+      writeDataToPoint_rho(xGlobal, yGlobal, val + t);
+    }
+  }
+
+  private void addDataToPoint_g(int xGlobal, int yGlobal, float val)
+  {
+    if (isPointValid(xGlobal, yGlobal)) {
+      // add rho to the in-place density
+      var rt = readDataFromPoint_g(xGlobal, yGlobal);
+      writeDataToPoint_g(xGlobal, yGlobal, val + rt);
+    }
+  }
+
+  private void addDataToPoint_vAve(int xGlobal, int yGlobal, Vector2 val)
+  {
+    if (isPointValid(xGlobal, yGlobal)) {
+      // add rho to the in-place density
+      var rt = readDataFromPoint_vAve(xGlobal, yGlobal);
+      writeDataToPoint_vAve(xGlobal, yGlobal, val + rt);
+    }
+  }
+
+  private void addDataToPoint_f(int xGlobal, int yGlobal, Vector4 val)
+  {
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_f(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
+  }
+
+  private void addDataToPoint_C(int xGlobal, int yGlobal, Vector4 val)
+  {
+    var l = tileCornerFromGlobalCoords(xGlobal, yGlobal);
+    _tiles[l].writeData_C(tileCoordsFromGlobal(l, xGlobal, yGlobal), val);
   }
 }

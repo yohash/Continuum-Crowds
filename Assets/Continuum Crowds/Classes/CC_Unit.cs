@@ -5,10 +5,11 @@ public class CC_Unit
 {
   public Vector2 GetVelocity() { return getVelocity(); }
   public Vector2 GetPosition() { return getPosition(); }
+  public float GetRotetion() { return getRotation(); }
 
   private Func<Vector2> getVelocity;
-  // in xz euler angles
-  private Func<Vector2> getRotation;
+  // in y euler angles
+  private Func<float> getRotation;
   private Func<Vector2> getPosition;
   private Func<Vector2> getSize;
   private Func<float> getFalloff;
@@ -21,7 +22,7 @@ public class CC_Unit
 
   public CC_Unit(
       Func<Vector2> getVelocity,
-      Func<Vector2> getRotation,
+      Func<float> getRotation,
       Func<Vector2> getPosition,
       Func<Vector2> unitDimensions,
       Func<float> getFalloff

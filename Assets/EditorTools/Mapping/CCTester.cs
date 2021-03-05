@@ -123,7 +123,7 @@ public class CCTester : MonoBehaviour
         TestUnit.AddComponent<CCTestUnit>();
         NavSystem.TrackUnit(new CC_Unit(
             () => TestUnit.GetComponent<CCTestUnit>().velocity,
-            () => TestUnit.transform.eulerAngles.XYZtoXZ(),
+            () => TestUnit.transform.eulerAngles.y,
             () => TestUnit.transform.position.XYZtoXZ(),
             () => TestUnit.GetComponent<CCTestUnit>().dimensions,
             () => TestUnit.GetComponent<CCTestUnit>().falloff
@@ -234,9 +234,6 @@ public class CCTester : MonoBehaviour
   {
     var tile = NavSystem.GetCCTile(currentTile.Corner);
     var velMtx = tile.vAve.Normalize();
-
-    UnityEngine.Debug.Log(tile.vAve.ToString<Vector2>());
-
 
     for (int x = 0; x < velMtx.GetLength(0); x++) {
       for (int y = 0; y < velMtx.GetLength(1); y++) {

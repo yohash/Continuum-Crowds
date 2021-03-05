@@ -242,7 +242,7 @@ public class CCEikonalSolver
         if (phi_proposed < Phi[neighbor.x, neighbor.y]) {
           // save the value of the lower phi
           Phi[neighbor.x, neighbor.y] = phi_proposed;
-
+            
           if (considered.Contains(neighbor)) {
             // re-write the old value in the queue
             considered.UpdatePriority(neighbor, phi_proposed);

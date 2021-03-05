@@ -113,6 +113,28 @@ public class CC_Tile
   // **************************************************************
   //  		WRITE data
   // **************************************************************
+  public void writeData_rho(Location l, float f)
+  {
+    rho[l.x, l.y] = f;
+    UPDATE_TILE = true;
+  }
+  public void writeData_g(Location l, float f)
+  {
+    g[l.x, l.y] = f;
+    UPDATE_TILE = true;
+  }
+  public void writeData_vAve(Location l, Vector2 f)
+  {
+    vAve[l.x, l.y] = f;
+  }
+  public void writeData_f(Location l, Vector4 v)
+  {
+    f[l.x, l.y] = v;
+  }
+  public void writeData_C(Location l, Vector4 v)
+  {
+    C[l.x, l.y] = v;
+  }
   public void writeData_rho(int xTile, int yTile, float f)
   {
     rho[xTile, yTile] = f;
@@ -139,6 +161,34 @@ public class CC_Tile
   // **************************************************************
   //  		READ data - discrete
   // **************************************************************
+  public float readData_rho(Location l)
+  {
+    return rho[l.x, l.y];
+  }
+  public float readData_g(Location l)
+  {
+    return g[l.x, l.y];
+  }
+  public float readData_h(Location l)
+  {
+    return h[l.x, l.y];
+  }
+  public Vector2 readData_dh(Location l)
+  {
+    return dh[l.x, l.y];
+  }
+  public Vector2 readData_vAve(Location l)
+  {
+    return vAve[l.x, l.y];
+  }
+  public Vector4 readData_f(Location l)
+  {
+    return f[l.x, l.y];
+  }
+  public Vector4 readData_C(Location l)
+  {
+    return C[l.x, l.y];
+  }
   public float readData_rho(int xTile, int yTile)
   {
     return rho[xTile, yTile];
