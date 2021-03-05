@@ -43,11 +43,8 @@ public class CCValues : ScriptableObject
   [Header("Weights: Time (speed field inverse)")]
   public float C_beta = 1f;
   // discomfort weight
-  [Header("Weights: Discomofort")]
+  [Header("Weights: Discomfort")]
   public float C_gamma = 1f;
-  // density weight
-  [Header("Weights: Density (Custom - may be removed)")]
-  public float C_delta = 1f;
 
   [Header("Weighted average for Eikonal solutions")]
   // Eikonal solver weighted average, max weight

@@ -371,17 +371,14 @@ public class CCDynamicGlobalFields
 
     // initialize g as the map discomfort data value
     float g = readDataFromPoint_g(xGlobalInto, yGlobalInto);
-    //float rho;
 
     // test to see if the point we're looking INTO is in a DIFFERENT tile, and if so, pull it
     if (xLocalInto < 0 || xLocalInto > tileSize - 1 ||
         yLocalInto < 0 || yLocalInto > tileSize - 1
     ) {
       g += readDataFromPoint_g(xGlobalInto, yGlobalInto);
-      //rho = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
     } else {
       g += cct.g[xLocalInto, yLocalInto];
-      //rho = cct.rho[xLocalInto, yLocalInto];
     }
 
     // clamp g to make sure it's not > 1
@@ -391,9 +388,7 @@ public class CCDynamicGlobalFields
     var f = cct.f[tileX, tileY][d];
     float cost = CCValues.S.C_alpha
                 + CCValues.S.C_beta * 1 / f
-                + CCValues.S.C_gamma * g / f
-                /*+ CCValues.Instance.C_delta * rho*/;
-
+                + CCValues.S.C_gamma * g / f;
 
     return cost;
   }
