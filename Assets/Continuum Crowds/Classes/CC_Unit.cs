@@ -5,7 +5,7 @@ public class CC_Unit
 {
   public Vector2 GetVelocity() { return getVelocity(); }
   public Vector2 GetPosition() { return getPosition(); }
-  public float GetRotetion() { return getRotation(); }
+  public float GetRotation() { return getRotation(); }
 
   private Func<Vector2> getVelocity;
   // in y euler angles
@@ -56,8 +56,7 @@ public class CC_Unit
     // performing this action now for the sake of debugging
     baseprint = computeBaseFootprint();
 
-    // TODO: integrate rotation
-    return baseprint.BilinearInterpolation(xOffset, yOffset);
+    return baseprint;
   }
 
   private void setLocalSize()

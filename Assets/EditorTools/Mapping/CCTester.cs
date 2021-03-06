@@ -52,7 +52,7 @@ public class CCTester : MonoBehaviour
 
   // visualization tool handlers
   private TileMap tilemap;
-  private GameObject TestUnit;
+  public GameObject TestUnit;
 
   // vars to track CC solution solving process
   private bool solutionProcessing = false;

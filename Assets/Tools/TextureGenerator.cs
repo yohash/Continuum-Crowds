@@ -19,7 +19,7 @@ public static class TextureGenerator
 
 	public static Texture2D TextureFromMatrix(float[,] matrix, Color min, Color max)
 	{
-		var normalized = matrix.Normalize();
+		var normalized = matrix.Normalize(1);
 
 		int width = matrix.GetLength(0);
 		int height = matrix.GetLength(1);

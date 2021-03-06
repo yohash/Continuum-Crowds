@@ -148,36 +148,32 @@ public class CCDynamicGlobalFields
   // ******************************************************************************************
   private void computeDensityField(CC_Unit ccu)
   {
-    // grab the NxN footprint matrix
-    var footprint = ccu.GetFootprint();
+    // grab properties of the CC Unit
+    var footprint = ccu.GetFootprint().Rotate(-ccu.GetRotation());
     var anchor = ccu.GetPosition();
 
-    // cache the x - offset
-    int xOffset = ccu.SizeX % 2 == 0 ?
-        // if even, use Math.Round
-        (int)Math.Round(anchor.x) :
-        // is odd, use Math.Floor
-        (int)Math.Floor(anchor.x);
+    // compute the half-dimensions
+    var xHalf = footprint.GetLength(0) / 2f;
+    var yHalf = footprint.GetLength(1) / 2f;
+    // translate the anchor so it's centered about our unit
+    anchor -= new Vector2(xHalf, yHalf);
+    // finally, perform bilinear interpolation of the footprint at our anchor
+    var footprintInterp = footprint.BilinearInterpolation(anchor);
 
-    // cache y - offset
-    int yOffset = ccu.SizeY % 2 == 0 ?
-        // if even, use Math.Round
-        (int)Math.Round(anchor.y) :
-        // is odd, use Math.Floor
-        (int)Math.Floor(anchor.y);
+    // offsets - casting to (int) truncates the decimal
+    // and produces smoothest interpolated position stamps
+    var xOffset = (int)anchor.x;
+    var yOffset = (int)anchor.y;
 
-    // cache iterators
-    int xIndex, yIndex;
     // scan the grid, stamping the footprint onto the tile
-    for (int x = 0; x < footprint.GetLength(0); x++) {
-      for (int y = 0; y < footprint.GetLength(1); y++) {
+    for (int x = 0; x < footprintInterp.GetLength(0); x++) {
+      for (int y = 0; y < footprintInterp.GetLength(1); y++) {
         // get the rho value
-        float rho = footprint[x, y];
+        float rho = footprintInterp[x, y];
         // only perform storage functions if there is a density value
         if (rho > 0) {
-          xIndex = x + xOffset;
-          yIndex = y + yOffset;
-
+          var xIndex = x + xOffset;
+          var yIndex = y + yOffset;
           // add rho to the in-place density
           addDataToPoint_rho(xIndex, yIndex, rho);
 
@@ -193,18 +189,18 @@ public class CCDynamicGlobalFields
   }
 
   // **********************************************************************
-  // 		PREDICTIVE DISCOMFORT - replace wth predictive velocity fields
+  // 		Predictive velocity fields
   // **********************************************************************
   private void applyPredictiveVelocity(CC_Unit ccu)
   {
     var vel = ccu.GetVelocity();
     var pos = ccu.GetPosition();
+    var rote = Mathf.Repeat(-ccu.GetRotation(), 360);
     // compuate values
     var distance = (int)Math.Ceiling(vel.magnitude * CCValues.S.v_predictiveSeconds);
     var footprint = ccu.GetFootprint();
-    // determine falloff rates, start at mid-point between rho min value to consider 
-    // speed fields as a function of velocity fields
-    var start = (CCValues.S.f_rhoMin + CCValues.S.f_rhoMax) / 2f;
+    // determine falloff rates
+    var start = CCValues.S.f_rhoMax;
 
     // (1) create a rect with Length = predictive distance, Height = Unit footprint height
     var rect = new float[distance, footprint.GetLength(0)];
@@ -226,8 +222,17 @@ public class CCDynamicGlobalFields
       }
     }
 
-    // (5) rotate the rect 
-    var rotated = rect.Rotate(ccu.GetRotetion());
+    // (4) rotate the rect 
+    var rotated = rect.Rotate(rote);
+
+    // (5) determine the quadrant we are in so we can offset the rect
+    var offset = new Vector2Int(
+          rote > 90 && rote < 270 ? -rotated.GetLength(0) + footprint.GetLength(0) : 0,
+          rote > 180 && rote < 360 ? -rotated.GetLength(1) + footprint.GetLength(0) : 0
+    );
+    pos += offset;
+
+    Debug.Log(rote + ",\toff: " + offset);
 
     // (6) add the density and velocity along the length of the path, scaling each by the value of the rect
     for (int x = 0; x < rotated.GetLength(0); x++) {

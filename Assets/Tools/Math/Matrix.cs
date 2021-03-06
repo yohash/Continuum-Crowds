@@ -52,7 +52,7 @@ public static class Matrix
   }
 
   /// <summary>
-  /// Normalize a matrix of floats to 1 by the largest absolute value
+  /// Normalize a matrix of floats to the largest absolute value
   /// </summary>
   /// <param name="matrix"></param>
   /// <returns></returns>
@@ -65,10 +65,22 @@ public static class Matrix
       }
     }
 
+    return matrix.Normalize(max);
+  }
+
+  /// <summary>
+  /// Normzlize a matrix of floats to the input value
+  /// </summary>
+  /// <param name="matrix"></param>
+  /// <param name="normValue"></param>
+  /// <returns></returns>
+  public static float[,] Normalize(this float[,] matrix, float normValue)
+  {
     var normalized = new float[matrix.GetLength(0), matrix.GetLength(1)];
     for (int i = 0; i < matrix.GetLength(0); i++) {
       for (int k = 0; k < matrix.GetLength(1); k++) {
-        normalized[i, k] = Mathf.Abs(matrix[i, k]) / max;
+        // clamp the normalized matrix value to the input norm value
+        normalized[i, k] = Mathf.Clamp(Mathf.Abs(matrix[i, k]) / normValue, -normValue, normValue);
       }
     }
 
@@ -258,7 +270,7 @@ public static class Matrix
     // build the rotated matrix
     for (int u = 0; u < N; u++) {
       for (int v = 0; v < M; v++) {
-        rotated[u,v] = invTransform(c, u, v);
+        rotated[u, v] = invTransform(c, u, v);
       }
     }
 
