@@ -77,23 +77,16 @@ public class CCDynamicGlobalFields
       }
     }
 
-    // update the unit specific elements (rho, vAve, g_P)
+    // update the unit specific elements (rho, vAve))
     for (int i = 0; i < _units.Count; i++) {
-      // (1) density field and velocity
-      computeDensityField(_units[i]);
-      // ******************************************************************************************
-      // 		PREDICTIVE DISCOMFORT is being phased out due to visually
-      //		unappealing behaviour - units would 'dodge/weave' to avoid
-      //								their own predictive dicomfort
-      //
-      //    TODO: Replace with predictive velocity field.
-      //
-      // predictive discomfort is only applied to moving units
-      if (_units[i].GetVelocity().sqrMagnitude > 0) {
-        // (2) predictive discomfort field
+      // predictive velocity is only applied to moving units
+      if (_units[i].GetVelocity().sqrMagnitude == 0) {
+        // (1) apply stationary unit density field
+        computeDensityField(_units[i]);
+      } else {
+        // (2) moving units apply predictive discomfort/velocity field
         applyPredictiveVelocity(_units[i]);
       }
-      // ******************************************************************************************
     }
 
     // these next values are derived from rho, vAve, and g_P, so we simply iterate
@@ -176,13 +169,6 @@ public class CCDynamicGlobalFields
           var yIndex = y + yOffset;
           // add rho to the in-place density
           addDataToPoint_rho(xIndex, yIndex, rho);
-
-          // compute velocity field with this density
-          var v = ccu.GetVelocity();
-          // only record velocity if exists
-          if (v.sqrMagnitude > 0) {
-            addDataToPoint_vAve(xIndex, yIndex, v * rho);
-          }
         }
       }
     }
@@ -196,9 +182,11 @@ public class CCDynamicGlobalFields
     var vel = ccu.GetVelocity();
     var pos = ccu.GetPosition();
     var rote = Mathf.Repeat(-ccu.GetRotation(), 360);
+
     // compuate values
     var distance = (int)Math.Ceiling(vel.magnitude * CCValues.S.v_predictiveSeconds);
     var footprint = ccu.GetFootprint();
+
     // determine falloff rates
     var start = CCValues.S.f_rhoMax;
 
