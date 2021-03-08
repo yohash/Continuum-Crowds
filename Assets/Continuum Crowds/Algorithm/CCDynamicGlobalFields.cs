@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// Continuum Crowds dynamic global fields.
@@ -145,7 +145,7 @@ public class CCDynamicGlobalFields
     var footprint = ccu.GetFootprint().Rotate(-ccu.GetRotation());
     var anchor = ccu.GetPosition();
 
-    // compute the half-dimensions
+    // compute the footprint's half-dimensions
     var xHalf = footprint.GetLength(0) / 2f;
     var yHalf = footprint.GetLength(1) / 2f;
     // translate the anchor so it's centered about our unit
@@ -153,10 +153,9 @@ public class CCDynamicGlobalFields
     // finally, perform bilinear interpolation of the footprint at our anchor
     var footprintInterp = footprint.BilinearInterpolation(anchor);
 
-    // offsets - casting to (int) truncates the decimal
-    // and produces smoothest interpolated position stamps
-    var xOffset = (int)anchor.x;
-    var yOffset = (int)anchor.y;
+    // offsets - floor produces smoothest interpolated position stamps
+    var xOffset = Mathf.FloorToInt(anchor.x);
+    var yOffset = Mathf.FloorToInt(anchor.y);
 
     // scan the grid, stamping the footprint onto the tile
     for (int x = 0; x < footprintInterp.GetLength(0); x++) {
@@ -179,54 +178,87 @@ public class CCDynamicGlobalFields
   // **********************************************************************
   private void applyPredictiveVelocity(CC_Unit ccu)
   {
+    // TODO: Only apply predictive velocity to continuous segments, ie.
+    //      if a portion of this predictive path is blocked by impassable
+    //      terrain, we should not apply predictive velocity beyond that
+    //      point
+
+    // fetch unit properties
     var vel = ccu.GetVelocity();
-    var pos = ccu.GetPosition();
-    var rote = Mathf.Repeat(-ccu.GetRotation(), 360);
 
     // compuate values
     var distance = (int)Math.Ceiling(vel.magnitude * CCValues.S.v_predictiveSeconds);
     var footprint = ccu.GetFootprint();
-
-    // determine falloff rates
-    var start = CCValues.S.f_rhoMax;
+    var height = footprint.GetLength(1);
 
     // (1) create a rect with Length = predictive distance, Height = Unit footprint height
-    var rect = new float[distance, footprint.GetLength(0)];
+    var footprintHalfWidth = (int)Math.Floor(footprint.GetLength(0) / 2f);
+    var predictive = new float[footprintHalfWidth + distance, height];
 
-    // (2) taper the ends off according to the "center slice" of the unit footprint
-    var slice = new float[footprint.GetLength(1)];
-    var center = (int)Math.Floor(footprint.GetLength(0) / 2f);
-    for (int i = 0; i < slice.Length; i++) {
-      slice[i] = footprint[center, i];
-    }
-
-    // (3) extend this pattern along the length of the rect
-    for (int i = 0; i < distance; i++) {
-      // taper from <start> down to 0
-      var scalar = (distance - i) / (float)distance * start;
-      for (int k = 0; k < rect.GetLength(1); k++) {
-        // build the predictive velocity rect
-        rect[i, k] = slice[k] * scalar;
+    // (2) build half of the footprint into the predictive rect
+    for (int i = 0; i < footprintHalfWidth; i++) {
+      for (int k = 0; k < height; k++) {
+        predictive[i, k] = footprint[i, k];
       }
     }
 
-    // (4) rotate the rect 
-    var rotated = rect.Rotate(rote);
+    // (3a) record the "vertical slice" of the unit footprint
+    var slice = new float[height];
+    for (int i = 0; i < slice.Length; i++) {
+      slice[i] = footprint[footprintHalfWidth, i];
+    }
 
-    // (5) determine the quadrant we are in so we can offset the rect
-    var offset = new Vector2Int(
-          rote > 90 && rote < 270 ? -rotated.GetLength(0) + footprint.GetLength(0) : 0,
-          rote > 180 && rote < 360 ? -rotated.GetLength(1) + footprint.GetLength(0) : 0
-    );
-    pos += offset;
+    // (3b) scale the vertical slice along the length of the rect
+    // determine falloff rates
+    var start = 1;
+    var end = CCValues.S.f_rhoMin;
+    // track iteration
+    int c = 0;
+    for (int i = footprintHalfWidth; i < predictive.GetLength(0); i++) {
+      // taper from <start> down to <end>
+      var scalar = (end - start) / distance * c + start;
+      c++;
+      for (int k = 0; k < height; k++) {
+        // build the predictive velocity rect in front of the footprint
+        predictive[i, k] = slice[k] * scalar;
+      }
+    }
 
-    Debug.Log(rote + ",\toff: " + offset);
+    // (4) rotate the rect
+    var degrees = Mathf.Repeat(-ccu.GetRotation(), 360);
+    var rotated = predictive.Rotate(degrees);
 
-    // (6) add the density and velocity along the length of the path, scaling each by the value of the rect
-    for (int x = 0; x < rotated.GetLength(0); x++) {
-      for (int y = 0; y < rotated.GetLength(1); y++) {
-        addDataToPoint_rho((int)pos.x + x, (int)pos.y + y, rotated[x, y]);
-        addDataToPoint_vAve((int)pos.x + x, (int)pos.y + y, rotated[x, y] * vel);
+    // (5) determine anchor position - do this by taking the "perfect" center
+    //     and applying the same translations/rotations that our rotate process
+    //     applies
+    //   (i) declare unit location in original footprint center
+    var unitOffset = new Vector2(footprint.GetLength(0) / 2f, height / 2f);
+    //   (ii) translate by predictive velocity half-shape to center on (0,0)
+    unitOffset += new Vector2(-predictive.GetLength(0) / 2f, -height / 2f);
+    //   (iii) rotate the point by our rotation
+    unitOffset = unitOffset.Rotate(degrees * Mathf.Deg2Rad);
+    //   (iv) translate back by rotated shape half-space
+    unitOffset += new Vector2(rotated.GetLength(0) / 2f, rotated.GetLength(1) / 2f);
+
+    // finally, translate the anchor to be positioned on the unit
+    var anchor = ccu.GetPosition() - unitOffset;
+
+    // (6) inteprolate the final result
+    var final = rotated.BilinearInterpolation(anchor);
+
+    // offsets - floor produces smoothest interpolated position stamps
+    var xOffset = Mathf.FloorToInt(anchor.x);
+    var yOffset = Mathf.FloorToInt(anchor.y);
+
+    // (7) add the density and velocity along the length of the path, 
+    // scaling each by the value of the rect
+    for (int x = 0; x < final.GetLength(0); x++) {
+      for (int y = 0; y < final.GetLength(1); y++) {
+        var xIndex = x + xOffset;
+        var yIndex = y + yOffset;
+        // add rho and velocity to existing data
+        addDataToPoint_rho(xIndex, yIndex, final[x, y]);
+        addDataToPoint_vAve(xIndex, yIndex, final[x, y] * vel);
       }
     }
   }

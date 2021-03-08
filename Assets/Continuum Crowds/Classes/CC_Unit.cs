@@ -45,13 +45,6 @@ public class CC_Unit
 
   public float[,] GetFootprint()
   {
-    // use getPosition(), getRotation(), and unit size to compute
-    // the footprint, properly interpolated and splatted into a 2x2 grid
-
-    // wrap getPostion to the range 0 < position < 1 (grid size)
-    float xOffset = getPosition().x.Modulus(1f);
-    float yOffset = getPosition().y.Modulus(1f);
-
     // TEMPORARY - dont re-compute each time footprint is sought
     // performing this action now for the sake of debugging
     baseprint = computeBaseFootprint();
