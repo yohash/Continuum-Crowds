@@ -235,7 +235,7 @@ public class CCDynamicGlobalFields
     var unitOffset = new Vector2(footprint.GetLength(0) / 2f, height / 2f);
     //   (ii) translate by predictive velocity half-shape to center on (0,0)
     unitOffset += new Vector2(-predictive.GetLength(0) / 2f, -height / 2f);
-    //   (iii) rotate the point by our rotation
+    //   (iii) rotate the point about (0,0) by our unit's rotation
     unitOffset = unitOffset.Rotate(degrees * Mathf.Deg2Rad);
     //   (iv) translate back by rotated shape half-space
     unitOffset += new Vector2(rotated.GetLength(0) / 2f, rotated.GetLength(1) / 2f);
