@@ -80,11 +80,11 @@ public class CCDynamicGlobalFields
     // update the unit specific elements (rho, vAve))
     for (int i = 0; i < _units.Count; i++) {
       // predictive velocity is only applied to moving units
-      if (_units[i].GetVelocity().sqrMagnitude == 0) {
+      if (_units[i].Speed() <= 0.25f) {
         // (1) apply stationary unit density field
         computeDensityField(_units[i]);
       } else {
-        // (2) moving units apply predictive discomfort/velocity field
+        // (2) moving units apply predictive density/velocity field
         applyPredictiveVelocity(_units[i]);
       }
     }
@@ -142,8 +142,8 @@ public class CCDynamicGlobalFields
   private void computeDensityField(CC_Unit ccu)
   {
     // grab properties of the CC Unit
-    var footprint = ccu.GetFootprint().Rotate(-ccu.GetRotation());
-    var anchor = ccu.GetPosition();
+    var footprint = ccu.GetFootprint().Rotate(-ccu.Rotation());
+    var anchor = ccu.Position();
 
     // compute the footprint's half-dimensions
     var xHalf = footprint.GetLength(0) / 2f;
@@ -184,10 +184,10 @@ public class CCDynamicGlobalFields
     //      point
 
     // fetch unit properties
-    var vel = ccu.GetVelocity();
+    var speed = ccu.Speed();
 
-    // compuate values
-    var distance = (int)Math.Ceiling(vel.magnitude * CCValues.S.v_predictiveSeconds);
+    // compute values
+    var distance = (int)Math.Ceiling(speed * CCValues.S.v_predictiveSeconds);
     var footprint = ccu.GetFootprint();
     var height = footprint.GetLength(1);
 
@@ -225,7 +225,12 @@ public class CCDynamicGlobalFields
     }
 
     // (4) rotate the rect
-    var degrees = Mathf.Repeat(-ccu.GetRotation(), 360);
+    var yEuler = ccu.Rotation();
+    // Unity y-euler rotations start at +z (+y in 2D) and move CW.
+    // Academic rotations are described as CCW from the +x axis, which is what
+    // many of our derivations are based, so we convert here.
+    var degrees = Mathf.Repeat(90 - yEuler, 360);
+    var radians = degrees * Mathf.Deg2Rad;
     var rotated = predictive.Rotate(degrees);
 
     // (5) determine anchor position - do this by taking the "perfect" center
@@ -236,12 +241,12 @@ public class CCDynamicGlobalFields
     //   (ii) translate by predictive velocity half-shape to center on (0,0)
     unitOffset += new Vector2(-predictive.GetLength(0) / 2f, -height / 2f);
     //   (iii) rotate the point about (0,0) by our unit's rotation
-    unitOffset = unitOffset.Rotate(degrees * Mathf.Deg2Rad);
+    unitOffset = unitOffset.Rotate(radians);
     //   (iv) translate back by rotated shape half-space
     unitOffset += new Vector2(rotated.GetLength(0) / 2f, rotated.GetLength(1) / 2f);
 
     // finally, translate the anchor to be positioned on the unit
-    var anchor = ccu.GetPosition() - unitOffset;
+    var anchor = ccu.Position() - unitOffset;
 
     // (6) inteprolate the final result
     var final = rotated.BilinearInterpolation(anchor);
@@ -252,13 +257,15 @@ public class CCDynamicGlobalFields
 
     // (7) add the density and velocity along the length of the path, 
     // scaling each by the value of the rect
+    var direction = new Vector2(1, 0).Rotate(radians);
+    var velocity = direction * speed;
     for (int x = 0; x < final.GetLength(0); x++) {
       for (int y = 0; y < final.GetLength(1); y++) {
         var xIndex = x + xOffset;
         var yIndex = y + yOffset;
         // add rho and velocity to existing data
         addDataToPoint_rho(xIndex, yIndex, final[x, y]);
-        addDataToPoint_vAve(xIndex, yIndex, final[x, y] * vel);
+        addDataToPoint_vAve(xIndex, yIndex, final[x, y] * velocity);
       }
     }
   }
@@ -352,8 +359,7 @@ public class CCDynamicGlobalFields
   private float computeFlowSpeed(int xI, int yI, Vector2 direction)
   {
     // the flow speed is simply the average velocity field of the region
-    // INTO WHICH we are looking,
-    // dotted with the direction vector
+    // INTO WHICH we are looking, dotted with the direction vector
     var vAvePt = readDataFromPoint_vAve(xI, yI);
     float dot = vAvePt.x * direction.x + vAvePt.y * direction.y;
     return Math.Max(CCValues.S.f_speedMin, dot);

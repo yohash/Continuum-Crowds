@@ -119,10 +119,10 @@ public class CCTester : MonoBehaviour
     if (unit) {
       // create a test unit
       if (TestUnit == null) {
-        TestUnit = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        TestUnit = GameObject.CreatePrimitive(PrimitiveType.Cube);
         TestUnit.AddComponent<CCTestUnit>();
         NavSystem.TrackUnit(new CC_Unit(
-            () => TestUnit.GetComponent<CCTestUnit>().velocity,
+            () => TestUnit.GetComponent<CCTestUnit>().velocity.magnitude,
             () => TestUnit.transform.eulerAngles.y,
             () => TestUnit.transform.position.XYZtoXZ(),
             () => TestUnit.GetComponent<CCTestUnit>().dimensions,

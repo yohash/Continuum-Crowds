@@ -3,11 +3,11 @@ using System;
 
 public class CC_Unit
 {
-  public Vector2 GetVelocity() { return getVelocity(); }
-  public Vector2 GetPosition() { return getPosition(); }
-  public float GetRotation() { return getRotation(); }
+  public float Speed() { return getSpeed(); }
+  public Vector2 Position() { return getPosition(); }
+  public float Rotation() { return getRotation(); }
 
-  private Func<Vector2> getVelocity;
+  private Func<float> getSpeed;
   // in y euler angles
   private Func<float> getRotation;
   private Func<Vector2> getPosition;
@@ -21,7 +21,7 @@ public class CC_Unit
   public int SizeY { get { return size.y; } }
 
   public CC_Unit(
-      Func<Vector2> getVelocity,
+      Func<float> getSpeed,
       Func<float> getRotation,
       Func<Vector2> getPosition,
       Func<Vector2> unitDimensions,
@@ -34,7 +34,7 @@ public class CC_Unit
       Debug.LogWarning("CC_Unit created with unit size dimension <1");
     }
 
-    this.getVelocity = getVelocity;
+    this.getSpeed = getSpeed;
     this.getRotation = getRotation;
     this.getPosition = getPosition;
     this.getFalloff = getFalloff;
@@ -77,10 +77,11 @@ public class CC_Unit
 
     // init the footprint
     var footprint = new float[cols, rows];
-
+    // helper functions to clean up footprint construction
     bool xInside(int x) { return x >= buffer && x < buffer + SizeX; }
     bool yInside(int y) { return y >= buffer && y < buffer + SizeY; }
 
+    // construct unit's footprint
     for (int x = 0; x < cols; x++) {
       for (int y = 0; y < rows; y++) {
         // check for the different zones
