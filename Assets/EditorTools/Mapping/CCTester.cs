@@ -24,9 +24,13 @@ public class CCTester : MonoBehaviour
   [SerializeField] private bool solve;
   public Toggle SolveToggle;
 
-  public void ShowUnit(bool value) { unit = value; }
-  [SerializeField] private bool unit;
-  public Toggle UnitToggle;
+  public void ShowUnitA(bool value) { unitA = value; }
+  [SerializeField] private bool unitA;
+  public Toggle UnitToggleA;
+
+  public void ShowUnitB(bool value) { unitB = value; }
+  [SerializeField] private bool unitB;
+  public Toggle UnitToggleB;
 
   public void ShowDensity(bool value) { density = value; }
   [SerializeField] private bool density;
@@ -52,7 +56,8 @@ public class CCTester : MonoBehaviour
 
   // visualization tool handlers
   private TileMap tilemap;
-  public GameObject TestUnit;
+  public GameObject TestUnitA;
+  public GameObject TestUnitB;
 
   // vars to track CC solution solving process
   private bool solutionProcessing = false;
@@ -116,23 +121,44 @@ public class CCTester : MonoBehaviour
       }
     }
 
-    if (unit) {
+    if (unitA) {
       // create a test unit
-      if (TestUnit == null) {
-        TestUnit = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        TestUnit.AddComponent<CCTestUnit>();
+      if (TestUnitA == null) {
+        TestUnitA = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        TestUnitA.name = "Unit A";
+        TestUnitA.AddComponent<CCTestUnit>();
         NavSystem.TrackUnit(new CC_Unit(
-            () => TestUnit.GetComponent<CCTestUnit>().velocity.magnitude,
-            () => TestUnit.transform.eulerAngles.y,
-            () => TestUnit.transform.position.XYZtoXZ(),
-            () => TestUnit.GetComponent<CCTestUnit>().dimensions,
-            () => TestUnit.GetComponent<CCTestUnit>().falloff
+            () => TestUnitA.GetComponent<CCTestUnit>().velocity.magnitude,
+            () => TestUnitA.transform.eulerAngles.y,
+            () => TestUnitA.transform.position.XYZtoXZ(),
+            () => TestUnitA.GetComponent<CCTestUnit>().dimensions,
+            () => TestUnitA.GetComponent<CCTestUnit>().falloff
         ));
       }
-      TestUnit.SoftSetActive(true);
+      TestUnitA.SoftSetActive(true);
     } else {
       // disable the test unit
-      TestUnit.SoftSetActive(false);
+      TestUnitA.SoftSetActive(false);
+    }
+
+    if (unitB) {
+      // create a test unit
+      if (TestUnitB == null) {
+        TestUnitB = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        TestUnitB.name = "Unit B";
+        TestUnitB.AddComponent<CCTestUnit>();
+        NavSystem.TrackUnit(new CC_Unit(
+            () => TestUnitB.GetComponent<CCTestUnit>().velocity.magnitude,
+            () => TestUnitB.transform.eulerAngles.y,
+            () => TestUnitB.transform.position.XYZtoXZ(),
+            () => TestUnitB.GetComponent<CCTestUnit>().dimensions,
+            () => TestUnitB.GetComponent<CCTestUnit>().falloff
+        ));
+      }
+      TestUnitB.SoftSetActive(true);
+    } else {
+      // disable the test unit
+      TestUnitB.SoftSetActive(false);
     }
 
     if (density) {
