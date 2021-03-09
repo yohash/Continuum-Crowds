@@ -40,11 +40,11 @@ public static class VectorExtensions
     return new Vector2(v.x, v.y);
   }
 
-  public static Vector2 Rotate(this Vector2 self, float radians)
+  public static Vector2 Rotate(this Vector2 v, float radians)
   {
     return new Vector2(
-      self.x * Mathf.Cos(radians) - self.y * Mathf.Sin(radians),
-      self.x * Mathf.Sin(radians) + self.y * Mathf.Cos(radians)
+      v.x * Mathf.Cos(radians) - v.y * Mathf.Sin(radians),
+      v.x * Mathf.Sin(radians) + v.y * Mathf.Cos(radians)
     );
   }
 
