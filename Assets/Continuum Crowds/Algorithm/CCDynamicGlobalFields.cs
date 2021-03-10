@@ -210,8 +210,8 @@ public class CCDynamicGlobalFields
 
     // (3b) scale the vertical slice along the length of the rect
     // determine falloff rates
-    var start = 1;
-    var end = CCValues.S.f_rhoMin;
+    var start = 0.75f; // CCValues.S.f_rhoMax;
+    var end = 0f; // CCValues.S.f_rhoMin / 4f;
     // track iteration
     int c = 0;
     for (int i = footprintHalfWidth; i < predictive.GetLength(0); i++) {

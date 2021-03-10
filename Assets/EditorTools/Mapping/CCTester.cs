@@ -128,7 +128,7 @@ public class CCTester : MonoBehaviour
         TestUnitA.name = "Unit A";
         TestUnitA.AddComponent<CCTestUnit>();
         NavSystem.TrackUnit(new CC_Unit(
-            () => TestUnitA.GetComponent<CCTestUnit>().velocity.magnitude,
+            () => TestUnitA.GetComponent<CCTestUnit>().speed,
             () => TestUnitA.transform.eulerAngles.y,
             () => TestUnitA.transform.position.XYZtoXZ(),
             () => TestUnitA.GetComponent<CCTestUnit>().dimensions,
@@ -148,7 +148,7 @@ public class CCTester : MonoBehaviour
         TestUnitB.name = "Unit B";
         TestUnitB.AddComponent<CCTestUnit>();
         NavSystem.TrackUnit(new CC_Unit(
-            () => TestUnitB.GetComponent<CCTestUnit>().velocity.magnitude,
+            () => TestUnitB.GetComponent<CCTestUnit>().speed,
             () => TestUnitB.transform.eulerAngles.y,
             () => TestUnitB.transform.position.XYZtoXZ(),
             () => TestUnitB.GetComponent<CCTestUnit>().dimensions,
@@ -245,7 +245,7 @@ public class CCTester : MonoBehaviour
     for (int x = 0; x < currentTile.TileSize; x++) {
       for (int y = 0; y < currentTile.TileSize; y++) {
         var loc = new Vector2(x, y);
-        var vel = tileSolution(loc).normalized;
+        var vel = tileSolution(loc) / CCValues.S.f_speedMax;
         float worldX = x + .5f + currentTile.Corner.x;
         float worldY = y + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);
@@ -263,7 +263,7 @@ public class CCTester : MonoBehaviour
 
     for (int x = 0; x < velMtx.GetLength(0); x++) {
       for (int y = 0; y < velMtx.GetLength(1); y++) {
-        var vel = velMtx[x,y];
+        var vel = velMtx[x, y];
         float worldX = x + .5f + currentTile.Corner.x;
         float worldY = y + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);
