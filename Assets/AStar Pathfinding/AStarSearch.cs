@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AStarSearch
 {
-  private static float sqrt2 = 1.414213562373095f;
+  private const float sqrt2 = 1.414213562373095f;
 
   public AStarSearch() { }
 

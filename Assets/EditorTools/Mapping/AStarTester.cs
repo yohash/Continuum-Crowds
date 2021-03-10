@@ -76,21 +76,25 @@ public class AStarTester : MonoBehaviour
     if (!EventSystem.current.IsPointerOverGameObject()) {
       if (Input.GetMouseButtonDown(0)) {
         // raycast to find tap point
-        RaycastHit hit;
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // ensure raycast hits terrain
-        if (Physics.Raycast(ray, out hit)) {
+        if (Physics.Raycast(ray, out RaycastHit hit)) {
           var loc = new Location(hit.point.x, hit.point.z);
-          // store start location
-          startTile = NavSystem.GetTileForLocation(loc);
-          startLocation = loc;
+          if (State == A_STAR_TESTER_STATE.SELECT_END) {
+            // store end location
+            endTile = NavSystem.GetTileForLocation(loc);
+            endLocation = loc;
+          } else {
+            // store start location
+            startTile = NavSystem.GetTileForLocation(loc);
+            startLocation = loc;
+          }
         }
       } else if (Input.GetMouseButtonDown(1)) {
         // raycast to find tap point
-        RaycastHit hit;
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // ensure raycast hits terrain
-        if (Physics.Raycast(ray, out hit)) {
+        if (Physics.Raycast(ray, out RaycastHit hit)) {
           var loc = new Location(hit.point.x, hit.point.z);
           // store end location
           endTile = NavSystem.GetTileForLocation(loc);
