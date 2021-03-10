@@ -6,6 +6,7 @@ public class CC_Unit
   public float Speed() { return getSpeed(); }
   public Vector2 Position() { return getPosition(); }
   public float Rotation() { return getRotation(); }
+  public float Falloff() { return getFalloff(); }
 
   private Func<float> getSpeed;
   // in y euler angles

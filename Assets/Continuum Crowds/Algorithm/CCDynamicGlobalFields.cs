@@ -192,11 +192,12 @@ public class CCDynamicGlobalFields
     var height = footprint.GetLength(1);
 
     // (1) create a rect with Length = predictive distance, Height = Unit footprint height
-    var footprintHalfWidth = (int)Math.Floor(footprint.GetLength(0) / 2f);
-    var predictive = new float[footprintHalfWidth + distance, height];
+    //var footprintEnd = (int)Math.Floor(footprint.GetLength(0) / 2f);
+    var footprintEnd = Mathf.FloorToInt(ccu.Falloff() + ccu.SizeX - 1);
+    var predictive = new float[footprintEnd + distance, height];
 
     // (2) build half of the footprint into the predictive rect
-    for (int i = 0; i < footprintHalfWidth; i++) {
+    for (int i = 0; i < footprintEnd; i++) {
       for (int k = 0; k < height; k++) {
         predictive[i, k] = footprint[i, k];
       }
@@ -205,7 +206,7 @@ public class CCDynamicGlobalFields
     // (3a) record the "vertical slice" of the unit footprint
     var slice = new float[height];
     for (int i = 0; i < slice.Length; i++) {
-      slice[i] = footprint[footprintHalfWidth, i];
+      slice[i] = footprint[footprintEnd, i];
     }
 
     // (3b) scale the vertical slice along the length of the rect
@@ -214,7 +215,7 @@ public class CCDynamicGlobalFields
     var end = CCValues.S.f_rhoMin;
     // track iteration
     int c = 0;
-    for (int i = footprintHalfWidth; i < predictive.GetLength(0); i++) {
+    for (int i = footprintEnd; i < predictive.GetLength(0); i++) {
       // taper from <start> down to <end>
       var scalar = (end - start) / distance * c + start;
       c++;
