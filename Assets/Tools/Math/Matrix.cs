@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using System;
 
-public static class MatrixExtensions
+public static class Matrix
 {
   public static float[,] SubMatrix(this float[,] matrix, int startX, int startY, int sizeX, int sizeY)
   {
@@ -30,20 +31,20 @@ public static class MatrixExtensions
 
   public static Vector2[,] Normalize(this Vector2[,] matrix)
   {
-    float xMax = 0f;
-    float yMax = 0f;
+    float max = 0;
     for (int i = 0; i < matrix.GetLength(0); i++) {
       for (int k = 0; k < matrix.GetLength(1); k++) {
-        if (Mathf.Abs(matrix[i, k].x) > xMax) { xMax = Mathf.Abs(matrix[i, k].x); }
-        if (Mathf.Abs(matrix[i, k].y) > yMax) { yMax = Mathf.Abs(matrix[i, k].y); }
+        if (matrix[i, k].sqrMagnitude > max) { max = matrix[i, k].sqrMagnitude; }
       }
     }
+
+    if (max == 0) { return matrix; }
+    max = Mathf.Sqrt(max);
 
     var normalized = new Vector2[matrix.GetLength(0), matrix.GetLength(1)];
     for (int i = 0; i < matrix.GetLength(0); i++) {
       for (int k = 0; k < matrix.GetLength(1); k++) {
-        normalized[i, k].x = Mathf.Abs(matrix[i, k].x) / xMax;
-        normalized[i, k].y = Mathf.Abs(matrix[i, k].y) / yMax;
+        normalized[i, k] = matrix[i, k] / max;
       }
     }
 
@@ -51,7 +52,7 @@ public static class MatrixExtensions
   }
 
   /// <summary>
-  /// Normalize a matrix of floats to 1 by the largest absolute value
+  /// Normalize a matrix of floats to the largest absolute value
   /// </summary>
   /// <param name="matrix"></param>
   /// <returns></returns>
@@ -64,10 +65,22 @@ public static class MatrixExtensions
       }
     }
 
+    return matrix.Normalize(max);
+  }
+
+  /// <summary>
+  /// Normzlize a matrix of floats to the input value
+  /// </summary>
+  /// <param name="matrix"></param>
+  /// <param name="normValue"></param>
+  /// <returns></returns>
+  public static float[,] Normalize(this float[,] matrix, float normValue)
+  {
     var normalized = new float[matrix.GetLength(0), matrix.GetLength(1)];
     for (int i = 0; i < matrix.GetLength(0); i++) {
       for (int k = 0; k < matrix.GetLength(1); k++) {
-        normalized[i, k] = Mathf.Abs(matrix[i, k]) / max;
+        // clamp the normalized matrix value to the input norm value
+        normalized[i, k] = Mathf.Clamp(Mathf.Abs(matrix[i, k]) / normValue, -normValue, normValue);
       }
     }
 
@@ -75,7 +88,7 @@ public static class MatrixExtensions
   }
 
   /// <summary>
-  /// Compute the matrix of absolute values from a vector matrix
+  /// Compute the matrix of absolute maximum values from a vector matrix
   /// </summary>
   /// <param name="matrix"></param>
   /// <returns></returns>
@@ -176,15 +189,91 @@ public static class MatrixExtensions
     return y;
   }
 
-  public static string ToString<T>(this T[,] matrix)
+  public static string ToString<T>(this T[,] matrix, string format = "")
   {
     string s = "";
     for (int i = 0; i < matrix.GetLength(0); i++) {
       for (int k = 0; k < matrix.GetLength(1); k++) {
-        s += matrix[i, k].ToString() + ", ";
+        s += matrix[i, k].ToString() + ",\t";
       }
       s += "\n";
     }
     return s;
+  }
+
+  /// <summary>
+  /// Rotates a matrix counter-clockwise by given degrees.
+  /// 
+  /// Performs rotation via "inverse transformation". The rotated
+  /// matrix (u, v) is mapped into the space (frame of reference) 
+  /// of the source matrix (x, y), and each point is determined
+  /// by bilinear interpolation of the 4 nearest-neighbor points in
+  /// the source matrix.
+  /// 
+  /// Returns a new matrix whose dimensions are be greater than or 
+  /// equal to the dimensions of the source matrix. Requires 
+  /// additional allocations 
+  /// </summary>
+  /// <param name="matrix"></param>
+  /// <param name="degrees"></param>
+  public static float[,] Rotate(this float[,] matrix, float degrees)
+  {
+    float radians = degrees * Mathf.Deg2Rad;
+    // store constants
+    var n = matrix.GetLength(0);
+    var m = matrix.GetLength(1);
+    // determine the components that sum the side dimensions of our new matrix
+    var na = Mathf.Abs(n * Mathf.Cos(radians));
+    var nb = Mathf.Abs(m * Mathf.Sin(radians));
+    var ma = Mathf.Abs(m * Mathf.Cos(radians));
+    var mb = Mathf.Abs(n * Mathf.Sin(radians));
+
+    // compute new dimensions of the matrix required to hold the rotated matrix
+    var N = Mathf.Ceil(na + nb);
+    var M = Mathf.Ceil(ma + mb);
+
+    // helper function to determine if the given indeces are outside our original matrix
+    bool outside(float x, float y) { return x < 0 || y < 0 || x > n - 1 || y > m - 1; }
+
+    // build a helper function to transform a matrix point
+    float invTransform(float[,] mtx, int u, int v)
+    {
+      // (1) translate to midpoint
+      var ut = u - (N - 1) / 2f;
+      var vt = v - (M - 1) / 2f;
+      // (2) apply rotation matrix to rotate about (0, 0)
+      var ur = ut * Mathf.Cos(radians) + vt * Mathf.Sin(radians);
+      var vr = -ut * Mathf.Sin(radians) + vt * Mathf.Cos(radians);
+      // (3) re-scale to original frame of reference
+      var x = ur + (n - 1) / 2f;
+      var y = vr + (m - 1) / 2f;
+      // (4) determine original mapping vector bounding integers
+      var xf = Mathf.FloorToInt(x);
+      var xc = Mathf.CeilToInt(x);
+      var yf = Mathf.FloorToInt(y);
+      var yc = Mathf.CeilToInt(y);
+      // (5) build a 2x2 matrix of the value from our original matrix, 
+      //    from these 4 corners, using 0 if we're outisde the bounds
+      mtx[0, 0] = outside(xf, yf) ? 0 : matrix[xf, yf];
+      mtx[0, 1] = outside(xf, yc) ? 0 : matrix[xf, yc];
+      mtx[1, 0] = outside(xc, yf) ? 0 : matrix[xc, yf];
+      mtx[1, 1] = outside(xc, yc) ? 0 : matrix[xc, yc];
+      // (5) interpolate the rotated value from our original matrix
+      return mtx.Interpolate(x.Modulus(1), y.Modulus(1));
+    }
+
+    // declare new rotated matrix with previously determined dimensions
+    var rotated = new float[(int)N, (int)M];
+    // cache to reduce allocations per-call to invTransform
+    float[,] c = new float[2, 2];
+
+    // build the rotated matrix
+    for (int u = 0; u < N; u++) {
+      for (int v = 0; v < M; v++) {
+        rotated[u, v] = invTransform(c, u, v);
+      }
+    }
+
+    return rotated;
   }
 }

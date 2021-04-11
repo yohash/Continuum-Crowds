@@ -1,51 +1,131 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
-[System.Serializable]
 public class CC_Unit
 {
-  public int UnitX, UnitY;
+  public float Speed() { return getSpeed(); }
+  public Vector2 Position() { return getPosition(); }
+  public float Rotation() { return getRotation(); }
+  public float Falloff() { return getFalloff(); }
 
-  // private variables
-  [SerializeField] Vector2 _CC_Unit_velocity;
+  private Func<float> getSpeed;
+  // in y euler angles
+  private Func<float> getRotation;
+  private Func<Vector2> getPosition;
+  private Func<Vector2> getSize;
+  private Func<float> getFalloff;
+  // local vars
+  private float[,] baseprint;
 
-  private float[,] _CC_Unit_Footprint;
+  private Vector2Int size;
+  public int SizeX { get { return size.x; } }
+  public int SizeY { get { return size.y; } }
 
-  [SerializeField] private Vector2 _CC_Footprint_Anchor;
-
-  // getters and setters
-  public float[,] GetFootprint() { return _CC_Unit_Footprint; }
-  public Vector2 GetAnchorPoint() { return _CC_Footprint_Anchor; }
-  public Vector2 GetVelocity() { return _CC_Unit_velocity; }
-
-
-  public CC_Unit(/*Unit u*/)
+  public CC_Unit(
+      Func<float> getSpeed,
+      Func<float> getRotation,
+      Func<Vector2> getPosition,
+      Func<Vector2> unitDimensions,
+      Func<float> getFalloff
+  )
   {
-    //_myUnit = u;
+    getSize = unitDimensions;
+    // verify
+    if (getSize().x < 1 || getSize().y < 1) {
+      Debug.LogWarning("CC_Unit created with unit size dimension <1");
+    }
 
-    //UnitX = u.SizeX;
-    //UnitY = u.SizeZ;
+    this.getSpeed = getSpeed;
+    this.getRotation = getRotation;
+    this.getPosition = getPosition;
+    this.getFalloff = getFalloff;
 
-    //_CC_Unit_Footprint = u.Footprint;
-    assign_CC_Footprint_Anchor();
+    baseprint = computeBaseFootprint();
+    setLocalSize();
   }
 
-  // the continuumCrowds code considers units lower-left location (similar to a rect)
-  // currently, my units are CENTERED on their transform, so we subtract half their size
-  public void UpdatePhysics()
+  public float[,] GetFootprint()
   {
-    //_CC_Unit_Footprint = _myUnit.GetInterpolatedFootprint();
+    // TEMPORARY - dont re-compute each time footprint is sought
+    // performing this action now for the sake of debugging
+    baseprint = computeBaseFootprint();
 
-    //_CC_Unit_velocity = _myUnit.Velocity;
-
-    assign_CC_Footprint_Anchor();
+    return baseprint;
   }
 
-
-  private void assign_CC_Footprint_Anchor()
+  private void setLocalSize()
   {
-    //_CC_Footprint_Anchor = _myUnit.GetCurrent2DPosition();
-    _CC_Footprint_Anchor += (-(new Vector2(((float)_CC_Unit_Footprint.GetLength(0)) / 2f,
-                                            ((float)_CC_Unit_Footprint.GetLength(1)) / 2f)));
+    var sizeX = (int)Math.Round(getSize().x);
+    var sizeY = (int)Math.Round(getSize().y);
+    // ensure we're clamped above 1
+    sizeX = Math.Max(sizeX, 1);
+    sizeY = Math.Max(sizeY, 1);
+    // cache
+    size = new Vector2Int(sizeX, sizeY);
+  }
+
+  private float[,] computeBaseFootprint()
+  {
+    // TODO: eliminate this when done debugging
+    // cache local references
+    setLocalSize();
+    var fadeout = getFalloff();
+
+    // initialize 'positions' with the standard grid and dimensions provided
+    int buffer = (int)Math.Ceiling(fadeout);
+    int cols = SizeX + buffer * 2;
+    int rows = SizeY + buffer * 2;
+
+    // init the footprint
+    var footprint = new float[cols, rows];
+    // helper functions to clean up footprint construction
+    bool xInside(int x) { return x >= buffer && x < buffer + SizeX; }
+    bool yInside(int y) { return y >= buffer && y < buffer + SizeY; }
+
+    // construct unit's footprint
+    for (int x = 0; x < cols; x++) {
+      for (int y = 0; y < rows; y++) {
+        // check for the different zones
+        // (1) within the main footprint range
+        // (2) within the buffer to the left/right or top/bottom of the main footprint
+        //      where footprint drops off linearly
+        // (3) one of the 4 corners, where footprint drops off radially
+
+        // if we're inside the footprint
+        if (xInside(x) && yInside(y)) {
+          // within the main footprint range, everything is 1
+          footprint[x, y] = 1;
+        }
+        // if we're outside the x range, but inside y
+        else if (!xInside(x) && yInside(y)) {
+          // footprint drops off linearly over x
+          // get x distance
+          float xVar = x < buffer ? x + 1 : cols - x;
+          footprint[x, y] = xVar / (buffer + 1);
+        }
+        // if we're outside the y range, but inside x
+        else if (xInside(x) && !yInside(y)) {
+          // footprint drops off linearly over y
+          float yVar = y < buffer ? y + 1 : rows - y;
+          footprint[x, y] = yVar / (buffer + 1);
+        }
+        // anything else, we're in a corner, drop off radially
+        else {
+          // determine how far x and y are away from closest corner
+          float xVar = x < buffer ? buffer - x : buffer + x + 1 - cols;
+          float yVar = y < buffer ? buffer - y : buffer + y + 1 - rows;
+          // use distance formula to determine distance from corner
+          float dd = (float)Math.Sqrt(xVar * xVar + yVar * yVar);
+
+          // invert the distance by buffer+1
+          dd = buffer + 1 - dd;
+          if (dd < 0) dd = 0;
+          // scale and record
+          footprint[x, y] = dd / (buffer + 1);
+        }
+      }
+    }
+
+    return footprint;
   }
 }

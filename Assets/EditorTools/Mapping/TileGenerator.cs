@@ -28,11 +28,14 @@ public class TileGenerator : MonoBehaviour
   private Vector2[,] dh;
 
   // viewables
+  private TileMap tilemap;
   private bool viewTiles;
   private bool viewBorders;
+  private bool viewDiscomfort, drawn;
   private bool viewNeighborBorders;
   public void ViewTiles(bool show) { viewTiles = show; }
   public void ViewBorders(bool show) { viewBorders = show; }
+  public void ViewDiscomfort(bool show) { viewDiscomfort = show; drawn = false; }
   public void ViewNeighbors(bool show) { viewNeighborBorders = show; }
   public void ViewTileIndex(string i)
   {
@@ -50,6 +53,7 @@ public class TileGenerator : MonoBehaviour
   private void Awake()
   {
     Instant = this;
+    tilemap = new TileMap("TileGenerator TileMap");
   }
 
   private void Update()
@@ -73,6 +77,13 @@ public class TileGenerator : MonoBehaviour
       }
     }
 
+    if (viewDiscomfort && Tiles.Count > tileIndex && tileIndex >= 0) {
+      if (!drawn) {
+        tilemap.BuildTexture(TextureGenerator.TextureFromMatrix(g, Color.clear, Color.red));
+        tilemap.BuildMesh(h);
+        drawn = true;
+      }
+    }
 
     if (viewBorders && Tiles.Count > tileIndex && tileIndex >= 0) {
       var tile = Tiles[tileIndex];

@@ -1,14 +1,9 @@
-﻿using System.Collections;
+﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
 public static class VectorExtensions
 {
-  public static Vector3 ToXZ(this Vector2 v)
-  {
-    return new Vector3(v.x, 0, v.y);
-  }
-
   public static Vector3 ToXZ(this Vector2Int v)
   {
     return new Vector3(v.x, 0, v.y);
@@ -36,9 +31,31 @@ public static class VectorExtensions
   {
     return new Vector3(v.x, v.y, z);
   }
-  public static Vector2 XYZtoXY(this Vector3 v)
+  public static Vector2 XYZtoXZ(this Vector3 v)
   {
     return new Vector2(v.x, v.z);
+  }
+  public static Vector2 XYZtoXY(this Vector3 v)
+  {
+    return new Vector2(v.x, v.y);
+  }
+
+  public static Vector2 Rotate(this Vector2 v, float radians)
+  {
+    return new Vector2(
+      v.x * Mathf.Cos(radians) - v.y * Mathf.Sin(radians),
+      v.x * Mathf.Sin(radians) + v.y * Mathf.Cos(radians)
+    );
+  }
+
+  public static Rect Bounds(this List<Vector2> points)
+  {
+    float xMin = points.OrderBy(m => m.x).FirstOrDefault().x;
+    float yMin = points.OrderBy(m => m.y).FirstOrDefault().y;
+    float xMax = points.OrderByDescending(m => m.x).FirstOrDefault().x;
+    float yMax = points.OrderByDescending(m => m.y).FirstOrDefault().y;
+
+    return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
   }
 
   public static Vector2Int Average(this List<Vector2Int> v)

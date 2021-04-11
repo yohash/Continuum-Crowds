@@ -74,15 +74,8 @@ public class CCEikonalSolver
     C = tile.C;
     g = tile.g;
 
-    Debug.Log("SolveContinuumCrowdsForTile");
-    Debug.Log("f\n" + f.ToString<Vector4>());
-    Debug.Log("C\n" + C.ToString<Vector4>());
-    Debug.Log("g\n" + g.ToString<float>());
-
     N = f.GetLength(0);
     M = f.GetLength(1);
-
-    Debug.Log($"CC eikonel solver [{N}x{M}], goal locs: " + string.Join(", ", goal));
 
     if (N == 0 || M == 0) {
       Debug.Log("Eikonal Solver initiated with 0-dimension");
@@ -111,8 +104,6 @@ public class CCEikonalSolver
     calculatePotentialGradientAndNormalize();
     // calculate velocity field
     calculateVelocityField();
-
-    Debug.Log("Final velocity field: \n" + velocity.ToString<Vector2>());
   }
 
   private void computePotentialField(List<Location> goal)
@@ -251,7 +242,7 @@ public class CCEikonalSolver
         if (phi_proposed < Phi[neighbor.x, neighbor.y]) {
           // save the value of the lower phi
           Phi[neighbor.x, neighbor.y] = phi_proposed;
-
+            
           if (considered.Contains(neighbor)) {
             // re-write the old value in the queue
             considered.UpdatePriority(neighbor, phi_proposed);

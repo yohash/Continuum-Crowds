@@ -19,6 +19,12 @@ public static class Drawings
     Debug.DrawLine(corner + Vector3.right, corner, c, duration);
   }
 
+  public static void DrawX(Vector3 v, Color c, float size = 0.3f, float duration = 0)
+  {
+    Debug.DrawLine(v + new Vector3(size, 0, size), v - new Vector3(size, 0, size), c, duration);
+    Debug.DrawLine(v + new Vector3(-size, 0, size), v - new Vector3(-size, 0, size), c, duration);
+  }
+
   public static void DrawPath(List<Vector2> path, float height, Color c, float duration = 0)
   {
     for (int i = 1; i < path.Count; i++) {

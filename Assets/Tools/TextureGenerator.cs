@@ -14,7 +14,12 @@ public static class TextureGenerator
 
 	public static Texture2D TextureFromMatrix(float[,] matrix)
 	{
-		var normalized = matrix.Normalize();
+		return TextureFromMatrix(matrix, Color.black, Color.white);
+	}
+
+	public static Texture2D TextureFromMatrix(float[,] matrix, Color min, Color max)
+	{
+		var normalized = matrix.Normalize(1);
 
 		int width = matrix.GetLength(0);
 		int height = matrix.GetLength(1);
@@ -24,7 +29,7 @@ public static class TextureGenerator
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				// Assign the pixel a color based on its value
-				colorMap[y * width + x] = Color.Lerp(Color.black, Color.white, normalized[x, y]);
+				colorMap[y * width + x] = Color.Lerp(min, max, normalized[x, y]);
 			}
 		}
 		return TextureFromColorMap(colorMap, width, height);
