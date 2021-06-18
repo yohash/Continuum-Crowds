@@ -6,15 +6,15 @@ using UnityEngine;
 
 public class NavSystem
 {
+  public int TileSize;
+
   // tile nav components
   private List<MapTile> mapTiles;
   private TileMesh mesh;
 
-  // continuum crowds components
+  // continuum crowds
   public CCDynamicGlobalFields ccFields;
   private List<CCEikonalSolver> ccSolutions;
-
-  public int TileSize;
 
   public NavSystem(List<MapTile> tiles)
   {
@@ -79,7 +79,7 @@ public class NavSystem
 
     // start pathfinding
     var aStar = new AStarSearch();
-    // don't awayt this final astar search, we don't need to hold computation
+    // don't await this final astar search, we don't need to hold computation
     aStar.ComputePath(startPortal, endPortal, onComplete);
   }
 
@@ -115,12 +115,12 @@ public class NavSystem
   )
   {
     // (1) perform continuum crowd solution on provided tile
-    var solution = new CCEikonalSolver();
+    var eikonalSolution = new CCEikonalSolver();
     var ccTile = ccFields.GetCCTile(tile.Corner);
 
-    solution.SolveContinuumCrowdsForTile(ccTile, goals.Select(g => g - tile.Corner).ToList());
+    eikonalSolution.SolveContinuumCrowdsForTile(ccTile, goals.Select(g => g - tile.Corner).ToList());
 
-    tileSolutionCallback(vel => solution.velocity.Interpolate(vel.x, vel.y));
+    tileSolutionCallback(vel => eikonalSolution.velocity.Interpolate(vel.x, vel.y));
 
     // (2) store the velocity field (solution) in a list with some identifier
     //      to clearly show what we've solved and can therefore reference later
@@ -145,7 +145,7 @@ public class NavSystem
 public class NavigationSolution
 {
   /// <summary>
-  /// The ordered list of the Maptiles that we will traverse to reach our goal
+  /// The ordered list of the MapTiles that we will traverse to reach our goal
   /// </summary>
   public LinkedList<MapTile> Tiles;
 

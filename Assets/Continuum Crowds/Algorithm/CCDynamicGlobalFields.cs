@@ -17,9 +17,6 @@ public class CCDynamicGlobalFields
   //// map dimensions
   //private int _mapX, _mapY;
 
-  // cached 2x2 float[] for linear1stOrderSplat (GC redux)
-  private float[,] mat = new float[2, 2];
-
   // ****************************************************************
   // 				PUBLIC ACCESSORS and CONSTRUCTORS
   // ****************************************************************
@@ -89,18 +86,18 @@ public class CCDynamicGlobalFields
       }
     }
 
-    // these next values are derived from rho, vAve, and g_P, so we simply iterate
+    // these next values are derived from rho and vAve, so we simply iterate
     // through the tiles and ONLY update the ones that have had their values changed
     foreach (CC_Tile cct in _tiles.Values) {
       //if (cct.UPDATE_TILE) {
       // (3) 	now that the velocity field and density fields are computed,
-      // 		divide the velocity by density to get average velocity field
+      // 		  divide the velocity by density to get average velocity field
       computeAverageVelocityField(cct);
       // (4)	now that the average velocity field is computed, and the density
-      // 		field is in place, we calculate the speed field, f
+      // 		  field is in place, we calculate the speed field, f
       computeSpeedField(cct);
       // (5) 	the cost field depends only on f and g, so it can be computed in its
-      //		entirety now as well
+      //		  entirety now as well
       computeCostField(cct);
       //}
     }
@@ -211,8 +208,8 @@ public class CCDynamicGlobalFields
 
     // (3b) scale the vertical slice along the length of the rect
     // determine falloff rates
-    var start = 1;
-    var end = CCValues.S.f_rhoMin;
+    var start = (CCValues.S.f_rhoMax + CCValues.S.f_rhoMin) / 2;
+    var end = 0f; // CCValues.S.f_rhoMin / 4f;
     // track iteration
     int c = 0;
     for (int i = footprintEnd; i < predictive.GetLength(0); i++) {
