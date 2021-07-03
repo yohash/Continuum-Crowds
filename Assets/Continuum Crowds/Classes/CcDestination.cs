@@ -23,8 +23,10 @@ public class CcDestination : IEquatable<CcDestination>
   // cache the hash code in effort to reduce re-compute
   private int _hash = 0;
 
-  public CcDestination(CC_Tile tile, List<Location> goal) => (_tile, _goal) = (tile.Corner, goal);
-  public CcDestination(Location tile, List<Location> goal) => (_tile, _goal) = (tile, goal);
+  public CcDestination(CC_Tile tile, List<Location> goal)
+    => (_tile, _goal) = (tile.Corner, goal);
+  public CcDestination(Location tile, List<Location> goal)
+    => (_tile, _goal) = (tile, goal);
 
   // *******************************************************************
   //    IEquatable
@@ -37,9 +39,9 @@ public class CcDestination : IEquatable<CcDestination>
 
   public override bool Equals(object obj)
   {
-    return obj is CcDestination destination &&
-           _tile.Equals(destination._tile) &&
-           EqualityComparer<List<Location>>.Default.Equals(_goal, destination._goal);
+    return obj is CcDestination destination
+      && _tile.Equals(destination._tile)
+      && EqualityComparer<List<Location>>.Default.Equals(_goal, destination._goal);
   }
 
   public override int GetHashCode()
@@ -54,7 +56,8 @@ public class CcDestination : IEquatable<CcDestination>
   {
     int hashCode = -1244036622;
     hashCode = hashCode * -1521134295 + _tile.GetHashCode();
-    hashCode = hashCode * -1521134295 + EqualityComparer<List<Location>>.Default.GetHashCode(_goal);
+    hashCode = hashCode * -1521134295
+      + EqualityComparer<List<Location>>.Default.GetHashCode(_goal);
     return hashCode;
   }
 }

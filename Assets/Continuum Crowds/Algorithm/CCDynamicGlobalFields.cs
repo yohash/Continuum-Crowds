@@ -184,7 +184,7 @@ public class CCDynamicGlobalFields
     var speed = ccu.Speed();
 
     // compute values
-    var distance = (int)Math.Ceiling(speed * CCValues.S.v_predictiveSeconds);
+    var distance = (int)Math.Ceiling(speed * CcValues.S.v_predictiveSeconds);
     var footprint = ccu.GetFootprint();
     var height = footprint.GetLength(1);
 
@@ -208,7 +208,7 @@ public class CCDynamicGlobalFields
 
     // (3b) scale the vertical slice along the length of the rect
     // determine falloff rates
-    var start = (CCValues.S.f_rhoMax + CCValues.S.f_rhoMin) / 2;
+    var start = (CcValues.S.f_rhoMax + CcValues.S.f_rhoMin) / 2;
     var end = 0f; // CCValues.S.f_rhoMin / 4f;
     // track iteration
     int c = 0;
@@ -289,8 +289,8 @@ public class CCDynamicGlobalFields
   {
     for (int n = 0; n < tileSize; n++) {
       for (int m = 0; m < tileSize; m++) {
-        for (int d = 0; d < CCValues.S.ENSW.Length; d++) {
-          cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, CCValues.S.ENSW[d]);
+        for (int d = 0; d < CcValues.S.ENSW.Length; d++) {
+          cct.f[n, m][d] = computeSpeedFieldPoint(n, m, cct, CcValues.S.ENSW[d]);
         }
       }
     }
@@ -312,7 +312,7 @@ public class CCDynamicGlobalFields
     if (xLocalInto < 0 || xLocalInto > tileSize - 1 || yLocalInto < 0 || yLocalInto > tileSize - 1) {
       // if we're looking off the map, dont store this value
       if (!isPointValid(xGlobalInto, yGlobalInto)) {
-        return CCValues.S.f_speedMin;
+        return CcValues.S.f_speedMin;
       }
       r = readDataFromPoint_rho(xGlobalInto, yGlobalInto);
     } else {
@@ -320,11 +320,11 @@ public class CCDynamicGlobalFields
     }
 
     // test the density INTO WHICH we move:
-    if (r < CCValues.S.f_rhoMin) {
+    if (r < CcValues.S.f_rhoMin) {
       // rho < rho_min calc
       ft = computeTopographicalSpeed(readDataFromPoint_dh(xGlobalInto, yGlobalInto), direction);
       ff = ft;
-    } else if (r > CCValues.S.f_rhoMax) {
+    } else if (r > CcValues.S.f_rhoMax) {
       // rho > rho_max calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
       ff = fv;
@@ -332,10 +332,10 @@ public class CCDynamicGlobalFields
       // rho in-between calc
       fv = computeFlowSpeed(xGlobalInto, yGlobalInto, direction);
       ft = computeTopographicalSpeed(readDataFromPoint_dh(xGlobalInto, yGlobalInto), direction);
-      ff = ft + (r - CCValues.S.f_rhoMin) / (CCValues.S.f_rhoMax - CCValues.S.f_rhoMin) * (fv - ft);
+      ff = ft + (r - CcValues.S.f_rhoMin) / (CcValues.S.f_rhoMax - CcValues.S.f_rhoMin) * (fv - ft);
     }
-    ff = Mathf.Clamp(ff, CCValues.S.f_speedMin, CCValues.S.f_speedMax);
-    return Math.Max(CCValues.S.f_speedMin, ff);
+    ff = Mathf.Clamp(ff, CcValues.S.f_speedMin, CcValues.S.f_speedMax);
+    return Math.Max(CcValues.S.f_speedMin, ff);
   }
 
   private float computeTopographicalSpeed(Vector2 dh, Vector2 direction)
@@ -349,9 +349,9 @@ public class CCDynamicGlobalFields
     //						Vector2.Dot(Vector.left, dh[x,y]) = -dhdx;
     float dhInDirection = direction.x * dh.x + direction.y * dh.y;
     // calculate the speed field from the equation
-    return CCValues.S.f_speedMax
-        + (dhInDirection - CCValues.S.f_slopeMin) / (CCValues.S.f_slopeMax - CCValues.S.f_slopeMin)
-        * (CCValues.S.f_speedMin - CCValues.S.f_speedMax);
+    return CcValues.S.f_speedMax
+        + (dhInDirection - CcValues.S.f_slopeMin) / (CcValues.S.f_slopeMax - CcValues.S.f_slopeMin)
+        * (CcValues.S.f_speedMin - CcValues.S.f_speedMax);
   }
 
   private float computeFlowSpeed(int xI, int yI, Vector2 direction)
@@ -360,15 +360,15 @@ public class CCDynamicGlobalFields
     // INTO WHICH we are looking, dotted with the direction vector
     var vAvePt = readDataFromPoint_vAve(xI, yI);
     float dot = vAvePt.x * direction.x + vAvePt.y * direction.y;
-    return Math.Max(CCValues.S.f_speedMin, dot);
+    return Math.Max(CcValues.S.f_speedMin, dot);
   }
 
   private void computeCostField(CC_Tile cct)
   {
     for (int n = 0; n < tileSize; n++) {
       for (int m = 0; m < tileSize; m++) {
-        for (int d = 0; d < CCValues.S.ENSW.Length; d++) {
-          cct.C[n, m][d] = computeCostFieldValue(n, m, d, CCValues.S.ENSW[d], cct);
+        for (int d = 0; d < CcValues.S.ENSW.Length; d++) {
+          cct.C[n, m][d] = computeCostFieldValue(n, m, d, CcValues.S.ENSW[d], cct);
         }
       }
     }
@@ -404,9 +404,9 @@ public class CCDynamicGlobalFields
 
     // compute the cost weighted by our coefficients
     var f = cct.f[tileX, tileY][d];
-    float cost = CCValues.S.C_alpha
-                + CCValues.S.C_beta * 1 / f
-                + CCValues.S.C_gamma * g / f;
+    float cost = CcValues.S.C_alpha
+                + CcValues.S.C_beta * 1 / f
+                + CcValues.S.C_gamma * g / f;
 
     return cost;
   }

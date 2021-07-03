@@ -6,5 +6,6 @@ public interface ICcUnit
 {
   Vector2 Velocity();
   Vector2 Position();
-  Vector2[] Density();
+  Quaternion Rotation();
+  float[] Density();
 }

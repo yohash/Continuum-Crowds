@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(menuName = "New Continuum Crowds Constants", fileName = "CCConstants")]
-public class CCValues : ScriptableObject
+public class CcValues : ScriptableObject
 {
-  static private CCValues instance;
-  static public CCValues S {
+  static private CcValues instance;
+  static public CcValues S {
     get {
       return instance ??
-        (instance = Resources.Load("CCConstants") as CCValues);
+        (instance = Resources.Load("CCConstants") as CcValues);
     }
   }
 

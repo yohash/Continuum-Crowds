@@ -245,7 +245,7 @@ public class CCTester : MonoBehaviour
     for (int x = 0; x < currentTile.TileSize; x++) {
       for (int y = 0; y < currentTile.TileSize; y++) {
         var loc = new Vector2(x, y);
-        var vel = tileSolution(loc) / CCValues.S.f_speedMax;
+        var vel = tileSolution(loc) / CcValues.S.f_speedMax;
         float worldX = x + .5f + currentTile.Corner.x;
         float worldY = y + .5f + currentTile.Corner.y;
         var height = currentTile.Height(worldX, worldY);

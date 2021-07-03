@@ -57,13 +57,13 @@ public class CC_Tile
     _fbackup = new Vector4[dim, dim];
     _Cbackup = new Vector4[dim, dim];
 
-    float f0 = CCValues.S.f_speedMax
-      + (-CCValues.S.f_slopeMin) / (CCValues.S.f_slopeMax - CCValues.S.f_slopeMin)
-      * (CCValues.S.f_speedMin - CCValues.S.f_speedMax);
+    float f0 = CcValues.S.f_speedMax
+      + (-CcValues.S.f_slopeMin) / (CcValues.S.f_slopeMax - CcValues.S.f_slopeMin)
+      * (CcValues.S.f_speedMin - CcValues.S.f_speedMax);
 
     // initialize speed and cost fields
     Vector4 f_init = f0 * Vector4.one;
-    Vector4 C_init = Vector4.one * (f0 * CCValues.S.C_alpha + CCValues.S.C_beta) / f0;
+    Vector4 C_init = Vector4.one * (f0 * CcValues.S.C_alpha + CcValues.S.C_beta) / f0;
 
     for (int i = 0; i < dim; i++) {
       for (int k = 0; k < dim; k++) {
