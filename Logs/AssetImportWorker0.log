@@ -77,3 +77,11 @@ Received Import Request.
 Start importing Assets/Continuum Crowds/Classes/CcValues.cs using Guid(3c2092c67a11e8545994980960b6fca0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '922c737ce9d819d384897e90b7f4798a') in 0.286685 seconds
   Import took 0.293649 seconds .
 
+========================================================================
+Received Import Request.
+  Time since last request: 58.180784 seconds.
+  path: Assets/Continuum Crowds/Classes/CcUnit.cs
+  artifactKey: Guid(2ce6545381aa0d04d9d9da0e5fc394c8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Continuum Crowds/Classes/CcUnit.cs using Guid(2ce6545381aa0d04d9d9da0e5fc394c8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '804a028ac156ef6c3a65de5e1cebe8c5') in 0.026367 seconds
+  Import took 0.038104 seconds .
+
