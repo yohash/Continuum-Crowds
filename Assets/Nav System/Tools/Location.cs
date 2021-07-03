@@ -41,6 +41,16 @@ public partial struct Location : IEquatable<Location>
     return l1.Equals(l2);
   }
 
+  public static bool operator ==(Location l1, Location l2)
+  {
+    return l1.Equals(l2);
+  }
+
+  public static bool operator !=(Location l1, Location l2)
+  {
+    return !l1.Equals(l2);
+  }
+
   public override int GetHashCode()
   {
     int hash = 17;
