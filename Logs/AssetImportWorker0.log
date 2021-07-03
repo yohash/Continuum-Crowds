@@ -85,3 +85,27 @@ Received Import Request.
 Start importing Assets/Continuum Crowds/Classes/CcUnit.cs using Guid(2ce6545381aa0d04d9d9da0e5fc394c8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '804a028ac156ef6c3a65de5e1cebe8c5') in 0.026367 seconds
   Import took 0.038104 seconds .
 
+========================================================================
+Received Import Request.
+  Time since last request: 35.907869 seconds.
+  path: Assets/Continuum Crowds/Classes
+  artifactKey: Guid(6b69960e13994994bacce159bf524fe1) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Continuum Crowds/Classes using Guid(6b69960e13994994bacce159bf524fe1) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'fc47d0720f021434fad8c5ecef1f622b') in 0.014574 seconds
+  Import took 0.019934 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 7.181774 seconds.
+  path: Assets/Continuum Crowds/Classes/CcValues.cs
+  artifactKey: Guid(3c2092c67a11e8545994980960b6fca0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Continuum Crowds/Classes/CcValues.cs using Guid(3c2092c67a11e8545994980960b6fca0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'cf46b19246c2dd3047f571653bd22baa') in 0.022341 seconds
+  Import took 0.032670 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 39.646454 seconds.
+  path: Assets/Continuum Crowds/Classes/CcValues.cs
+  artifactKey: Guid(3c2092c67a11e8545994980960b6fca0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Continuum Crowds/Classes/CcValues.cs using Guid(3c2092c67a11e8545994980960b6fca0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8cf9964af6b060b6ffec5ddc29934448') in 0.084809 seconds
+  Import took 0.096653 seconds .
+
