@@ -21,7 +21,8 @@ public class CcDestination : IEquatable<CcDestination>
   }
 
   // cache the hash code in effort to reduce re-compute
-  private int _hash = 0;
+  private int _hash;
+  private bool hashed = false;
 
   public CcDestination(CC_Tile tile, List<Location> goal)
     => (_tile, _goal) = (tile.Corner, goal);
@@ -46,8 +47,9 @@ public class CcDestination : IEquatable<CcDestination>
 
   public override int GetHashCode()
   {
-    if (_hash == 0) {
+    if (!hashed) {
       _hash = generateHash();
+      hashed = true;
     }
     return _hash;
   }

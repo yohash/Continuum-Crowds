@@ -127,7 +127,7 @@ public class CCTester : MonoBehaviour
         TestUnitA = GameObject.CreatePrimitive(PrimitiveType.Cube);
         TestUnitA.name = "Unit A";
         TestUnitA.AddComponent<CCTestUnit>();
-        NavSystem.TrackUnit(new CC_Unit(
+        NavSystem.AddUnit(new CC_Unit(
             () => TestUnitA.GetComponent<CCTestUnit>().speed,
             () => TestUnitA.transform.eulerAngles.y,
             () => TestUnitA.transform.position.XYZtoXZ(),
@@ -147,7 +147,7 @@ public class CCTester : MonoBehaviour
         TestUnitB = GameObject.CreatePrimitive(PrimitiveType.Cube);
         TestUnitB.name = "Unit B";
         TestUnitB.AddComponent<CCTestUnit>();
-        NavSystem.TrackUnit(new CC_Unit(
+        NavSystem.AddUnit(new CC_Unit(
             () => TestUnitB.GetComponent<CCTestUnit>().speed,
             () => TestUnitB.transform.eulerAngles.y,
             () => TestUnitB.transform.position.XYZtoXZ(),

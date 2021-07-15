@@ -47,6 +47,11 @@ public class CcValues : ScriptableObject
   // Eikonal solver weighted average, min weight
   public float minWeight = 1f;
 
+  public float FlatSpeed {
+    get {
+      return f_speedMax + (-f_slopeMin) / (f_slopeMax - f_slopeMin) * (f_speedMin - f_speedMax);
+    }
+  }
 
   // this array of Vect2's correlates to our data format: Vector4(x, y, z, w) = (+x, +y, -x, -y)
   public Vector2[] ENSW = new Vector2[] {
